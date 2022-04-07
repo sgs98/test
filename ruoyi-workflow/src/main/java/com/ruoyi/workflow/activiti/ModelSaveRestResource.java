@@ -14,10 +14,12 @@ package com.ruoyi.workflow.activiti;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.activiti.editor.constants.ModelDataJsonConstants;
-import org.activiti.engine.ActivitiException;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.repository.Model;
+import com.ruoyi.common.exception.ServiceException;
+import org.flowable.cmmn.image.exception.FlowableImageException;
+import org.flowable.editor.constants.ModelDataJsonConstants;
+import org.flowable.editor.form.converter.FormJsonConverter;
+import org.flowable.engine.RepositoryService;
+import org.flowable.engine.repository.Model;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
@@ -86,7 +88,7 @@ public class ModelSaveRestResource implements ModelDataJsonConstants {
 
     } catch (Exception e) {
       logger.error("Error saving model", e);
-      throw new ActivitiException("Error saving model", e);
+      throw new FlowableImageException("Error saving model", e);
     }
   }
 }

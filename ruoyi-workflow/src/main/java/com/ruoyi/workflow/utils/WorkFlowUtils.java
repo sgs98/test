@@ -13,8 +13,6 @@ import com.ruoyi.system.domain.SysUserRole;
 import com.ruoyi.system.mapper.SysRoleMapper;
 import com.ruoyi.system.mapper.SysUserMapper;
 import com.ruoyi.system.mapper.SysUserRoleMapper;
-import com.ruoyi.system.service.ISysRoleService;
-import com.ruoyi.system.service.ISysUserService;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
 import com.ruoyi.workflow.domain.ActBusinessStatus;
@@ -22,24 +20,21 @@ import com.ruoyi.workflow.domain.ActFullClassParam;
 import com.ruoyi.workflow.domain.vo.ActFullClassVo;
 import com.ruoyi.workflow.domain.vo.ProcessNode;
 import com.ruoyi.workflow.service.IActBusinessStatusService;
-import de.odysseus.el.ExpressionFactoryImpl;
-import de.odysseus.el.util.SimpleContext;
-import de.odysseus.el.util.SimpleResolver;
 import lombok.SneakyThrows;
-import org.activiti.bpmn.converter.BpmnXMLConverter;
-import org.activiti.bpmn.model.*;
-import org.activiti.editor.language.json.converter.BpmnJsonConverter;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
-import org.activiti.engine.delegate.Expression;
-import org.activiti.engine.impl.Condition;
-import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.activiti.engine.impl.context.Context;
-import org.activiti.engine.impl.el.UelExpressionCondition;
-import org.activiti.engine.impl.persistence.entity.ExecutionEntityImpl;
-import org.activiti.engine.impl.persistence.entity.VariableInstance;
 import org.apache.commons.lang3.StringUtils;
+import org.flowable.bpmn.converter.BpmnXMLConverter;
+import org.flowable.bpmn.model.*;
+import org.flowable.common.engine.api.delegate.Expression;
+import org.flowable.common.engine.impl.context.Context;
+import org.flowable.editor.language.json.converter.BpmnJsonConverter;
+import org.flowable.engine.ProcessEngine;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.TaskService;
+import org.flowable.engine.impl.Condition;
+import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.flowable.engine.impl.el.UelExpressionCondition;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
+import org.flowable.variable.api.persistence.entity.VariableInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -124,7 +119,7 @@ public class WorkFlowUtils {
      * @param businessKey
      * @param gateway
      */
-    public void getNextNodes(FlowElement flowElement, ExecutionEntityImpl executionEntity,List<ProcessNode> nextNodes, List<ProcessNode> tempNodes, String taskId, String businessKey, String gateway) {
+    public void getNextNodes(FlowElement flowElement, ExecutionEntityImpl executionEntity, List<ProcessNode> nextNodes, List<ProcessNode> tempNodes, String taskId, String businessKey, String gateway) {
         // 获取当前节点的连线信息
         List<SequenceFlow> outgoingFlows = ((FlowNode) flowElement).getOutgoingFlows();
         // 当前节点的所有下一节点出口
@@ -142,8 +137,11 @@ public class WorkFlowUtils {
                     if (StringUtils.isNotBlank(conditionExpression)) {
                         ProcessEngineConfigurationImpl processEngineConfiguration = (ProcessEngineConfigurationImpl)processEngine.getProcessEngineConfiguration();
                         Context.setCommandContext(processEngineConfiguration.getCommandContextFactory().createCommandContext(null));
-                        Context.setProcessEngineConfiguration(processEngineConfiguration);
+                        /*Context.setProcessEngineConfiguration(processEngineConfiguration);
                         Expression expression = Context.getProcessEngineConfiguration().getExpressionManager().createExpression(conditionExpression);
+                        Condition condition = new UelExpressionCondition(expression);
+                        boolean evaluate = condition.evaluate(sequenceFlow.getId(), executionEntity);*/
+                        Expression expression = processEngineConfiguration.getExpressionManager().createExpression(conditionExpression);
                         Condition condition = new UelExpressionCondition(expression);
                         boolean evaluate = condition.evaluate(sequenceFlow.getId(), executionEntity);
                         if (evaluate) {
@@ -211,7 +209,7 @@ public class WorkFlowUtils {
      * @Author: gssong
      * @Date: 2021/11/5
      */
-    public boolean isCondition(String uel, String businessKey, String taskId) {
+    /*public boolean isCondition(String uel, String businessKey, String taskId) {
         Map<String, VariableInstance> variables = taskService.getVariableInstances(taskId);
 
         Class className = null;
@@ -271,7 +269,7 @@ public class WorkFlowUtils {
             }
         }
         return false;
-    }
+    }*/
 
     /**
      *

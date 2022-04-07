@@ -12,8 +12,9 @@
  */
 package com.ruoyi.workflow.activiti;
 
-import org.activiti.engine.ActivitiException;
+import com.ruoyi.common.exception.ServiceException;
 import org.apache.commons.io.IOUtils;
+import org.flowable.cmmn.image.exception.FlowableImageException;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -34,7 +35,7 @@ public class StencilsetRestResource {
     try {
       return IOUtils.toString(stencilsetStream, "utf-8");
     } catch (Exception e) {
-      throw new ActivitiException("Error while loading stencil set", e);
+      throw new FlowableImageException(e.getMessage());
     }
   }
 }

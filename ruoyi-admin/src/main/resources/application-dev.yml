@@ -53,7 +53,7 @@ spring:
           driverClassName: com.mysql.cj.jdbc.Driver
           # jdbc 所有参数配置参考 https://lionli.blog.csdn.net/article/details/122018562
           # rewriteBatchedStatements=true 批处理优化 大幅提升批量插入更新删除性能(对数据库有性能损耗 使用批量操作应考虑性能问题)
-          url: jdbc:mysql://localhost:3306/ruoyi-activiti6?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true
+          url: jdbc:mysql://127.0.0.1:3306/ruoyi-flowable6?useUnicode=true&characterEncoding=utf8&nullCatalogMeansCurrent=true&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true
           username: root
           password: root
         # 从库数据源
@@ -111,33 +111,36 @@ spring:
           config:
             multi-statement-allow: true
 --- #activiti配置
-spring:
-  activiti:
-    #自动更新数据库结构
-    # true：适用开发环境，默认值。activiti会对数据库中所有表进行更新操作。如果表不存在，则自动创建
-    # false：适用生产环境。activiti在启动时，对比数据库表中保存的版本，如果没有表或者版本不匹配，将抛出异常
-    # create_drop： 在activiti启动时创建表，在关闭时删除表（必须手动关闭引擎，才能删除表）
-    # drop-create： 在activiti启动时删除原来的旧表，然后在创建新表（不需要手动关闭引擎）
-    database-schema-update: true
-    # activiti7与springboot整合后默认不创建历史表，需要手动开启
-    db-history-used: true
-    # 记录历史等级 可配置的历史级别有none, activity, audit, full
-    # none：不保存任何的历史数据，因此，在流程执行过程中，这是最高效的。
-    # activity：级别高于none，保存流程实例与流程行为，其他数据不保存。
-    # audit：除activity级别会保存的数据外，还会保存全部的流程任务及其属性。
-    # full：保存历史数据的最高级别，除了会保存audit级别的数据外，还会保存其他全部流程相关的细节数据，包括一些流程参数等。
-    history-level: full
-    # 是否自动检查resources下的processes目录的流程定义文件
-    check-process-definitions: false
-    # 关闭不自动添加部署数据 SpringAutoDeployment
-    deployment-mode: never-fail
-    # #开启异步true，定时任务
-    async-executor-activate: false
+flowable:
+  async-executor-activate: false #关闭定时任务JOB
+  #  将databaseSchemaUpdate设置为true。当Flowable发现库与数据库表结构不一致时，会自动将数据库表结构升级至新版本。
+  database-schema-update: true
+#  activiti:
+#    #自动更新数据库结构
+#    # true：适用开发环境，默认值。activiti会对数据库中所有表进行更新操作。如果表不存在，则自动创建
+#    # false：适用生产环境。activiti在启动时，对比数据库表中保存的版本，如果没有表或者版本不匹配，将抛出异常
+#    # create_drop： 在activiti启动时创建表，在关闭时删除表（必须手动关闭引擎，才能删除表）
+#    # drop-create： 在activiti启动时删除原来的旧表，然后在创建新表（不需要手动关闭引擎）
+#    database-schema-update: true
+#    # activiti7与springboot整合后默认不创建历史表，需要手动开启
+#    db-history-used: true
+#    # 记录历史等级 可配置的历史级别有none, activity, audit, full
+#    # none：不保存任何的历史数据，因此，在流程执行过程中，这是最高效的。
+#    # activity：级别高于none，保存流程实例与流程行为，其他数据不保存。
+#    # audit：除activity级别会保存的数据外，还会保存全部的流程任务及其属性。
+#    # full：保存历史数据的最高级别，除了会保存audit级别的数据外，还会保存其他全部流程相关的细节数据，包括一些流程参数等。
+#    history-level: full
+#    # 是否自动检查resources下的processes目录的流程定义文件
+#    check-process-definitions: false
+#    # 关闭不自动添加部署数据 SpringAutoDeployment
+#    deployment-mode: never-fail
+#    # #开启异步true，定时任务
+#    async-executor-activate: false
 --- # redis 单机配置(单机与集群只能开启一个另一个需要注释掉)
 spring:
   redis:
     # 地址
-    host: localhost
+    host: 127.0.0.1
     # 端口，默认为6379
     port: 6379
     # 数据库索引

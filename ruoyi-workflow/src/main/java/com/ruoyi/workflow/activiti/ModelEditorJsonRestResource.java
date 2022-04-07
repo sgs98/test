@@ -14,11 +14,11 @@ package com.ruoyi.workflow.activiti;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.activiti.editor.constants.ModelDataJsonConstants;
-import org.activiti.engine.ActivitiException;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.repository.Model;
 import org.apache.commons.lang3.StringUtils;
+import org.flowable.cmmn.image.exception.FlowableImageException;
+import org.flowable.editor.constants.ModelDataJsonConstants;
+import org.flowable.engine.RepositoryService;
+import org.flowable.engine.repository.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,6 @@ public class ModelEditorJsonRestResource implements ModelDataJsonConstants {
 
   @Autowired
   private RepositoryService repositoryService;
-
   @Resource
   private ObjectMapper objectMapper;
 
@@ -64,7 +63,7 @@ public class ModelEditorJsonRestResource implements ModelDataJsonConstants {
 
       } catch (Exception e) {
         logger.error("Error creating model JSON", e);
-        throw new ActivitiException("Error creating model JSON", e);
+        throw new FlowableImageException("Error creating model JSON", e);
       }
     }
     return modelNode;

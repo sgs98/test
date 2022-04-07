@@ -7,7 +7,6 @@ import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.helper.LoginHelper;
 import com.ruoyi.workflow.activiti.config.CustomProcessDiagramGenerator;
-import com.ruoyi.workflow.activiti.config.ICustomProcessDiagramGenerator;
 import com.ruoyi.workflow.activiti.config.WorkflowConstants;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
 import com.ruoyi.workflow.domain.ActBusinessStatus;
@@ -21,25 +20,25 @@ import com.ruoyi.workflow.domain.vo.ProcessInstRunningVo;
 import com.ruoyi.workflow.factory.WorkflowService;
 import com.ruoyi.workflow.service.*;
 import lombok.RequiredArgsConstructor;
-import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.bpmn.model.FlowNode;
-import org.activiti.bpmn.model.ParallelGateway;
-import org.activiti.bpmn.model.SequenceFlow;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.history.HistoricActivityInstance;
-import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.history.HistoricProcessInstanceQuery;
-import org.activiti.engine.history.HistoricTaskInstance;
-import org.activiti.engine.impl.identity.Authentication;
-import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.runtime.ProcessInstanceQuery;
-import org.activiti.engine.task.Comment;
-import org.activiti.engine.task.Task;
-import org.activiti.engine.task.TaskQuery;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.flowable.bpmn.model.BpmnModel;
+import org.flowable.bpmn.model.FlowNode;
+import org.flowable.bpmn.model.ParallelGateway;
+import org.flowable.bpmn.model.SequenceFlow;
+import org.flowable.common.engine.impl.identity.Authentication;
+import org.flowable.engine.ProcessEngine;
+import org.flowable.engine.history.HistoricActivityInstance;
+import org.flowable.engine.history.HistoricProcessInstance;
+import org.flowable.engine.history.HistoricProcessInstanceQuery;
+import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.engine.runtime.ProcessInstanceQuery;
+import org.flowable.engine.task.Comment;
+import org.flowable.image.ProcessDiagramGenerator;
+import org.flowable.task.api.Task;
+import org.flowable.task.api.TaskQuery;
+import org.flowable.task.api.history.HistoricTaskInstance;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -201,12 +200,15 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
             // 4. 正在执行的节点 （红色）
             Set<String> executedActivityIdList = runtimeService.createExecutionQuery().processInstanceId(processInstanceId).list()
                 .stream().map(e->e.getActivityId()).collect(Collectors.toSet());
-
-            ICustomProcessDiagramGenerator diagramGenerator = (ICustomProcessDiagramGenerator) processEngine.getProcessEngineConfiguration().getProcessDiagramGenerator();
-            inputStream = diagramGenerator.generateDiagram(bpmnModel, "png", histExecutedActivityIdList,
-                highLightedFlows, "宋体", "宋体", "宋体", null, 1.0, new Color[] { WorkflowConstants.COLOR_NORMAL, WorkflowConstants.COLOR_CURRENT }, executedActivityIdList);
-
-            // 响应相关图片
+            // 定义流程画布生成器
+            ProcessDiagramGenerator processDiagramGenerator = null;
+            // 使用默认配置获得流程图表生成器，并生成追踪图片字符流
+            inputStream = ((CustomProcessDiagramGenerator) processDiagramGenerator)
+                .generateDiagramCustom(bpmnModel, "png",
+                    histExecutedActivityIdList, new ArrayList<>(executedActivityIdList), highLightedFlows,
+                    "宋体", "微软雅黑", "黑体",
+                    null, 2.0);
+            // 响应相关图片*/
             response.setContentType("image/png");
 
             byte[] bytes = IOUtils.toByteArray(inputStream);

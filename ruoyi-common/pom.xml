@@ -165,21 +165,30 @@
         </dependency>
 
         <!--activiti6.0-->
-        <dependency>
+        <!--<dependency>
             <groupId>org.activiti</groupId>
             <artifactId>activiti-spring-boot-starter-rest-api</artifactId>
-        </dependency>
-
-        <!-- java绘制activiti流程图 -->
+        </dependency>-->
         <dependency>
-            <groupId>org.activiti</groupId>
-            <artifactId>activiti-image-generator</artifactId>
+            <groupId>org.flowable</groupId>
+            <artifactId>flowable-spring-boot-starter</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.mybatis</groupId>
+                    <artifactId>mybatis</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- java绘制flowable流程图 -->
+        <dependency>
+            <groupId>org.flowable</groupId>
+            <artifactId>flowable-image-generator</artifactId>
         </dependency>
 
         <!-- activiti json转换器-->
         <dependency>
-            <groupId>org.activiti</groupId>
-            <artifactId>activiti-json-converter</artifactId>
+            <groupId>org.flowable</groupId>
+            <artifactId>flowable-json-converter</artifactId>
         </dependency>
 
         <!-- svg转png图片工具-->

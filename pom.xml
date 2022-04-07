@@ -54,7 +54,7 @@
         <docker.plugin.version>1.2.2</docker.plugin.version>
 
         <!--工作流配置-->
-        <activiti.version>6.0.0</activiti.version>
+        <flowable.version>6.6.0</flowable.version>
     </properties>
 
     <!-- 依赖声明 -->
@@ -233,23 +233,36 @@
             </dependency>
 
             <!--activiti6.0-->
-			<dependency>
+			<!--<dependency>
 				<groupId>org.activiti</groupId>
 				<artifactId>activiti-spring-boot-starter-rest-api</artifactId>
 				<version>${activiti.version}</version>
+            </dependency>-->
+            <!--引入Flowable6.3依赖-->
+            <dependency>
+                <groupId>org.flowable</groupId>
+                <artifactId>flowable-spring-boot-starter</artifactId>
+                <version>${flowable.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.mybatis</groupId>
+                        <artifactId>mybatis</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
+
 
             <!-- java绘制activiti流程图 -->
             <dependency>
-                <groupId>org.activiti</groupId>
-                <artifactId>activiti-image-generator</artifactId>
-                <version>${activiti.version}</version>
+                <groupId>org.flowable</groupId>
+                <artifactId>flowable-image-generator</artifactId>
+                <version>${flowable.version}</version>
             </dependency>
             <!-- activiti json转换器-->
             <dependency>
-                <groupId>org.activiti</groupId>
-                <artifactId>activiti-json-converter</artifactId>
-                <version>${activiti.version}</version>
+                <groupId>org.flowable</groupId>
+                <artifactId>flowable-json-converter</artifactId>
+                <version>${flowable.version}</version>
             </dependency>
             <!-- svg转png图片工具-->
             <dependency>

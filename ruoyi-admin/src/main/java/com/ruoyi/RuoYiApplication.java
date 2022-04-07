@@ -11,7 +11,6 @@ import org.springframework.boot.context.metrics.buffering.BufferingApplicationSt
  */
 
 @SpringBootApplication(exclude = {
-    org.activiti.spring.boot.SecurityAutoConfiguration.class,
     org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
     org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration.class})
 public class RuoYiApplication {

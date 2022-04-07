@@ -8,7 +8,6 @@ import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.helper.LoginHelper;
-import com.ruoyi.workflow.activiti.cmd.JumpAnyWhereCmd;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
 import com.ruoyi.workflow.domain.ActHiTaskInst;
@@ -24,18 +23,18 @@ import com.ruoyi.workflow.service.*;
 import com.ruoyi.workflow.utils.WorkFlowUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.activiti.bpmn.model.*;
-import org.activiti.engine.ManagementService;
-import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.history.HistoricTaskInstance;
-import org.activiti.engine.history.HistoricTaskInstanceQuery;
-import org.activiti.engine.impl.persistence.entity.ExecutionEntityImpl;
-import org.activiti.engine.impl.persistence.entity.TaskEntity;
-import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.task.Task;
-import org.activiti.engine.task.TaskQuery;
+import org.flowable.bpmn.model.*;
+import org.flowable.engine.ManagementService;
 import org.apache.commons.lang3.StringUtils;
+import org.flowable.engine.history.HistoricProcessInstance;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
+import org.flowable.engine.repository.ProcessDefinition;
+import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.task.api.TaskQuery;
+import org.flowable.task.api.Task;
+import org.flowable.task.api.history.HistoricTaskInstance;
+import org.flowable.task.api.history.HistoricTaskInstanceQuery;
+import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -738,12 +737,12 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean backProcess2(BackProcessVo backProcessVo) {
-        String taskId = backProcessVo.getTaskId();
+       /* String taskId = backProcessVo.getTaskId();
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         String processInstanceId = task.getProcessInstanceId();
         JumpAnyWhereCmd jumpAnyWhereCmd = new JumpAnyWhereCmd
             (backProcessVo.getTaskId(),backProcessVo.getTargetActivityId(),repositoryService);
-        managementService.executeCommand(jumpAnyWhereCmd);
+        managementService.executeCommand(jumpAnyWhereCmd);*/
         /*String processInstanceId = task.getProcessInstanceId();
         //当前节点id
         String currentActivityId = task.getTaskDefinitionKey();
@@ -780,7 +779,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             taskService.setAssignee(newTask.getId(), singleResult.getAssignee());
         }*/
         // 13. 删除驳回后的流程节点
-        ActTaskNode actTaskNode = iActTaskNodeService.getListByInstanceIdAndNodeId(task.getProcessInstanceId(), backProcessVo.getTargetActivityId());
+        /*ActTaskNode actTaskNode = iActTaskNodeService.getListByInstanceIdAndNodeId(task.getProcessInstanceId(), backProcessVo.getTargetActivityId());
         if(ObjectUtil.isNotNull(actTaskNode)&&actTaskNode.getOrderNo()==0){
             ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
             List<Task> newList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
@@ -791,8 +790,8 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             }
             iActBusinessStatusService.updateState(processInstance.getBusinessKey(),BusinessStatusEnum.BACK);
         }
-        Boolean taskNode = iActTaskNodeService.deleteBackTaskNode(processInstanceId, backProcessVo.getTargetActivityId());
-        return taskNode;
+        Boolean taskNode = iActTaskNodeService.deleteBackTaskNode(processInstanceId, backProcessVo.getTargetActivityId());*/
+        return null;
     }
 
     /**

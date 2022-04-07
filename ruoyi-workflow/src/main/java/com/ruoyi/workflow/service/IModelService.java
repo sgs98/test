@@ -4,7 +4,7 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.workflow.domain.bo.ModelAdd;
 import com.ruoyi.workflow.domain.bo.ModelREQ;
-import org.activiti.engine.repository.Model;
+import org.flowable.engine.repository.Model;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
