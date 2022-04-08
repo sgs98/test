@@ -13,6 +13,7 @@ import com.ruoyi.system.domain.SysUserRole;
 import com.ruoyi.system.mapper.SysRoleMapper;
 import com.ruoyi.system.mapper.SysUserMapper;
 import com.ruoyi.system.mapper.SysUserRoleMapper;
+import com.ruoyi.workflow.activiti.cmd.ExpressCmd;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
 import com.ruoyi.workflow.domain.ActBusinessStatus;
@@ -27,6 +28,7 @@ import org.flowable.bpmn.model.*;
 import org.flowable.common.engine.api.delegate.Expression;
 import org.flowable.common.engine.impl.context.Context;
 import org.flowable.editor.language.json.converter.BpmnJsonConverter;
+import org.flowable.engine.ManagementService;
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
@@ -34,8 +36,10 @@ import org.flowable.engine.impl.Condition;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.engine.impl.el.UelExpressionCondition;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
+import org.flowable.engine.impl.util.condition.ConditionUtil;
 import org.flowable.variable.api.persistence.entity.VariableInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -84,6 +88,10 @@ public class WorkFlowUtils {
 
     @Autowired
     private SysUserRoleMapper userRoleMapper;
+
+
+    @Autowired
+    ManagementService managementService;
 
 
     /**
@@ -135,16 +143,9 @@ public class WorkFlowUtils {
                     String conditionExpression = sequenceFlow.getConditionExpression();
                     //判断是否有条件
                     if (StringUtils.isNotBlank(conditionExpression)) {
-                        ProcessEngineConfigurationImpl processEngineConfiguration = (ProcessEngineConfigurationImpl)processEngine.getProcessEngineConfiguration();
-                        Context.setCommandContext(processEngineConfiguration.getCommandContextFactory().createCommandContext(null));
-                        /*Context.setProcessEngineConfiguration(processEngineConfiguration);
-                        Expression expression = Context.getProcessEngineConfiguration().getExpressionManager().createExpression(conditionExpression);
-                        Condition condition = new UelExpressionCondition(expression);
-                        boolean evaluate = condition.evaluate(sequenceFlow.getId(), executionEntity);*/
-                        Expression expression = processEngineConfiguration.getExpressionManager().createExpression(conditionExpression);
-                        Condition condition = new UelExpressionCondition(expression);
-                        boolean evaluate = condition.evaluate(sequenceFlow.getId(), executionEntity);
-                        if (evaluate) {
+                        ExpressCmd expressCmd = new ExpressCmd(sequenceFlow,executionEntity);
+                        Boolean condition = managementService.executeCommand(expressCmd);
+                        if (condition) {
                             processNode.setNodeId(outFlowElement.getId());
                             processNode.setNodeName(outFlowElement.getName());
                             processNode.setNodeType(ActConstant.EXCLUSIVEGATEWAY);
@@ -199,77 +200,6 @@ public class WorkFlowUtils {
             }
         }
     }
-
-    /**
-     * @Description: 判断uel表达式
-     * @param: uel uel条件
-     * @param: businessKey 业务key
-     * @param: taskId 任务id
-     * @return: boolean
-     * @Author: gssong
-     * @Date: 2021/11/5
-     */
-    /*public boolean isCondition(String uel, String businessKey, String taskId) {
-        Map<String, VariableInstance> variables = taskService.getVariableInstances(taskId);
-
-        Class className = null;
-        Object entity = null;
-        ActBusinessStatus actBusinessStatus = iActBusinessStatusService.getInfoByBusinessKey(businessKey);
-        if (ObjectUtil.isNull(actBusinessStatus)) {
-            throw new ServiceException("业务流程不存在");
-        }
-
-        for (Map.Entry<String, VariableInstance> variable : variables.entrySet()) {
-            // 变量名 key
-            String name = variable.getValue().getName();
-            // 变量值 value
-            String textValue = variable.getValue().getTextValue();
-            // 变量类型
-            String typeName = variable.getValue().getTypeName();
-            if (ActConstant.JSON.equals(typeName) && uel.contains(name)) {
-                try {
-                    //通过全类名获取
-                    className = Class.forName(actBusinessStatus.getClassFullName());
-                    //转为对象
-                    entity = objectMapper.readValue(textValue, className);
-                    ExpressionFactory factory = new ExpressionFactoryImpl();
-                    SimpleContext context = new SimpleContext(new SimpleResolver());
-                    context.setVariable(name, factory.createValueExpression(entity, className));
-                    ValueExpression exp = factory.createValueExpression(context, uel, boolean.class);
-                    if ((boolean) exp.getValue(context)) {
-                        return true;
-                    }
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                    throw new ServiceException("找不到指定的类");
-                } catch (JsonProcessingException ex) {
-                    ex.printStackTrace();
-                    throw new ServiceException("JSON转换异常");
-                }
-            } else if (uel.contains(name)) {
-                ExpressionFactory factory = new ExpressionFactoryImpl();
-                SimpleContext context = new SimpleContext(new SimpleResolver());
-                if (ActConstant.STRING.equals(typeName)) {
-                    context.setVariable(name, factory.createValueExpression(textValue, String.class));
-                } else if (ActConstant.INTEGER.equals(typeName)) {
-                    context.setVariable(name, factory.createValueExpression(textValue, Integer.class));
-                } else if (ActConstant.LONG.equals(typeName)) {
-                    context.setVariable(name, factory.createValueExpression(textValue, Long.class));
-                } else if (ActConstant.DOUBLE.equals(typeName)) {
-                    context.setVariable(name, factory.createValueExpression(textValue, Double.class));
-                } else if (ActConstant.SHORT.equals(typeName)) {
-                    context.setVariable(name, factory.createValueExpression(textValue, Short.class));
-                } else if (ActConstant.DATE.equals(typeName)) {
-                    context.setVariable(name, factory.createValueExpression(textValue, Date.class));
-                }
-                ValueExpression exp = factory.createValueExpression(context, uel, boolean.class);
-                if ((boolean) exp.getValue(context)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }*/
 
     /**
      *
