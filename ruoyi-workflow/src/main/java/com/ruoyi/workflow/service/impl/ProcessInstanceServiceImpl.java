@@ -20,6 +20,7 @@ import com.ruoyi.workflow.domain.vo.ProcessInstRunningVo;
 import com.ruoyi.workflow.factory.WorkflowService;
 import com.ruoyi.workflow.service.*;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.BpmnModel;
@@ -28,6 +29,8 @@ import org.flowable.bpmn.model.ParallelGateway;
 import org.flowable.bpmn.model.SequenceFlow;
 import org.flowable.common.engine.impl.identity.Authentication;
 import org.flowable.engine.ProcessEngine;
+import org.flowable.engine.ProcessEngineConfiguration;
+import org.flowable.engine.ProcessEngines;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
@@ -47,6 +50,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -168,8 +172,9 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
         return collect;
     }
 
-    @Override
-    public void getHistoryProcessImage(String processInstanceId, HttpServletResponse response) {
+
+    //@Override
+    public void getHistoryProcessImage2(String processInstanceId, HttpServletResponse response) {
         // 设置页面不缓存
         response.setHeader( "Pragma", "no-cache" );
         response.addHeader( "Cache-Control", "must-revalidate" );
@@ -227,6 +232,78 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
                 }
             }
         }
+    }
+    public ProcessEngine processEngine() {
+        return ProcessEngines.getDefaultProcessEngine();
+    }
+    /**
+     * 生成流程图
+     *
+     * @param processId 流程部署id
+     */
+    @SneakyThrows
+    @Override
+    public void getHistoryProcessImage(String processInstanceId, HttpServletResponse response) {
+        HistoricProcessInstance hpi = historyService.createHistoricProcessInstanceQuery()
+            .processInstanceId(processInstanceId).singleResult();
+        //流程走完的不显示图
+       /* if (pi == null) {
+            return;
+        }*/
+
+        List<HistoricActivityInstance> historyProcess = getHistoryProcess(processInstanceId);
+        List<String> activityIds = new ArrayList<>();
+        List<String> flows = new ArrayList<>();
+        //获取流程图
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(hpi.getProcessDefinitionId());
+        for (HistoricActivityInstance hi : historyProcess) {
+            String activityType = hi.getActivityType();
+            if (activityType.equals("sequenceFlow") || activityType.equals("exclusiveGateway")) {
+                flows.add(hi.getActivityId());
+            } else if (activityType.equals("userTask") || activityType.equals("startEvent")) {
+                activityIds.add(hi.getActivityId());
+            }
+        }
+        List<Task> tasks = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        for (Task task : tasks) {
+            activityIds.add(task.getTaskDefinitionKey());
+        }
+        ProcessEngineConfiguration engConf = processEngine().getProcessEngineConfiguration();
+        //定义流程画布生成器
+        ProcessDiagramGenerator processDiagramGenerator = engConf.getProcessDiagramGenerator();
+        InputStream in = processDiagramGenerator.generateDiagram(bpmnModel, "png", activityIds, flows, engConf.getActivityFontName(), engConf.getLabelFontName(), engConf.getAnnotationFontName(), engConf.getClassLoader(), 1.0, true);
+        OutputStream out = null;
+        byte[] buf = new byte[1024];
+        int legth = 0;
+        try {
+            out = response.getOutputStream();
+            while ((legth = in.read(buf)) != -1) {
+                out.write(buf, 0, legth);
+            }
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+            if (out != null) {
+                out.close();
+            }
+        }
+
+
+    }
+
+    /**
+     * 任务历史
+     *
+     * @param processId 部署id
+     */
+    public List<HistoricActivityInstance> getHistoryProcess(String processId) {
+        List<HistoricActivityInstance> list = historyService // 历史相关Service
+            .createHistoricActivityInstanceQuery() // 创建历史活动实例查询
+            .processInstanceId(processId) // 执行流程实例id
+            .finished()
+            .list();
+        return list;
     }
 
     /**
