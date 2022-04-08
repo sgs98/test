@@ -1328,4 +1328,5 @@ public class CustomProcessDiagramCanvas {
         p.setLocation(a.getX1() + ta * (a.getX2() - a.getX1()), a.getY1() + ta * (a.getY2() - a.getY1()));
         return p;
     }
+
 }

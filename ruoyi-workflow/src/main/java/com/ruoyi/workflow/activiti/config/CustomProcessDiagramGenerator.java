@@ -1,8 +1,8 @@
 package com.ruoyi.workflow.activiti.config;
 
+
 import org.flowable.bpmn.model.*;
 import org.flowable.bpmn.model.Process;
-import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.image.ProcessDiagramGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +11,12 @@ import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.util.*;
 
+
+/**
+ *生成图像
+ *
+ * @author liuxz
+ */
 public class CustomProcessDiagramGenerator implements ProcessDiagramGenerator {
     protected static final Logger logger = LoggerFactory.getLogger(CustomProcessDiagramGenerator.class);
 
@@ -996,40 +1002,5 @@ public class CustomProcessDiagramGenerator implements ProcessDiagramGenerator {
         return generateImage(bpmnModel, "png", Collections.<String>emptyList(), Collections.<String>emptyList(),
             scaleFactor, true);
     }
-    public List<String> getHighLightedFlows(BpmnModel bpmnModel,
-                                            List<HistoricActivityInstance> historicActivityInstances) {
-        // 高亮流程已发生流转的线id集合
-        List<String> highLightedFlowIds = new ArrayList<>();
-        // 全部活动节点
-        List<FlowNode> historicActivityNodes = new ArrayList<>();
-        // 已完成的历史活动节点
-        List<HistoricActivityInstance> finishedActivityInstances = new ArrayList<>();
 
-        for (HistoricActivityInstance historicActivityInstance : historicActivityInstances) {
-            FlowNode flowNode = (FlowNode) bpmnModel.getMainProcess().getFlowElement(historicActivityInstance.getActivityId(), true);
-            historicActivityNodes.add(flowNode);
-            if (historicActivityInstance.getEndTime() != null) {
-                finishedActivityInstances.add(historicActivityInstance);
-            }
-        }
-
-        FlowNode currentFlowNode = null;
-        FlowNode targetFlowNode = null;
-
-        // 遍历已完成的活动实例，从每个实例的outgoingFlows中找到已执行的
-        for (HistoricActivityInstance currentActivityInstance : finishedActivityInstances) {
-            // 获得当前活动对应的节点信息及outgoingFlows信息
-            currentFlowNode = (FlowNode) bpmnModel.getMainProcess().getFlowElement(currentActivityInstance.getActivityId(), true);
-            List<SequenceFlow> sequenceFlows = currentFlowNode.getOutgoingFlows();
-            // 遍历历史活动节点，找到匹配流程目标节点的
-            for (SequenceFlow sequenceFlow : sequenceFlows) {
-                targetFlowNode = (FlowNode) bpmnModel.getMainProcess().getFlowElement(sequenceFlow.getTargetRef(), true);
-                if (historicActivityNodes.contains(targetFlowNode)) {
-                    highLightedFlowIds.add(sequenceFlow.getId());
-                }
-            }
-        }
-
-        return highLightedFlowIds;
-    }
 }
