@@ -18,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -78,8 +79,8 @@ public class ProcessInstanceController {
     @ApiOperation("通过流程实例id获取历史流程图")
     @GetMapping("/getHistoryProcessImage")
     public void getHistoryProcessImage(@RequestParam String processInstanceId,
-                                       HttpServletResponse response) {
-        processInstanceService.getHistoryProcessImage(processInstanceId, response);
+                                              HttpServletResponse response) {
+         processInstanceService.getHistoryProcessImage(processInstanceId, response);
     }
 
     /**
