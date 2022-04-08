@@ -54,7 +54,7 @@
         <docker.plugin.version>1.2.2</docker.plugin.version>
 
         <!--工作流配置-->
-        <flowable.version>6.6.0</flowable.version>
+        <flowable.version>6.7.2</flowable.version>
     </properties>
 
     <!-- 依赖声明 -->
