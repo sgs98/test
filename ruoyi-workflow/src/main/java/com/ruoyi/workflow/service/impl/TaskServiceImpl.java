@@ -8,11 +8,12 @@ import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.helper.LoginHelper;
+import com.ruoyi.workflow.activiti.cmd.DeleteExecuteCmd;
+import com.ruoyi.workflow.activiti.cmd.DeleteTaskCmd;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
 import com.ruoyi.workflow.domain.ActHiTaskInst;
 import com.ruoyi.workflow.domain.ActNodeAssignee;
-import com.ruoyi.workflow.domain.ActRuExecution;
 import com.ruoyi.workflow.domain.ActTaskNode;
 import com.ruoyi.workflow.domain.bo.NextNodeREQ;
 import com.ruoyi.workflow.domain.bo.TaskCompleteREQ;
@@ -197,27 +198,23 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         taskService.complete(req.getTaskId());
         // 5. 记录执行过的流程任务
         List<ActTaskNode> actTaskNodeList = iActTaskNodeService.getListByInstanceId(task.getProcessInstanceId());
-        List<String> nodeIdList = actTaskNodeList.stream().map(ActTaskNode::getNodeId).collect(Collectors.toList());
-        if (!nodeIdList.contains(task.getTaskDefinitionKey())) {
-            ActTaskNode actTaskNode = new ActTaskNode();
-            actTaskNode.setNodeId(task.getTaskDefinitionKey());
-            actTaskNode.setNodeName(task.getName());
-            actTaskNode.setInstanceId(task.getProcessInstanceId());
-            if (CollectionUtil.isEmpty(actTaskNodeList)) {
-                actTaskNode.setOrderNo(0);
-                actTaskNode.setIsBack(true);
-            } else {
-                ActNodeAssignee actNodeAssignee = actNodeAssignees.stream().filter(e -> e.getNodeId().equals(task.getTaskDefinitionKey())).findFirst().orElse(null);
-                //如果为设置流程定义配置默认 当前环节可以回退
-                if(ObjectUtil.isEmpty(actNodeAssignee)){
-                    actTaskNode.setIsBack(true);
-                    actTaskNode.setOrderNo(actTaskNodeList.get(0).getOrderNo() + 1);
-                }else{
-                    actTaskNode.setIsBack(actNodeAssignee.getIsBack());
-                    actTaskNode.setOrderNo(actTaskNodeList.get(0).getOrderNo() + 1);
-                }
-            }
+        ActTaskNode actTaskNode = new ActTaskNode();
+        actTaskNode.setNodeId(task.getTaskDefinitionKey());
+        actTaskNode.setNodeName(task.getName());
+        actTaskNode.setInstanceId(task.getProcessInstanceId());
+        if (CollectionUtil.isEmpty(actTaskNodeList)) {
+            actTaskNode.setOrderNo(0);
+            actTaskNode.setIsBack(true);
             iActTaskNodeService.save(actTaskNode);
+        } else {
+            ActNodeAssignee actNodeAssignee = actNodeAssignees.stream().filter(e -> e.getNodeId().equals(task.getTaskDefinitionKey())).findFirst().orElse(null);
+            //如果为设置流程定义配置默认 当前环节可以回退
+            if(ObjectUtil.isEmpty(actNodeAssignee)){
+                actTaskNode.setIsBack(true);
+            }else{
+                actTaskNode.setIsBack(actNodeAssignee.getIsBack());
+            }
+            iActTaskNodeService.saveTaskNode(actTaskNode);
         }
         // 更新业务状态为：办理中, 和流程实例id
         iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.WAITING, task.getProcessInstanceId());
@@ -631,9 +628,17 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         if (ObjectUtil.isNull(task)) {
             throw new ServiceException("当前任务不存在或你不是任务办理人");
         }
+        //判断是否有多个任务
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        List<String> otherTaskIds = null;
+        if(taskList.size()>1){
+            otherTaskIds = taskList.stream().map(Task::getId).collect(Collectors.toList());
+        }
         taskService.addComment(task.getId(), processInstanceId, StringUtils.isNotBlank(backProcessVo.getComment()) ? backProcessVo.getComment() : "驳回");
         runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
-            .moveActivityIdTo(task.getTaskDefinitionKey(),backProcessVo.getTargetActivityId())
+            .moveActivityIdsToSingleActivityId(taskList.stream().map(Task::getTaskDefinitionKey).collect(Collectors.toList()), backProcessVo.getTargetActivityId())
+            //当前节点id驳回到单个节点
+            //.moveActivityIdTo(task.getTaskDefinitionKey(),backProcessVo.getTargetActivityId())
             //当前节点id驳回到多个节点
             //.moveSingleActivityIdToActivityIds(task.getTaskDefinitionKey(),Arrays.asList(backProcessVo.getTargetActivityId()))
             //当前的执行id驳回到目标节点
@@ -643,22 +648,46 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             // 并行网关驳回 当前有多个任务节点，并行驳回单个节点
             //.moveActivityIdsToSingleActivityId(new ArrayList<>(),"")
             .changeState();
+        if(CollectionUtil.isNotEmpty(otherTaskIds)&&otherTaskIds.size()>0){
+            otherTaskIds.forEach(taskId->{
+                historyService.deleteHistoricTaskInstance(taskId);
+            });
+        }
        // 判断是否会签
         LambdaQueryWrapper<ActNodeAssignee> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ActNodeAssignee::getNodeId,backProcessVo.getTargetActivityId());
         wrapper.eq(ActNodeAssignee::getProcessDefinitionId,task.getProcessDefinitionId());
         ActNodeAssignee actNodeAssignee = iActNodeAssigneeService.getOne(wrapper);
         List<Task> newTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        //处理并行会签环节重复节点
+        if(CollectionUtil.isNotEmpty(newTaskList)&&newTaskList.size()>0){
+            List<Task> taskCollect = newTaskList.stream().filter(e -> e.getTaskDefinitionKey().equals(backProcessVo.getTargetActivityId())).collect(Collectors.toList());
+            if(taskCollect.size()>1){
+                taskCollect.remove(0);
+                taskCollect.forEach(e->{
+                    DeleteTaskCmd deleteTaskCmd = new DeleteTaskCmd(e.getId());
+                    managementService.executeCommand(deleteTaskCmd);
+                    DeleteExecuteCmd deleteExecuteCmd = new DeleteExecuteCmd(e.getExecutionId());
+                    managementService.executeCommand(deleteExecuteCmd);
+                    historyService.deleteHistoricTaskInstance(e.getId());
+                });
+            }
+        }
         if(ObjectUtil.isNotEmpty(actNodeAssignee)&&!actNodeAssignee.getMultiple()){
-            for (Task newTask : newTaskList) {
+            List<Task> runTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+            for (Task runTask : runTaskList) {
                 // 取之前的历史办理人
-                HistoricTaskInstance oldTargerTask = historyService.createHistoricTaskInstanceQuery()
-                    .taskDefinitionKey(newTask.getTaskDefinitionKey()) // 节点id
+                List<HistoricTaskInstance> oldTargerTaskList = historyService.createHistoricTaskInstanceQuery()
+                    .taskDefinitionKey(runTask.getTaskDefinitionKey()) // 节点id
                     .processInstanceId(processInstanceId)
                     .finished() // 已经完成才是历史
                     .orderByTaskCreateTime().desc() // 最新办理的在最前面
-                    .list().get(0);
-                taskService.setAssignee(newTask.getId(), oldTargerTask.getAssignee());
+                    .list();
+                if(CollectionUtil.isNotEmpty(oldTargerTaskList)){
+                    HistoricTaskInstance oldTargerTask = oldTargerTaskList.get(0);
+                    taskService.setAssignee(runTask.getId(), oldTargerTask.getAssignee());
+                }
+
             }
         }
 
@@ -674,6 +703,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             }
             iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.BACK);
         }
+        iActTaskNodeService.deleteBackTaskNode(processInstanceId, backProcessVo.getTargetActivityId());
         return processInstanceId;
     }
 
@@ -684,7 +714,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
      */
     @Override
     public List<ActTaskNode> getBackNodes(String processInstId) {
-        List<ActTaskNode> list = iActTaskNodeService.getListByInstanceId(processInstId);
+        List<ActTaskNode> list = iActTaskNodeService.getListByInstanceId(processInstId).stream().filter(e->e.getIsBack()).collect(Collectors.toList());
         return list;
     }
 

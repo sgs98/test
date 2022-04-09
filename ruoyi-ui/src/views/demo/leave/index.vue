@@ -463,7 +463,7 @@ export default {
             entity: entity
         }
         const data = {
-            processKey: 'test2', // key
+            processKey: 'bingxing', // key
             businessKey: entity.id, // 业务id
             variables: variables
         }
