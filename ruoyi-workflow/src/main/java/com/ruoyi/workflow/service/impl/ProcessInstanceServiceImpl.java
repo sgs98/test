@@ -6,6 +6,8 @@ import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.helper.LoginHelper;
+import com.ruoyi.workflow.activiti.cmd.DeleteExecuteCmd;
+import com.ruoyi.workflow.activiti.cmd.DeleteTaskCmd;
 import com.ruoyi.workflow.activiti.config.CustomProcessDiagramGenerator;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
 import com.ruoyi.workflow.domain.ActBusinessStatus;
@@ -19,17 +21,13 @@ import com.ruoyi.workflow.domain.vo.ProcessInstRunningVo;
 import com.ruoyi.workflow.factory.WorkflowService;
 import com.ruoyi.workflow.service.*;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.BpmnModel;
-import org.flowable.bpmn.model.FlowNode;
-import org.flowable.bpmn.model.ParallelGateway;
-import org.flowable.bpmn.model.SequenceFlow;
 import org.flowable.common.engine.impl.identity.Authentication;
+import org.flowable.engine.ManagementService;
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngineConfiguration;
-import org.flowable.engine.ProcessEngines;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
@@ -69,6 +67,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
     private final IUserService iUserService;
     private final IActTaskNodeService iActTaskNodeService;
     private final ProcessEngine processEngine;
+    private final ManagementService managementService;
 
 
 
@@ -171,13 +170,6 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
         collect.addAll(waitingTask);
         collect.addAll(finishTask);
         return collect;
-    }
-
-
-
-
-    public ProcessEngine processEngine() {
-        return ProcessEngines.getDefaultProcessEngine();
     }
 
     /**
@@ -472,26 +464,6 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
         if(ObjectUtil.isNull(processInstance)){
             throw new ServiceException("流程不是该审批人提交,撤销失败!");
         }
-        List<Task> list = taskService.createTaskQuery().processInstanceId(processInstId).list();
-        if(list.size()>1){
-            throw new ServiceException("当前任务有多人审批不可撤销");
-        }
-        Task task = list.get(0);
-        if (task.isSuspended()) {
-            throw new ServiceException("当前任务已被挂起");
-        }
-        // 1. 获取流程模型实例 BpmnModel
-        BpmnModel bpmnModel = repositoryService.getBpmnModel(task.getProcessDefinitionId());
-        // 2.当前节点信息
-        FlowNode curFlowNode = (FlowNode) bpmnModel.getFlowElement(task.getTaskDefinitionKey());
-        // 3.获取当前节点原出口连线
-        List<SequenceFlow> sequenceFlowList = curFlowNode.getOutgoingFlows();
-        // 4. 临时存储当前节点的原出口连线
-        List<SequenceFlow> oriSequenceFlows = new ArrayList<>();
-        oriSequenceFlows.addAll(sequenceFlowList);
-        // 5. 将当前节点的原出口清空
-        sequenceFlowList.clear();
-        // 6. 获取目标节点信息
         List<ActTaskNode> listActTaskNode = iActTaskNodeService.getListByInstanceId(processInstId);
         if(CollectionUtil.isEmpty(listActTaskNode)){
             throw new ServiceException("未查询到撤回节点信息");
@@ -500,42 +472,42 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
         if(ObjectUtil.isNull(actTaskNode)){
             throw new ServiceException("未查询到撤回节点信息");
         }
-        FlowNode targetFlowNode = (FlowNode) bpmnModel.getFlowElement(actTaskNode.getNodeId());
-        // 7. 获取目标节点的入口连线
-        List<SequenceFlow> incomingFlows = targetFlowNode.getIncomingFlows();
-        // 8. 存储所有目标出口
-        List<SequenceFlow> targetSequenceFlow = new ArrayList<>();
-        for (SequenceFlow incomingFlow : incomingFlows) {
-            // 找到入口连线的源头（获取目标节点的父节点）
-            FlowNode source = (FlowNode) incomingFlow.getSourceFlowElement();
-            List<SequenceFlow> sequenceFlows;
-            if (source instanceof ParallelGateway) {
-                // 并行网关: 获取目标节点的父节点（并行网关）的所有出口，
-                sequenceFlows = source.getOutgoingFlows();
-            } else {
-                // 其他类型父节点, 则获取目标节点的入口连续
-                sequenceFlows = targetFlowNode.getIncomingFlows();
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstId).list();
+        String processInstanceId = taskList.get(0).getProcessInstanceId();
+        for (Task task : taskList) {
+            if (task.isSuspended()) {
+                throw new ServiceException("【"+task.getName()+"】任务已被挂起");
             }
-            targetSequenceFlow.addAll(sequenceFlows);
+            taskService.addComment(task.getId(), processInstanceId,"申请人撤销申请");
         }
-        // 9. 将当前节点的出口设置为新节点
-        curFlowNode.setOutgoingFlows(targetSequenceFlow);
-        // 10. 完成当前任务，流程就会流向目标节点创建新目标任务
-        // 当前任务，完成当前任务
-        taskService.addComment(task.getId(), task.getProcessInstanceId(),"申请人撤销申请");
-        // 完成任务，就会进行驳回到目标节点，产生目标节点的任务数据
+        runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
+            .moveActivityIdsToSingleActivityId(taskList.stream().map(Task::getTaskDefinitionKey).collect(Collectors.toList()), actTaskNode.getNodeId())
+            .changeState();
+        List<Task> newTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        //处理并行会签环节重复节点
+        if(CollectionUtil.isNotEmpty(newTaskList)&&newTaskList.size()>0){
+            List<Task> taskCollect = newTaskList.stream().filter(e -> e.getTaskDefinitionKey().equals(actTaskNode.getNodeId())).collect(Collectors.toList());
+            if(taskCollect.size()>1){
+                taskCollect.remove(0);
+                taskCollect.forEach(e->{
+                    DeleteTaskCmd deleteTaskCmd = new DeleteTaskCmd(e.getId());
+                    managementService.executeCommand(deleteTaskCmd);
+                    DeleteExecuteCmd deleteExecuteCmd = new DeleteExecuteCmd(e.getExecutionId());
+                    managementService.executeCommand(deleteExecuteCmd);
+                    historyService.deleteHistoricTaskInstance(e.getId());
+                });
+            }
+        }
         Map<String, Object> variables =new HashMap<>();
         variables.put("status",BusinessStatusEnum.CANCEL.getStatus());
-        taskService.setVariables(task.getId(),variables);
-        taskService.complete(task.getId());
-        // 11. 完成驳回功能后，将当前节点的原出口方向进行恢复
-        curFlowNode.setOutgoingFlows(oriSequenceFlows);
-        // 12. 查询目标任务节点历史办理人
-        List<Task> newTaskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
-        for (Task newTask : newTaskList) {
-            taskService.setAssignee(newTask.getId(), LoginHelper.getUserId().toString());
+        List<Task> variablesTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        if(CollectionUtil.isNotEmpty(variablesTaskList)){
+            for (Task task : variablesTaskList) {
+                taskService.setAssignee(task.getId(), LoginHelper.getUserId().toString());
+                taskService.setVariables(task.getId(),variables);
+            }
+            iActTaskNodeService.deleteBackTaskNode(variablesTaskList.get(0).getProcessDefinitionId(),variablesTaskList.get(0).getTaskDefinitionKey());
         }
-        // 13. 删除驳回后的流程节点
         boolean b = iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.CANCEL);
         return b;
     }

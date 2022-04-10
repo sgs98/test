@@ -1,5 +1,7 @@
 package com.ruoyi.workflow.common.constant;
 
+import org.flowable.bpmn.model.InclusiveGateway;
+
 public interface ActConstant {
 
      String PNG = "png";
@@ -24,6 +26,11 @@ public interface ActConstant {
      *排它网关
      */
      String EXCLUSIVEGATEWAY = "exclusiveGateway";
+
+    /**
+     *包含网关
+     */
+    String INCLUSIVEGATEWAY = "InclusiveGateway";
 
     /**
      *结束

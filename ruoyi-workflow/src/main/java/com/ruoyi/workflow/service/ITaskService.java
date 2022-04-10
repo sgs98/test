@@ -6,6 +6,7 @@ import com.ruoyi.workflow.domain.ActTaskNode;
 import com.ruoyi.workflow.domain.bo.NextNodeREQ;
 import com.ruoyi.workflow.domain.bo.TaskCompleteREQ;
 import com.ruoyi.workflow.domain.bo.TaskREQ;
+import com.ruoyi.workflow.domain.bo.TransmitREQ;
 import com.ruoyi.workflow.domain.vo.BackProcessVo;
 import com.ruoyi.workflow.domain.vo.ProcessNode;
 import com.ruoyi.workflow.domain.vo.TaskFinishVo;
@@ -85,8 +86,8 @@ public interface ITaskService {
 
     /**
      * 转办任务
-     * @param taskREQ
+     * @param transmitREQ
      * @return
      */
-    R<Boolean> transmitTask(TaskREQ taskREQ);
+    R<Boolean> transmitTask(TransmitREQ transmitREQ);
 }

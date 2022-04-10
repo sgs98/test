@@ -13,6 +13,8 @@ import com.ruoyi.system.domain.SysUserRole;
 import com.ruoyi.system.mapper.SysRoleMapper;
 import com.ruoyi.system.mapper.SysUserMapper;
 import com.ruoyi.system.mapper.SysUserRoleMapper;
+import com.ruoyi.workflow.activiti.cmd.DeleteExecuteCmd;
+import com.ruoyi.workflow.activiti.cmd.DeleteTaskCmd;
 import com.ruoyi.workflow.activiti.cmd.ExpressCmd;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
@@ -28,15 +30,13 @@ import org.flowable.bpmn.model.*;
 import org.flowable.common.engine.api.delegate.Expression;
 import org.flowable.common.engine.impl.context.Context;
 import org.flowable.editor.language.json.converter.BpmnJsonConverter;
-import org.flowable.engine.ManagementService;
-import org.flowable.engine.ProcessEngine;
-import org.flowable.engine.RuntimeService;
-import org.flowable.engine.TaskService;
+import org.flowable.engine.*;
 import org.flowable.engine.impl.Condition;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.engine.impl.el.UelExpressionCondition;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.engine.impl.util.condition.ConditionUtil;
+import org.flowable.task.api.Task;
 import org.flowable.variable.api.persistence.entity.VariableInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -70,13 +70,6 @@ public class WorkFlowUtils {
     @Autowired
     private TaskService taskService;
 
-    @Resource
-    private ProcessEngine processEngine;
-
-    @Autowired
-    private RuntimeService runtimeService;
-
-
     @Autowired
     private SysUserMapper sysUserMapper;
 
@@ -86,9 +79,11 @@ public class WorkFlowUtils {
     @Autowired
     private SysUserRoleMapper userRoleMapper;
 
+    @Autowired
+    private ManagementService managementService;
 
     @Autowired
-    ManagementService managementService;
+    private HistoryService historyService;
 
 
     /**
@@ -117,14 +112,13 @@ public class WorkFlowUtils {
     /**
      * 获取下一审批节点信息
      *
-     * @param flowElement
-     * @param nextNodes
-     * @param tempNodes
-     * @param taskId
-     * @param businessKey
-     * @param gateway
+     * @param flowElement 节点信息
+     * @param nextNodes 下一节点信息
+     * @param tempNodes 保存没有表达式的节点信息
+     * @param taskId 任务id
+     * @param gateway 网关
      */
-    public void getNextNodes(FlowElement flowElement, ExecutionEntityImpl executionEntity, List<ProcessNode> nextNodes, List<ProcessNode> tempNodes, String taskId, String businessKey, String gateway) {
+    public void getNextNodes(FlowElement flowElement, ExecutionEntityImpl executionEntity, List<ProcessNode> nextNodes, List<ProcessNode> tempNodes, String taskId, String gateway) {
         // 获取当前节点的连线信息
         List<SequenceFlow> outgoingFlows = ((FlowNode) flowElement).getOutgoingFlows();
         // 当前节点的所有下一节点出口
@@ -136,10 +130,30 @@ public class WorkFlowUtils {
             if (outFlowElement instanceof UserTask) {
                 buildNode(executionEntity, nextNodes, tempNodes, taskId, gateway, sequenceFlow, processNode, tempNode, outFlowElement);
             }else if (outFlowElement instanceof ExclusiveGateway) { // 排他网关
-                getNextNodes(outFlowElement, executionEntity, nextNodes, tempNodes, taskId, businessKey, ActConstant.EXCLUSIVEGATEWAY);
-            } else if (outFlowElement instanceof ParallelGateway) { //并行网关
-                getNextNodes(outFlowElement,executionEntity, nextNodes, tempNodes, taskId, businessKey, ActConstant.PARALLELGATEWAY);
-            }  else if (outFlowElement instanceof EndEvent) {
+                getNextNodes(outFlowElement, executionEntity, nextNodes, tempNodes, taskId, ActConstant.EXCLUSIVEGATEWAY);
+            }else if (outFlowElement instanceof ParallelGateway) { //并行网关
+                getNextNodes(outFlowElement,executionEntity, nextNodes, tempNodes, taskId, ActConstant.PARALLELGATEWAY);
+            }else if(outFlowElement instanceof InclusiveGateway){ //包含网关
+                getNextNodes(outFlowElement,executionEntity, nextNodes, tempNodes, taskId, ActConstant.INCLUSIVEGATEWAY);
+                /*List<SequenceFlow> inclusiveGatewayOutgoingFlow = ((InclusiveGateway) sourceFlowElement).getOutgoingFlows();
+                for (SequenceFlow sequenceFlow : inclusiveGatewayOutgoingFlow) {
+                    String conditionExpression = outgoingFlow.getConditionExpression();
+                    FlowElement element = sequenceFlow.getTargetFlowElement();
+                    if (sourceFlowElement instanceof UserTask) {
+                        if(StringUtils.isBlank(conditionExpression)){
+                            nodeListId.add(element.getId());
+                        }else{
+                            ExecutionEntityImpl executionEntity = (ExecutionEntityImpl) runtimeService.createExecutionQuery()
+                                .executionId(task.getExecutionId()).singleResult();
+                            ExpressCmd expressCmd = new ExpressCmd(outgoingFlow,executionEntity);
+                            Boolean condition = managementService.executeCommand(expressCmd);
+                            if(condition){
+                                nodeListId.add(element.getId());
+                            }
+                        }
+                    }
+                }*/
+            }else if (outFlowElement instanceof EndEvent) {
                 continue;
             }else if(outFlowElement instanceof SubProcess) {
                 Collection<FlowElement> flowElements = ((SubProcess) outFlowElement).getFlowElements();
@@ -158,14 +172,14 @@ public class WorkFlowUtils {
     /**
      * 构建下一审批节点
      * @param executionEntity
-     * @param nextNodes
-     * @param tempNodes
-     * @param taskId
-     * @param gateway
-     * @param sequenceFlow
-     * @param processNode
-     * @param tempNode
-     * @param outFlowElement
+     * @param nextNodes 下一节点信息
+     * @param tempNodes 保存没有表达式的节点信息
+     * @param taskId 任务id
+     * @param gateway 网关
+     * @param sequenceFlow  节点
+     * @param processNode 下一节点的目标元素
+     * @param tempNode  保存没有表达式的节点
+     * @param outFlowElement 目标节点
      */
     private void buildNode(ExecutionEntityImpl executionEntity, List<ProcessNode> nextNodes, List<ProcessNode> tempNodes, String taskId, String gateway, SequenceFlow sequenceFlow, ProcessNode processNode, ProcessNode tempNode, FlowElement outFlowElement) {
         // 用户任务，则获取响应给前端设置办理人或者候选人
@@ -208,8 +222,35 @@ public class WorkFlowUtils {
                 tempNode.setAssigneeId(((UserTask) outFlowElement).getAssignee());
                 tempNodes.add(tempNode);
             }
-
-        } else {
+        //包含网关
+        } else if(ActConstant.INCLUSIVEGATEWAY.equals(gateway)){
+            String conditionExpression = sequenceFlow.getConditionExpression();
+            if(StringUtils.isBlank(conditionExpression)){
+                processNode.setNodeId(outFlowElement.getId());
+                processNode.setNodeName(outFlowElement.getName());
+                processNode.setNodeType(ActConstant.EXCLUSIVEGATEWAY);
+                processNode.setTaskId(taskId);
+                processNode.setExpression(true);
+                processNode.setChooseWay(ActConstant.WORKFLOW_ASSIGNEE);
+                processNode.setAssignee(((UserTask) outFlowElement).getAssignee());
+                processNode.setAssigneeId(((UserTask) outFlowElement).getAssignee());
+                nextNodes.add(processNode);
+            }else{
+                ExpressCmd expressCmd = new ExpressCmd(sequenceFlow,executionEntity);
+                Boolean condition = managementService.executeCommand(expressCmd);
+                if (condition) {
+                    processNode.setNodeId(outFlowElement.getId());
+                    processNode.setNodeName(outFlowElement.getName());
+                    processNode.setNodeType(ActConstant.EXCLUSIVEGATEWAY);
+                    processNode.setTaskId(taskId);
+                    processNode.setExpression(true);
+                    processNode.setChooseWay(ActConstant.WORKFLOW_ASSIGNEE);
+                    processNode.setAssignee(((UserTask) outFlowElement).getAssignee());
+                    processNode.setAssigneeId(((UserTask) outFlowElement).getAssignee());
+                    nextNodes.add(processNode);
+                }
+            }
+        }else {
             processNode.setNodeId(outFlowElement.getId());
             processNode.setNodeName(outFlowElement.getName());
             processNode.setNodeType(ActConstant.USER_TASK);
@@ -385,5 +426,17 @@ public class WorkFlowUtils {
             throw new ServiceException(nodeName + "环节未设置审批人");
         }
         return list.stream().map(e -> e.getUserId()).collect(Collectors.toList());
+    }
+
+    /**
+     * 删除正在执行的任务
+     * @param task
+     */
+    public void deleteRuntimeTask(Task task){
+        DeleteTaskCmd deleteTaskCmd = new DeleteTaskCmd(task.getId());
+        managementService.executeCommand(deleteTaskCmd);
+        DeleteExecuteCmd deleteExecuteCmd = new DeleteExecuteCmd(task.getExecutionId());
+        managementService.executeCommand(deleteExecuteCmd);
+        historyService.deleteHistoricTaskInstance(task.getId());
     }
 }
