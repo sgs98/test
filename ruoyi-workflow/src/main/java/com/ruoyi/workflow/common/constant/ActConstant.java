@@ -12,6 +12,7 @@ public interface ActConstant {
 
      String ZIP = "ZIP";
 
+
     /**
      * bpmn2.0命名空间
      */
@@ -33,6 +34,11 @@ public interface ActConstant {
     String INCLUSIVEGATEWAY = "InclusiveGateway";
 
     /**
+     *连线
+     */
+    String SEQUENCEFLOW = "sequenceFlow";
+
+    /**
      *结束
      */
     String ENDTASK = "endTask";
@@ -42,23 +48,10 @@ public interface ActConstant {
      */
      String USER_TASK = "userTask";
 
-     String JSON = "json";
 
      Boolean TRUE=true;
 
      Boolean FALSE=false;
-
-     String STRING = "string";
-
-     String INTEGER = "integer";
-
-     String SHORT = "short";
-
-     String LONG = "long";
-
-     String DOUBLE = "double";
-
-     String DATE = "date";
 
     /**
      * 流程自定义人员

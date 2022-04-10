@@ -6,7 +6,7 @@ import org.flowable.spring.boot.ProcessEngineConfigurationConfigurer;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ActivitiConfig implements ProcessEngineConfigurationConfigurer {
+public class FlowableConfig implements ProcessEngineConfigurationConfigurer {
 
 
     /**
@@ -19,7 +19,7 @@ public class ActivitiConfig implements ProcessEngineConfigurationConfigurer {
         processEngineConfiguration.setActivityFontName("宋体");
         processEngineConfiguration.setAnnotationFontName("宋体");
         processEngineConfiguration.setLabelFontName("宋体");
-        processEngineConfiguration.setProcessDiagramGenerator(new CustomProcessDiagramGenerator());
+        processEngineConfiguration.setProcessDiagramGenerator(new CustomDefaultProcessDiagramGenerator());
     }
 }
 

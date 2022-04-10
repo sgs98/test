@@ -8,7 +8,8 @@ import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.helper.LoginHelper;
 import com.ruoyi.workflow.activiti.cmd.DeleteExecuteCmd;
 import com.ruoyi.workflow.activiti.cmd.DeleteTaskCmd;
-import com.ruoyi.workflow.activiti.config.CustomProcessDiagramGenerator;
+import com.ruoyi.workflow.activiti.config.CustomDefaultProcessDiagramGenerator;
+import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
 import com.ruoyi.workflow.domain.ActBusinessStatus;
 import com.ruoyi.workflow.domain.ActTaskNode;
@@ -26,15 +27,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.common.engine.impl.identity.Authentication;
 import org.flowable.engine.ManagementService;
-import org.flowable.engine.ProcessEngine;
-import org.flowable.engine.ProcessEngineConfiguration;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
 import org.flowable.engine.task.Comment;
-import org.flowable.image.ProcessDiagramGenerator;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskQuery;
 import org.flowable.task.api.history.HistoricTaskInstance;
@@ -46,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -66,7 +65,6 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
     private final IActBusinessStatusService iActBusinessStatusService;
     private final IUserService iUserService;
     private final IActTaskNodeService iActTaskNodeService;
-    private final ProcessEngine processEngine;
     private final ManagementService managementService;
 
 
@@ -208,22 +206,23 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
                 List<String> highLightedNodes = new ArrayList<>();
                 //高亮线
                 for (HistoricActivityInstance tempActivity : highLightedFlowList) {
-                    if ("sequenceFlow".equals(tempActivity.getActivityType())) {
+                    if (ActConstant.SEQUENCEFLOW.equals(tempActivity.getActivityType())) {
                         //高亮线
                         highLightedFlows.add(tempActivity.getActivityId());
-                    } else {
+                    } else{
                         //高亮节点
-                        highLightedNodes.add(tempActivity.getActivityId());
+                        if(tempActivity.getEndTime()==null){
+                            highLightedNodes.add(Color.RED +tempActivity.getActivityId());
+                        }else{
+                            highLightedNodes.add(tempActivity.getActivityId());
+                        }
                     }
                 }
-
-                //获取流程图
                 BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
-                ProcessEngineConfiguration configuration = processEngine.getProcessEngineConfiguration();
-                //获取自定义图片生成器
-                ProcessDiagramGenerator diagramGenerator = new CustomProcessDiagramGenerator();
-                inputStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedNodes, highLightedFlows, configuration.getActivityFontName(),
-                    configuration.getLabelFontName(), configuration.getAnnotationFontName(), configuration.getClassLoader(), 1.0, true);
+                CustomDefaultProcessDiagramGenerator diagramGenerator = new CustomDefaultProcessDiagramGenerator();
+                inputStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedNodes,
+                    highLightedFlows, "宋体", "宋体", "宋体",
+                    null, 1.0, true);
                 // 响应相关图片
                 response.setContentType("image/png");
 
