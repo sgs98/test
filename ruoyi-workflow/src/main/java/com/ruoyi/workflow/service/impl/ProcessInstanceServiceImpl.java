@@ -204,7 +204,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
 
                 List<String> highLightedFlows = new ArrayList<>();
                 List<String> highLightedNodes = new ArrayList<>();
-                //高亮线
+                //高亮
                 for (HistoricActivityInstance tempActivity : highLightedFlowList) {
                     if (ActConstant.SEQUENCEFLOW.equals(tempActivity.getActivityType())) {
                         //高亮线
@@ -212,15 +212,25 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
                     } else{
                         //高亮节点
                         if(tempActivity.getEndTime()==null){
-                            highLightedNodes.add(Color.RED +tempActivity.getActivityId());
+                            highLightedNodes.add(Color.RED.toString() +tempActivity.getActivityId());
                         }else{
                             highLightedNodes.add(tempActivity.getActivityId());
                         }
                     }
                 }
+                List<String> highLightedNodeList = new ArrayList<>();
+                //运行中的节点
+                List<String> redNodeCollect = highLightedNodes.stream().filter(e -> e.contains(Color.RED.toString())).collect(Collectors.toList());
+                //排除与运行中相同的节点
+                for (String nodeId : highLightedNodes) {
+                    if(!nodeId.contains(Color.RED.toString())&&!redNodeCollect.contains(Color.RED.toString()+nodeId)){
+                            highLightedNodeList.add(nodeId);
+                    }
+                }
+                highLightedNodeList.addAll(redNodeCollect);
                 BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
                 CustomDefaultProcessDiagramGenerator diagramGenerator = new CustomDefaultProcessDiagramGenerator();
-                inputStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedNodes,
+                inputStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedNodeList,
                     highLightedFlows, "宋体", "宋体", "宋体",
                     null, 1.0, true);
                 // 响应相关图片

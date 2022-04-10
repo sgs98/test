@@ -772,8 +772,8 @@ public class CustomDefaultProcessDiagramGenerator implements ProcessDiagramGener
 
             // Draw highlighted activities
             if (highLightedActivities.contains(flowNode.getId())) {
-                drawHighLightNew(processDiagramCanvas, bpmnModel.getGraphicInfo(flowNode.getId()));
-            }else if(highLightedActivities.contains(Color.RED +flowNode.getId())){
+                drawHighLightRed(processDiagramCanvas, bpmnModel.getGraphicInfo(flowNode.getId()));
+            }else if(highLightedActivities.contains(Color.RED.toString() +flowNode.getId())){
                 drawHighLight(processDiagramCanvas, bpmnModel.getGraphicInfo(flowNode.getId()));
             }
 
@@ -781,8 +781,8 @@ public class CustomDefaultProcessDiagramGenerator implements ProcessDiagramGener
             activityDrawInstructions.get(Task.class).draw(processDiagramCanvas, bpmnModel, flowNode);
 
             if (highLightedActivities.contains(flowNode.getId())) {
-                drawHighLightNew(processDiagramCanvas, bpmnModel.getGraphicInfo(flowNode.getId()));
-            }else if(highLightedActivities.contains(Color.RED +flowNode.getId())){
+                drawHighLightRed(processDiagramCanvas, bpmnModel.getGraphicInfo(flowNode.getId()));
+            }else if(highLightedActivities.contains(Color.RED.toString() +flowNode.getId())){
                 drawHighLight(processDiagramCanvas, bpmnModel.getGraphicInfo(flowNode.getId()));
             }
         }
@@ -961,8 +961,8 @@ public class CustomDefaultProcessDiagramGenerator implements ProcessDiagramGener
         processDiagramCanvas.drawHighLight((int) graphicInfo.getX(), (int) graphicInfo.getY(), (int) graphicInfo.getWidth(), (int) graphicInfo.getHeight());
 
     }
-    private static void drawHighLightNew(CustomDefaultProcessDiagramCanvas processDiagramCanvas, GraphicInfo graphicInfo) {
-        processDiagramCanvas.drawHighLightNew((int) graphicInfo.getX(), (int) graphicInfo.getY(), (int) graphicInfo.getWidth(), (int) graphicInfo.getHeight());
+    private static void drawHighLightRed(CustomDefaultProcessDiagramCanvas processDiagramCanvas, GraphicInfo graphicInfo) {
+        processDiagramCanvas.drawHighLightRed((int) graphicInfo.getX(), (int) graphicInfo.getY(), (int) graphicInfo.getWidth(), (int) graphicInfo.getHeight());
 
     }
 

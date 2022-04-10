@@ -81,7 +81,7 @@ public class CustomDefaultProcessDiagramCanvas extends DefaultProcessDiagramCanv
         g.setStroke(originalStroke);
     }
 
-    public void drawHighLightNew(int x, int y, int width, int height) {
+    public void drawHighLightRed(int x, int y, int width, int height) {
         Paint originalPaint = g.getPaint();
         Stroke originalStroke = g.getStroke();
         //设置高亮节点的颜色
