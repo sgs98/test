@@ -91,7 +91,6 @@
   import verify from "@/components/Process/Verify";
   import history from "@/components/Process/History";
   import Back from "@/components/Process/Back";
-  import { getLeave} from "@/api/demo/leave";
   import  approvalForm from "@/views/components/approvalForm";
 
   export default {
@@ -175,16 +174,6 @@
         this.getList()
       },
       //办理任务弹出层
-      /* clickTaskPop(row){
-          getLeave(row.businessKey).then(response => {
-            this.taskVariables = {
-                 entity: response.data,
-                 userId :1
-            };
-          });
-          this.taskId = row.id;
-          this.$refs.verifyRef.visible = true
-      }, */
       clickTaskPop(row){
           this.businessKey = row.businessKey
           this.processInstanceId = row.processInstanceId
