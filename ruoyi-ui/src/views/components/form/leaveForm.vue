@@ -123,7 +123,6 @@ export default {
           handler (newVal) {
               if(newVal) {
                   this.getById()
-                  console.log("a")
               }
           }
       }
