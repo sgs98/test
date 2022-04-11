@@ -36,7 +36,12 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
+/**
+ * @program: ruoyi-vue-plus
+ * @description: 模型业务层
+ * @author: gssong
+ * @created: 2021/10/17 15:59
+ */
 @Service
 @Slf4j
 public class ModelServiceImpl extends WorkflowService implements IModelService {

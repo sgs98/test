@@ -10,6 +10,7 @@ import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.helper.LoginHelper;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
+import com.ruoyi.workflow.domain.ActBusinessStatus;
 import com.ruoyi.workflow.domain.ActHiTaskInst;
 import com.ruoyi.workflow.domain.ActNodeAssignee;
 import com.ruoyi.workflow.domain.ActTaskNode;
@@ -122,6 +123,18 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             taskWaitingVo.setProcessDefinitionName(pi.getProcessDefinitionName());
             taskWaitingVo.setBusinessKey(pi.getBusinessKey());
             list.add(taskWaitingVo);
+        }
+        if(CollectionUtil.isNotEmpty(list)){
+            List<String> businessKeyList = list.stream().map(TaskWaitingVo::getBusinessKey).collect(Collectors.toList());
+            List<ActBusinessStatus> infoList = iActBusinessStatusService.getListInfoByBusinessKey(businessKeyList);
+            if(CollectionUtil.isNotEmpty(infoList)){
+                list.forEach(e->{
+                    ActBusinessStatus businessStatus = infoList.stream().filter(t -> t.getBusinessKey().equals(e.getBusinessKey())).findFirst().orElse(null);
+                    if(ObjectUtil.isNotEmpty(businessStatus)){
+                        e.setActBusinessStatus(businessStatus);
+                    }
+                });
+            }
         }
         return new TableDataInfo(list, total);
     }

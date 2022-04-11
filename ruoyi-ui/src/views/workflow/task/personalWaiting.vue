@@ -82,7 +82,7 @@
           <history :processInstanceId="processInstanceId"></history>
         </el-dialog>
         <approvalForm ref="approvalForm" :businessKey = 'businessKey' :taskId = 'taskId'
-        @refresh = 'refresh' :processInstanceId = 'processInstanceId'/>
+        @refresh = 'refresh' :currProcessForm = 'currProcessForm' :processInstanceId = 'processInstanceId'/>
     </div>
 </template>
 
@@ -136,7 +136,8 @@
         taskVariables: undefined,
         processInstanceId: undefined,
         businessKey: undefined, // 业务唯一标识
-        visible: false
+        visible: false,
+        currProcessForm: '' //表单组件名称
       }
     },
     created() {
@@ -188,7 +189,16 @@
           this.businessKey = row.businessKey
           this.processInstanceId = row.processInstanceId
           this.taskId = row.id
-          this.$refs.approvalForm.visible = true
+          if(row.actBusinessStatus){
+               if(row.actBusinessStatus.classFullName === 'com.ruoyi.demo.domain.BsLeave'){
+                  this.currProcessForm = 'leaveForm'
+               }else if(row.actBusinessStatus.classFullName === '其他业务全类名'){
+                  this.currProcessForm = 'xxxForm'
+               }
+               this.$refs.approvalForm.visible = true
+          }else{
+              this.$modal.msgError("业务不存在");
+          }
       },
       clickHistPop(row){
          this.processInstanceId = row.processInstanceId

@@ -25,7 +25,12 @@ import java.util.stream.Collectors;
 
 import static com.ruoyi.workflow.common.constant.ActConstant.*;
 
-
+/**
+ * @program: ruoyi-vue-plus
+ * @description: 选人业务层
+ * @author: gssong
+ * @created: 2021/10/17 14:57
+ */
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements IUserService {
