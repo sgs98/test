@@ -27,24 +27,15 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.*;
-import org.flowable.common.engine.api.delegate.Expression;
-import org.flowable.common.engine.impl.context.Context;
 import org.flowable.editor.language.json.converter.BpmnJsonConverter;
 import org.flowable.engine.*;
-import org.flowable.engine.impl.Condition;
-import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.flowable.engine.impl.el.UelExpressionCondition;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
-import org.flowable.engine.impl.util.condition.ConditionUtil;
 import org.flowable.task.api.Task;
 import org.flowable.variable.api.persistence.entity.VariableInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import javax.el.ExpressionFactory;
-import javax.el.ValueExpression;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -117,6 +108,9 @@ public class WorkFlowUtils {
      * @param tempNodes 保存没有表达式的节点信息
      * @param taskId 任务id
      * @param gateway 网关
+     * @return: void
+     * @author: gssong
+     * @Date: 2022/4/11 13:37
      */
     public void getNextNodes(FlowElement flowElement, ExecutionEntityImpl executionEntity, List<ProcessNode> nextNodes, List<ProcessNode> tempNodes, String taskId, String gateway) {
         // 获取当前节点的连线信息
@@ -135,24 +129,6 @@ public class WorkFlowUtils {
                 getNextNodes(outFlowElement,executionEntity, nextNodes, tempNodes, taskId, ActConstant.PARALLELGATEWAY);
             }else if(outFlowElement instanceof InclusiveGateway){ //包含网关
                 getNextNodes(outFlowElement,executionEntity, nextNodes, tempNodes, taskId, ActConstant.INCLUSIVEGATEWAY);
-                /*List<SequenceFlow> inclusiveGatewayOutgoingFlow = ((InclusiveGateway) sourceFlowElement).getOutgoingFlows();
-                for (SequenceFlow sequenceFlow : inclusiveGatewayOutgoingFlow) {
-                    String conditionExpression = outgoingFlow.getConditionExpression();
-                    FlowElement element = sequenceFlow.getTargetFlowElement();
-                    if (sourceFlowElement instanceof UserTask) {
-                        if(StringUtils.isBlank(conditionExpression)){
-                            nodeListId.add(element.getId());
-                        }else{
-                            ExecutionEntityImpl executionEntity = (ExecutionEntityImpl) runtimeService.createExecutionQuery()
-                                .executionId(task.getExecutionId()).singleResult();
-                            ExpressCmd expressCmd = new ExpressCmd(outgoingFlow,executionEntity);
-                            Boolean condition = managementService.executeCommand(expressCmd);
-                            if(condition){
-                                nodeListId.add(element.getId());
-                            }
-                        }
-                    }
-                }*/
             }else if (outFlowElement instanceof EndEvent) {
                 continue;
             }else if(outFlowElement instanceof SubProcess) {
@@ -180,6 +156,9 @@ public class WorkFlowUtils {
      * @param processNode 下一节点的目标元素
      * @param tempNode  保存没有表达式的节点
      * @param outFlowElement 目标节点
+     * @return: void
+     * @author: gssong
+     * @Date: 2022/4/11 13:35
      */
     private void buildNode(ExecutionEntityImpl executionEntity, List<ProcessNode> nextNodes, List<ProcessNode> tempNodes, String taskId, String gateway, SequenceFlow sequenceFlow, ProcessNode processNode, ProcessNode tempNode, FlowElement outFlowElement) {
         // 用户任务，则获取响应给前端设置办理人或者候选人
@@ -268,6 +247,9 @@ public class WorkFlowUtils {
      * @param actFullClass 业务规则对象
      * @param taskId 任务id
      * @return 查询业务规则
+     * @return: java.lang.Object
+     * @author: gssong
+     * @Date: 2022/4/11 13:35
      */
     @SneakyThrows
     public Object assignList(ActFullClassVo actFullClass, String taskId) {
@@ -357,6 +339,7 @@ public class WorkFlowUtils {
      * @param o 对象
      * @param idList 主键集合
      * @param id 主键id
+     * @return: void
      * @Author: gssong
      * @Date: 2022/1/16
      */
@@ -394,7 +377,9 @@ public class WorkFlowUtils {
      * @param params
      * @param chooseWay
      * @param nodeName
-     * @return
+     * @return: java.util.List<java.lang.Long>
+     * @author: gssong
+     * @Date: 2022/4/11 13:36
      */
     public List<Long> assignees(String params, String chooseWay, String nodeName) {
         List<Long> paramList = new ArrayList<>();
@@ -431,6 +416,9 @@ public class WorkFlowUtils {
     /**
      * 删除正在执行的任务
      * @param task
+     * @return: void
+     * @author: gssong
+     * @Date: 2022/4/11 13:36
      */
     public void deleteRuntimeTask(Task task){
         DeleteTaskCmd deleteTaskCmd = new DeleteTaskCmd(task.getId());
