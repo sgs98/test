@@ -10,7 +10,7 @@
 [![JDK-11](https://img.shields.io/badge/JDK-11-green.svg)]()
 
 > RuoYi-Vue-Plus 是重写 RuoYi-Vue 针对 `分布式集群` 场景全方位升级(不兼容原框架) 
-**master分支为activiti，flowable分支为flowable** 
+> **master分支为activiti，flowable分支为flowable** 
 
 > 系统演示: [传送门](https://gitee.com/JavaLionLi/RuoYi-Vue-Plus/wikis/系统演示?sort_id=4836388)
 
