@@ -195,9 +195,25 @@ public class DefinitionServiceImpl extends WorkflowService implements IDefinitio
         List<Process> processes = bpmnModel.getProcesses();
         List<ActProcessNodeVo> processNodeVoList = new ArrayList<>();
         Collection<FlowElement> elements = processes.get(0).getFlowElements();
+        //获取开始节点后第一个节点
+        ActProcessNodeVo firstNode = new ActProcessNodeVo();
+        for (FlowElement element : elements) {
+            if(element instanceof StartEvent){
+                List<SequenceFlow> outgoingFlows = ((StartEvent) element).getOutgoingFlows();
+                for (SequenceFlow outgoingFlow : outgoingFlows) {
+                    FlowElement flowElement = outgoingFlow.getTargetFlowElement();
+                    if(flowElement instanceof UserTask){
+                        firstNode.setNodeId(flowElement.getId());
+                        firstNode.setNodeName(flowElement.getName());
+                        firstNode.setProcessDefinitionId(processDefinitionId);
+                    }
+                }
+            }
+        }
+        processNodeVoList.add(firstNode);
         for (FlowElement element : elements) {
             ActProcessNodeVo actProcessNodeVo = new ActProcessNodeVo();
-            if (element instanceof UserTask) {
+            if (element instanceof UserTask && !firstNode.getNodeId().equals(element.getId())) {
                 actProcessNodeVo.setNodeId(element.getId());
                 actProcessNodeVo.setNodeName(element.getName());
                 actProcessNodeVo.setProcessDefinitionId(processDefinitionId);
@@ -206,7 +222,7 @@ public class DefinitionServiceImpl extends WorkflowService implements IDefinitio
                 Collection<FlowElement> flowElements = ((SubProcess) element).getFlowElements();
                 for (FlowElement flowElement : flowElements) {
                     ActProcessNodeVo actProcessNode= new ActProcessNodeVo();
-                    if (flowElement instanceof UserTask) {
+                    if (flowElement instanceof UserTask && !firstNode.getNodeId().equals(flowElement.getId())) {
                         actProcessNode.setNodeId(flowElement.getId());
                         actProcessNode.setNodeName(flowElement.getName());
                         actProcessNode.setProcessDefinitionId(processDefinitionId);
