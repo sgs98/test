@@ -41,7 +41,7 @@ public class ModelController extends BaseController {
     /**
      * @Description: 查询模型列表
      * @param: modelReq 请求参数
-     * @return: com.ruoyi.common.core.page.TableDataInfo<org.activiti.engine.repository.Model>
+     * @return: com.ruoyi.common.core.page.TableDataInfo<org.flowable.engine.repository.Model>
      * @Author: gssong
      * @Date: 2021/10/3
      */
@@ -55,7 +55,7 @@ public class ModelController extends BaseController {
     /**
      * @Description: 新建模型
      * @param: modelAdd
-     * @return: com.ruoyi.common.core.domain.R<org.activiti.engine.repository.Model>
+     * @return: com.ruoyi.common.core.domain.R<org.flowable.engine.repository.Model>
      * @Author: gssong
      * @Date: 2021/10/3
      */

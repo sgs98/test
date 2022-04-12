@@ -48,24 +48,26 @@ public class ActTaskNodeServiceImpl extends ServiceImpl<ActTaskNodeMapper, ActTa
             queryWrapper.eq(ActTaskNode::getInstanceId, processInstanceId);
             queryWrapper.eq(ActTaskNode::getNodeId, targetActivityId);
             ActTaskNode actTaskNode = this.baseMapper.selectOne(queryWrapper);
-            Integer orderNo = actTaskNode.getOrderNo();
-            List<ActTaskNode> taskNodeList = getListByInstanceId(processInstanceId);
+            if(ObjectUtil.isNotNull(actTaskNode)){
+                Integer orderNo = actTaskNode.getOrderNo();
+                List<ActTaskNode> taskNodeList = getListByInstanceId(processInstanceId);
 
-            List<String> ids = new ArrayList<>();
-            if (CollectionUtil.isNotEmpty(taskNodeList)) {
-                for (ActTaskNode taskNode : taskNodeList) {
-                    if (taskNode.getOrderNo() >= orderNo) {
-                        ids.add(taskNode.getId());
+                List<String> ids = new ArrayList<>();
+                if (CollectionUtil.isNotEmpty(taskNodeList)) {
+                    for (ActTaskNode taskNode : taskNodeList) {
+                        if (taskNode.getOrderNo() >= orderNo) {
+                            ids.add(taskNode.getId());
+                        }
                     }
                 }
-            }
-            if (CollectionUtil.isNotEmpty(ids)) {
-                this.baseMapper.deleteBatchIds(ids);
+                if (CollectionUtil.isNotEmpty(ids)) {
+                    this.baseMapper.deleteBatchIds(ids);
+                }
             }
             return true;
         }catch (Exception e){
             e.printStackTrace();
-            return false;
+            throw new ServiceException("删除失败");
         }
     }
 

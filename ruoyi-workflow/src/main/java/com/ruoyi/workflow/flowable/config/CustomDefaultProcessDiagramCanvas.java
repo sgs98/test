@@ -1,4 +1,4 @@
-package com.ruoyi.workflow.activiti.config;
+package com.ruoyi.workflow.flowable.config;
 
 import org.flowable.bpmn.model.AssociationDirection;
 import org.flowable.image.impl.DefaultProcessDiagramCanvas;

@@ -11,7 +11,7 @@
  * limitations under the License.
  */
 
-package com.ruoyi.workflow.activiti.config;
+package com.ruoyi.workflow.flowable.config;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

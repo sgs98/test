@@ -231,14 +231,7 @@
                 <artifactId>tlog-xxljob-spring-boot-starter</artifactId>
                 <version>${tlog.version}</version>
             </dependency>
-
-            <!--activiti6.0-->
-			<!--<dependency>
-				<groupId>org.activiti</groupId>
-				<artifactId>activiti-spring-boot-starter-rest-api</artifactId>
-				<version>${activiti.version}</version>
-            </dependency>-->
-            <!--引入Flowable6.3依赖-->
+            <!--引入flowable依赖-->
             <dependency>
                 <groupId>org.flowable</groupId>
                 <artifactId>flowable-spring-boot-starter</artifactId>
@@ -251,14 +244,13 @@
                 </exclusions>
             </dependency>
 
-
-            <!-- java绘制activiti流程图 -->
+            <!-- java绘制flowable流程图 -->
             <dependency>
                 <groupId>org.flowable</groupId>
                 <artifactId>flowable-image-generator</artifactId>
                 <version>${flowable.version}</version>
             </dependency>
-            <!-- activiti json转换器-->
+            <!-- flowable json转换器-->
             <dependency>
                 <groupId>org.flowable</groupId>
                 <artifactId>flowable-json-converter</artifactId>

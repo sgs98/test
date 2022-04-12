@@ -164,11 +164,7 @@
             <artifactId>lock4j-redisson-spring-boot-starter</artifactId>
         </dependency>
 
-        <!--activiti6.0-->
-        <!--<dependency>
-            <groupId>org.activiti</groupId>
-            <artifactId>activiti-spring-boot-starter-rest-api</artifactId>
-        </dependency>-->
+        <!--引入flowable依赖-->
         <dependency>
             <groupId>org.flowable</groupId>
             <artifactId>flowable-spring-boot-starter</artifactId>
@@ -185,7 +181,7 @@
             <artifactId>flowable-image-generator</artifactId>
         </dependency>
 
-        <!-- activiti json转换器-->
+        <!-- flowable json转换器-->
         <dependency>
             <groupId>org.flowable</groupId>
             <artifactId>flowable-json-converter</artifactId>

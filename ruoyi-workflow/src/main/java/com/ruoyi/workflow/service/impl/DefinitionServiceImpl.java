@@ -8,7 +8,7 @@ import com.ruoyi.workflow.domain.ActNodeAssignee;
 import com.ruoyi.workflow.domain.bo.DefREQ;
 import com.ruoyi.workflow.domain.vo.ActProcessNodeVo;
 import com.ruoyi.workflow.domain.vo.ProcessDefinitionVo;
-import com.ruoyi.workflow.factory.WorkflowService;
+import com.ruoyi.workflow.flowable.factory.WorkflowService;
 import com.ruoyi.workflow.service.IActNodeAssigneeService;
 import com.ruoyi.workflow.service.IDefinitionService;
 import lombok.extern.slf4j.Slf4j;

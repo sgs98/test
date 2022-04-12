@@ -10,14 +10,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ruoyi.workflow.activiti;
+package com.ruoyi.workflow.flowable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.ruoyi.common.exception.ServiceException;
-import org.flowable.cmmn.image.exception.FlowableImageException;
+import org.flowable.common.engine.api.FlowableException;
 import org.flowable.editor.constants.ModelDataJsonConstants;
-import org.flowable.editor.form.converter.FormJsonConverter;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.Model;
 import org.apache.batik.transcoder.TranscoderInput;
@@ -88,7 +86,7 @@ public class ModelSaveRestResource implements ModelDataJsonConstants {
 
     } catch (Exception e) {
       logger.error("Error saving model", e);
-      throw new FlowableImageException("Error saving model", e);
+      throw new FlowableException("Error saving model", e);
     }
   }
 }

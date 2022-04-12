@@ -10,11 +10,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ruoyi.workflow.activiti;
+package com.ruoyi.workflow.flowable;
 
-import com.ruoyi.common.exception.ServiceException;
 import org.apache.commons.io.IOUtils;
-import org.flowable.cmmn.image.exception.FlowableImageException;
+import org.flowable.common.engine.api.FlowableException;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -35,7 +34,7 @@ public class StencilsetRestResource {
     try {
       return IOUtils.toString(stencilsetStream, "utf-8");
     } catch (Exception e) {
-      throw new FlowableImageException(e.getMessage());
+      throw new FlowableException(e.getMessage());
     }
   }
 }

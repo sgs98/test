@@ -6,9 +6,7 @@ import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.helper.LoginHelper;
-import com.ruoyi.workflow.activiti.cmd.DeleteExecuteCmd;
-import com.ruoyi.workflow.activiti.cmd.DeleteTaskCmd;
-import com.ruoyi.workflow.activiti.config.CustomDefaultProcessDiagramGenerator;
+import com.ruoyi.workflow.flowable.config.CustomDefaultProcessDiagramGenerator;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
 import com.ruoyi.workflow.domain.ActBusinessStatus;
@@ -19,14 +17,14 @@ import com.ruoyi.workflow.domain.bo.StartREQ;
 import com.ruoyi.workflow.domain.vo.ActHistoryInfoVo;
 import com.ruoyi.workflow.domain.vo.ProcessInstFinishVo;
 import com.ruoyi.workflow.domain.vo.ProcessInstRunningVo;
-import com.ruoyi.workflow.factory.WorkflowService;
+import com.ruoyi.workflow.flowable.factory.WorkflowService;
 import com.ruoyi.workflow.service.*;
+import com.ruoyi.workflow.utils.WorkFlowUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.common.engine.impl.identity.Authentication;
-import org.flowable.engine.ManagementService;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
@@ -65,7 +63,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
     private final IActBusinessStatusService iActBusinessStatusService;
     private final IUserService iUserService;
     private final IActTaskNodeService iActTaskNodeService;
-    private final ManagementService managementService;
+    private final WorkFlowUtils workFlowUtils;
 
 
 
@@ -252,20 +250,6 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
                     }
                 }
             }
-    }
-
-    /**
-     * 任务历史
-     *
-     * @param processId 部署id
-     */
-    public List<HistoricActivityInstance> getHistoryProcess(String processId) {
-        List<HistoricActivityInstance> list = historyService // 历史相关Service
-            .createHistoricActivityInstanceQuery() // 创建历史活动实例查询
-            .processInstanceId(processId) // 执行流程实例id
-            .finished()
-            .list();
-        return list;
     }
 
     /**
@@ -499,11 +483,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
             if(taskCollect.size()>1){
                 taskCollect.remove(0);
                 taskCollect.forEach(e->{
-                    DeleteTaskCmd deleteTaskCmd = new DeleteTaskCmd(e.getId());
-                    managementService.executeCommand(deleteTaskCmd);
-                    DeleteExecuteCmd deleteExecuteCmd = new DeleteExecuteCmd(e.getExecutionId());
-                    managementService.executeCommand(deleteExecuteCmd);
-                    historyService.deleteHistoricTaskInstance(e.getId());
+                    workFlowUtils.deleteRuntimeTask(e);
                 });
             }
         }

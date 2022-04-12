@@ -1,5 +1,5 @@
 
-package com.ruoyi.workflow.activiti.config;
+package com.ruoyi.workflow.flowable.config;
 
 import org.flowable.spring.SpringProcessEngineConfiguration;
 import org.flowable.spring.boot.ProcessEngineConfigurationConfigurer;

@@ -1,4 +1,4 @@
-package com.ruoyi.workflow.activiti.cmd;
+package com.ruoyi.workflow.flowable.cmd;
 
 import org.flowable.bpmn.model.SequenceFlow;
 import org.flowable.common.engine.impl.interceptor.Command;

@@ -49,7 +49,7 @@ public class ActNodeAssigneeServiceImpl extends ServiceImpl<ActNodeAssigneeMappe
         try {
             baseMapper.insert (actNodeAssignee);
         }catch (Exception e){
-            throw  new ServiceException("操作失败");
+            throw new ServiceException("操作失败");
         }
         return  actNodeAssignee;
     }

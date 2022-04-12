@@ -9,7 +9,7 @@ import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.workflow.common.constant.ActConstant;
-import com.ruoyi.workflow.factory.WorkflowService;
+import com.ruoyi.workflow.flowable.factory.WorkflowService;
 import com.ruoyi.workflow.domain.bo.ModelAdd;
 import com.ruoyi.workflow.domain.bo.ModelREQ;
 import com.ruoyi.workflow.service.IModelService;
