@@ -8,10 +8,7 @@ import com.ruoyi.common.core.validate.AddGroup;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.helper.LoginHelper;
 import com.ruoyi.workflow.domain.ActTaskNode;
-import com.ruoyi.workflow.domain.bo.NextNodeREQ;
-import com.ruoyi.workflow.domain.bo.TaskCompleteREQ;
-import com.ruoyi.workflow.domain.bo.TaskREQ;
-import com.ruoyi.workflow.domain.bo.TransmitREQ;
+import com.ruoyi.workflow.domain.bo.*;
 import com.ruoyi.workflow.domain.vo.BackProcessVo;
 import com.ruoyi.workflow.domain.vo.ProcessNode;
 import com.ruoyi.workflow.domain.vo.TaskFinishVo;
@@ -213,7 +210,7 @@ public class TaskController extends BaseController {
     /**
      * @Description: 转办任务
      * @param transmitREQ
-     * @return: com.ruoyi.common.core.domain.R<java.lang.Void>
+     * @return: com.ruoyi.common.core.domain.R<java.lang.Boolean>
      * @author: gssong
      * @Date: 2022/3/13 13:18
      */
@@ -222,6 +219,20 @@ public class TaskController extends BaseController {
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
     public R<Boolean> transmit(@Validated({AddGroup.class}) @RequestBody TransmitREQ transmitREQ) {
         return iTaskService.transmitTask(transmitREQ);
+    }
+
+    /**
+     * @Description: 会签任务加签
+     * @param addMultiREQ
+     * @return: com.ruoyi.common.core.domain.R<java.lang.Boolean>
+     * @author: gssong
+     * @Date: 2022/4/15 13:06
+     */
+    @ApiOperation("会签任务加签")
+    @PostMapping("/addMultiInstanceExecution")
+    @Log(title = "任务管理", businessType = BusinessType.INSERT)
+    public R<Boolean> addMultiInstanceExecution(@Validated({AddGroup.class}) @RequestBody AddMultiREQ addMultiREQ) {
+        return iTaskService.addMultiInstanceExecution(addMultiREQ);
     }
 }
 

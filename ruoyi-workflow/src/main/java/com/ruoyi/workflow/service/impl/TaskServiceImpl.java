@@ -14,10 +14,7 @@ import com.ruoyi.workflow.domain.ActBusinessStatus;
 import com.ruoyi.workflow.domain.ActHiTaskInst;
 import com.ruoyi.workflow.domain.ActNodeAssignee;
 import com.ruoyi.workflow.domain.ActTaskNode;
-import com.ruoyi.workflow.domain.bo.NextNodeREQ;
-import com.ruoyi.workflow.domain.bo.TaskCompleteREQ;
-import com.ruoyi.workflow.domain.bo.TaskREQ;
-import com.ruoyi.workflow.domain.bo.TransmitREQ;
+import com.ruoyi.workflow.domain.bo.*;
 import com.ruoyi.workflow.domain.vo.*;
 import com.ruoyi.workflow.flowable.factory.WorkflowService;
 import com.ruoyi.workflow.service.*;
@@ -866,4 +863,16 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         return  task;
     }
 
+    @Override
+    public R<Boolean> addMultiInstanceExecution(AddMultiREQ addMultiREQ) {
+        try {
+            for (String assignee : addMultiREQ.getAssignees()) {
+                runtimeService.addMultiInstanceExecution(addMultiREQ.getNodeId(), addMultiREQ.getProcessInstId(), Collections.singletonMap("assignee", assignee));
+            }
+            return R.ok();
+        }catch (Exception e){
+            e.printStackTrace();
+            return R.fail();
+        }
+    }
 }
