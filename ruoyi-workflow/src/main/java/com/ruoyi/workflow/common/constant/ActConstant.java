@@ -44,6 +44,11 @@ public interface ActConstant {
     String ENDTASK = "endTask";
 
     /**
+     *用户任务
+     */
+    String USERTASK = "userTask";
+
+    /**
      * 用户任务
      */
      String USER_TASK = "userTask";

@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.*;
 import org.apache.commons.lang3.StringUtils;
+import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.engine.repository.ProcessDefinition;
@@ -639,7 +640,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             //当前多个任务驳回到单个节点
         }else if(taskList.size()>1&&CollectionUtil.isEmpty(preUserTaskList)){
             runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
-            .moveActivityIdsToSingleActivityId(taskList.stream().map(Task::getTaskDefinitionKey).collect(Collectors.toList()), backProcessVo.getTargetActivityId())
+            .moveActivityIdsToSingleActivityId(taskList.stream().map(Task::getTaskDefinitionKey).distinct().collect(Collectors.toList()), backProcessVo.getTargetActivityId())
             .changeState();
             //当前单个节点驳回单个节点
         }else if(taskList.size()==1&&CollectionUtil.isEmpty(preUserTaskList)){
@@ -660,13 +661,13 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         }else{
             throw new ServiceException("驳回失败");
         }
-        List<String> otherTaskIds = null;
+        List<Task> otherTasks = null;
         if(taskList.size()>1){
-            otherTaskIds = taskList.stream().filter(e->!e.getId().equals(backProcessVo.getTaskId())).map(Task::getId).collect(Collectors.toList());
+            otherTasks = taskList.stream().filter(e->!e.getId().equals(backProcessVo.getTaskId())).collect(Collectors.toList());
         }
-        if(CollectionUtil.isNotEmpty(otherTaskIds)&&otherTaskIds.size()>0){
-            otherTaskIds.forEach(taskId->{
-                historyService.deleteHistoricTaskInstance(taskId);
+        if(CollectionUtil.isNotEmpty(otherTasks)&&otherTasks.size()>0){
+            otherTasks.forEach(e->{
+                historyService.deleteHistoricTaskInstance(e.getId());
             });
         }
        // 判断是否会签

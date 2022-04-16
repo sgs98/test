@@ -425,5 +425,7 @@ public class WorkFlowUtils {
         DeleteExecuteCmd deleteExecuteCmd = new DeleteExecuteCmd(task.getExecutionId());
         managementService.executeCommand(deleteExecuteCmd);
         historyService.deleteHistoricTaskInstance(task.getId());
+        historyService.createNativeHistoricActivityInstanceQuery()
+            .sql("DELETE  FROM ACT_HI_ACTINST WHERE EXECUTION_ID_ = '" + task.getExecutionId() + "'").list();
     }
 }

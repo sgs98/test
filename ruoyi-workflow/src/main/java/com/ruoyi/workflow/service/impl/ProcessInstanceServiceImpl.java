@@ -457,6 +457,12 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
         if(ObjectUtil.isNull(processInstance)){
             throw new ServiceException("流程不是该审批人提交,撤销失败!");
         }
+        //校验流程状态
+        ActBusinessStatus actBusinessStatus = iActBusinessStatusService.getInfoByBusinessKey(processInstance.getBusinessKey());
+        if(ObjectUtil.isEmpty(actBusinessStatus)){
+            throw new ServiceException("流程异常");
+        }
+        BusinessStatusEnum.checkCancel(actBusinessStatus.getStatus());
         List<ActTaskNode> listActTaskNode = iActTaskNodeService.getListByInstanceId(processInstId);
         if(CollectionUtil.isEmpty(listActTaskNode)){
             throw new ServiceException("未查询到撤回节点信息");

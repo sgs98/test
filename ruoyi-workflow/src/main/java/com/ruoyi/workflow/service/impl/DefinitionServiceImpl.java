@@ -1,6 +1,7 @@
 package com.ruoyi.workflow.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.workflow.common.constant.ActConstant;
@@ -93,7 +94,7 @@ public class DefinitionServiceImpl extends WorkflowService implements IDefinitio
                 processDefinitionVoList.add(processDefinitionVo);
             }
         }
-        return processDefinitionVoList;
+        return CollectionUtil.reverse(processDefinitionVoList);
     }
 
     @Override
