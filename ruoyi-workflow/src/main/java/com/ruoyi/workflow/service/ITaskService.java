@@ -10,6 +10,7 @@ import com.ruoyi.workflow.domain.vo.TaskFinishVo;
 import com.ruoyi.workflow.domain.vo.TaskWaitingVo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @program: ruoyi-vue-plus
@@ -44,7 +45,7 @@ public interface ITaskService {
      * @param req
      * @return
      */
-    List<ProcessNode> getNextNodeInfo(NextNodeREQ req);
+    Map<String,Object> getNextNodeInfo(NextNodeREQ req);
 
     /**
      * 查询所有用户的已办任务
@@ -94,4 +95,11 @@ public interface ITaskService {
      * @return
      */
     R<Boolean> addMultiInstanceExecution(AddMultiREQ addMultiREQ);
+
+    /**
+     * 会签任务减签
+     * @param deleteMultiREQ
+     * @return
+     */
+    R<Boolean> deleteMultiInstanceExecution(DeleteMultiREQ deleteMultiREQ);
 }

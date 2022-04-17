@@ -7,18 +7,18 @@ import org.flowable.engine.impl.util.CommandContextUtil;
 
 import java.io.Serializable;
 
-public class DeleteExecuteCmd implements Command<String>, Serializable {
+public class DeleteExecutionCmd implements Command<String>, Serializable {
 
-    private String executeId;
+    private String executionId;
 
-    public DeleteExecuteCmd(String executeId) {
-        this.executeId = executeId;
+    public DeleteExecutionCmd(String executionId) {
+        this.executionId = executionId;
     }
 
     @Override
     public String execute(CommandContext commandContext) {
         ExecutionEntityManager executionEntityManager = CommandContextUtil.getExecutionEntityManager();
-        executionEntityManager.delete(executeId);
+        executionEntityManager.delete(executionId);
         return null;
     }
 }

@@ -14,23 +14,27 @@ import java.util.List;
 
 /**
  * @program: ruoyi-vue-plus
- * @description: 加签参数请求
+ * @description: 减签参数请求
  * @author: gssong
- * @created: 2022年4月15日13:01:36
+ * @created: 2022年4月16日16:01:36
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ApiModel("加签参数请求")
-public class AddMultiREQ implements Serializable {
+@ApiModel("减签参数请求")
+public class DeleteMultiREQ implements Serializable {
 
     private static final long serialVersionUID=1L;
 
     @NotBlank(message = "任务ID不能为空",groups = AddGroup.class)
-    @ApiModelProperty("任务id")
+    @ApiModelProperty("当前任务id")
     private String taskId;
 
-    @NotNull(message = "加签人员不能为空",groups = AddGroup.class)
-    @ApiModelProperty("人员id")
-    private List<String> assignees;
+    @NotNull(message = "减签人员不能为空",groups = AddGroup.class)
+    @ApiModelProperty("减签任务ID")
+    private List<String> taskIds;
+
+    @NotNull(message = "减签人员不能为空",groups = AddGroup.class)
+    @ApiModelProperty("减签执行ID")
+    private List<String> executionIds;
 }

@@ -12,7 +12,7 @@ import com.ruoyi.system.domain.SysUserRole;
 import com.ruoyi.system.mapper.SysRoleMapper;
 import com.ruoyi.system.mapper.SysUserMapper;
 import com.ruoyi.system.mapper.SysUserRoleMapper;
-import com.ruoyi.workflow.flowable.cmd.DeleteExecuteCmd;
+import com.ruoyi.workflow.flowable.cmd.DeleteExecutionCmd;
 import com.ruoyi.workflow.flowable.cmd.DeleteTaskCmd;
 import com.ruoyi.workflow.flowable.cmd.ExpressCmd;
 import com.ruoyi.workflow.common.constant.ActConstant;
@@ -28,6 +28,7 @@ import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.*;
 import org.flowable.editor.language.json.converter.BpmnJsonConverter;
 import org.flowable.engine.*;
+import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.task.api.Task;
 import org.flowable.variable.api.persistence.entity.VariableInstance;
@@ -75,6 +76,9 @@ public class WorkFlowUtils {
     @Autowired
     private HistoryService historyService;
 
+    @Autowired
+    private RepositoryService repositoryService;
+
 
     /**
      * @Description: bpmnModel转为xml
@@ -100,13 +104,12 @@ public class WorkFlowUtils {
     }
 
     /**
-     * 获取下一审批节点信息
-     *
-     * @param flowElement 节点信息
-     * @param nextNodes 下一节点信息
-     * @param tempNodes 保存没有表达式的节点信息
-     * @param taskId 任务id
-     * @param gateway 网关
+     * @Description: 获取下一审批节点信息
+     * @param: flowElement 节点信息
+     * @param: nextNodes 下一节点信息
+     * @param: tempNodes 保存没有表达式的节点信息
+     * @param: taskId 任务id
+     * @param: gateway 网关
      * @return: void
      * @author: gssong
      * @Date: 2022/4/11 13:37
@@ -145,16 +148,16 @@ public class WorkFlowUtils {
     }
 
     /**
-     * 构建下一审批节点
-     * @param executionEntity
-     * @param nextNodes 下一节点信息
-     * @param tempNodes 保存没有表达式的节点信息
-     * @param taskId 任务id
-     * @param gateway 网关
-     * @param sequenceFlow  节点
-     * @param processNode 下一节点的目标元素
-     * @param tempNode  保存没有表达式的节点
-     * @param outFlowElement 目标节点
+     * @Description: 构建下一审批节点
+     * @param: executionEntity
+     * @param: nextNodes 下一节点信息
+     * @param: tempNodes 保存没有表达式的节点信息
+     * @param: taskId 任务id
+     * @param: gateway 网关
+     * @param: sequenceFlow  节点
+     * @param: processNode 下一节点的目标元素
+     * @param: tempNode  保存没有表达式的节点
+     * @param: outFlowElement 目标节点
      * @return: void
      * @author: gssong
      * @Date: 2022/4/11 13:35
@@ -242,10 +245,10 @@ public class WorkFlowUtils {
     }
 
     /**
-     *
-     * @param actFullClass 业务规则对象
-     * @param taskId 任务id
-     * @return 查询业务规则
+     * @Description: 查询业务规则中的人员id
+     * @param: actFullClass 业务规则对象
+     * @param: taskId 任务id
+     * @return: 查询业务规则
      * @return: java.lang.Object
      * @author: gssong
      * @Date: 2022/4/11 13:35
@@ -299,9 +302,9 @@ public class WorkFlowUtils {
 
     /**
      * @Description: 设置业务流程参数
-     * @param o 对象
-     * @param idList 主键集合
-     * @param id 主键id
+     * @param: o 对象
+     * @param: idList 主键集合
+     * @param: id 主键id
      * @Author: gssong
      * @Date: 2022/1/16
      */
@@ -335,9 +338,9 @@ public class WorkFlowUtils {
 
     /**
      * @Description: 设置流程实例id
-     * @param o 对象
-     * @param idList 主键集合
-     * @param id 主键id
+     * @param: o 对象
+     * @param: idList 主键集合
+     * @param: id 主键id
      * @return: void
      * @Author: gssong
      * @Date: 2022/1/16
@@ -371,11 +374,10 @@ public class WorkFlowUtils {
     }
 
     /**
-     * 查询审批人
-     *
-     * @param params
-     * @param chooseWay
-     * @param nodeName
+     * @Description: 查询审批人
+     * @param: params
+     * @param: chooseWay
+     * @param: nodeName
      * @return: java.util.List<java.lang.Long>
      * @author: gssong
      * @Date: 2022/4/11 13:36
@@ -413,8 +415,8 @@ public class WorkFlowUtils {
     }
 
     /**
-     * 删除正在执行的任务
-     * @param task
+     * @Description: 删除正在执行的任务
+     * @param: task
      * @return: void
      * @author: gssong
      * @Date: 2022/4/11 13:36
@@ -422,10 +424,31 @@ public class WorkFlowUtils {
     public void deleteRuntimeTask(Task task){
         DeleteTaskCmd deleteTaskCmd = new DeleteTaskCmd(task.getId());
         managementService.executeCommand(deleteTaskCmd);
-        DeleteExecuteCmd deleteExecuteCmd = new DeleteExecuteCmd(task.getExecutionId());
-        managementService.executeCommand(deleteExecuteCmd);
+        DeleteExecutionCmd deleteExecutionCmd = new DeleteExecutionCmd(task.getExecutionId());
+        managementService.executeCommand(deleteExecutionCmd);
         historyService.deleteHistoricTaskInstance(task.getId());
         historyService.createNativeHistoricActivityInstanceQuery()
             .sql("DELETE  FROM ACT_HI_ACTINST WHERE EXECUTION_ID_ = '" + task.getExecutionId() + "'").list();
+    }
+
+    /**
+     * @Description: 判断当前节点是否为会签节点
+     * @param: processDefinitionId 流程定义id
+     * @param: taskDefinitionKey 当前节点id
+     * @return: java.lang.Boolean
+     * @author: gssong
+     * @Date: 2022/4/16 13:31
+     */
+    public Boolean isMultiInstance(String processDefinitionId,String taskDefinitionKey) {
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
+        FlowNode flowNode = (FlowNode)bpmnModel.getFlowElement(taskDefinitionKey);
+        //判断是否为并行会签节点
+        if(flowNode.getBehavior()  instanceof ParallelMultiInstanceBehavior){
+            ParallelMultiInstanceBehavior behavior = (ParallelMultiInstanceBehavior) flowNode.getBehavior();
+            if (behavior != null && behavior.getCollectionExpression() != null) {
+                return true;
+            }
+        }
+        return false;
     }
 }

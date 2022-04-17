@@ -101,10 +101,26 @@ export default {
       data: data
     })
   },
-  // 委托任务
+  // 转办任务
   transmitTask(data) {
     return request({
       url: '/workflow/task/transmitTask',
+      method: 'post',
+      data: data
+    })
+  },
+  // 会签任务加签
+  addMultiInstanceExecution(data) {
+    return request({
+      url: '/workflow/task/addMultiInstanceExecution',
+      method: 'post',
+      data: data
+    })
+  },
+  // 会签任务减签
+  deleteMultiInstanceExecution(data) {
+    return request({
+      url: '/workflow/task/deleteMultiInstanceExecution',
       method: 'post',
       data: data
     })

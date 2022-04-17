@@ -85,7 +85,7 @@ public class DefinitionController extends BaseController {
 
     /**
      * @Description: 通过zip或xml部署流程定义
-     * @param file
+     * @param: file
      * @return: com.ruoyi.common.core.domain.R<java.lang.Void>
      * @author: gssong
      * @Date: 2022/4/12 13:32
@@ -133,7 +133,7 @@ public class DefinitionController extends BaseController {
 
     /**
      * @Description: 查询流程环节
-     * @param processDefinitionId
+     * @param: processDefinitionId
      * @return: com.ruoyi.common.core.domain.R<java.util.List<com.ruoyi.workflow.domain.vo.ActProcessNodeVo>>
      * @author: gssong
      * @Date: 2021/11/19

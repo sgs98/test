@@ -25,6 +25,7 @@ import org.flowable.bpmn.model.*;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
+import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -37,6 +38,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotBlank;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -367,15 +369,27 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
      * @return
      */
     @Override
-    public List<ProcessNode> getNextNodeInfo(NextNodeREQ req) {
+    public Map<String,Object> getNextNodeInfo(NextNodeREQ req) {
+        Map<String, Object> map = new HashMap<>();
         //设置变量
         TaskEntity task = (TaskEntity)taskService.createTaskQuery().taskId(req.getTaskId()).singleResult();
+        //判断当前是否为并行会签
+        Boolean isMultiInstance = workFlowUtils.isMultiInstance(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+        map.put("isMultiInstance",isMultiInstance);
         //委托流程
         if(ObjectUtil.isNotEmpty(task.getDelegationState())&&ActConstant.PENDING.equals(task.getDelegationState().name())){
-            return null;
+            map.put("list",new ArrayList<>());
+            map.put("isMultiInstance",false);
+            return map;
         }
         //查询任务
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
+        //可以减签的人员
+        if(isMultiInstance){
+            map.put("multiList",multiList(task, taskList));
+        }else{
+            map.put("multiList",new ArrayList<>());
+        }
         //如果是会签最后一个人员审批选人
         if(CollectionUtil.isNotEmpty(taskList)&&taskList.size()>1){
             //return null;
@@ -429,14 +443,57 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 });
                 //设置节点审批人员
                 List<ProcessNode> processNodeList = getProcessNodeAssigneeList(nodeList, task.getProcessDefinitionId());
-                return processNodeList;
+                map.put("list",processNodeList);
+                return map;
             } else {
                 //设置节点审批人员
                 List<ProcessNode> processNodeList = getProcessNodeAssigneeList(nextNodes, task.getProcessDefinitionId());
-                return processNodeList;
+                map.put("list",processNodeList);
+                return map;
             }
         }
-        return nextNodes;
+        map.put("list",nextNodes);
+        return map;
+    }
+
+    /**
+     * 可减签人员集合
+     * @param task 当前任务
+     * @param taskList 当前实例所有任务
+     * @return
+     */
+    private List<TaskVo> multiList(TaskEntity task, List<Task> taskList) {
+        List<TaskVo> taskListVo = new ArrayList<>();
+        List<Task> tasks = taskList.stream().filter(e -> !e.getExecutionId().equals(task.getExecutionId())
+            &&e.getTaskDefinitionKey().equals(task.getTaskDefinitionKey())).collect(Collectors.toList());
+        if(CollectionUtil.isNotEmpty(tasks)&&tasks.size()>0){
+
+            List<Long> userIds = tasks.stream().map(e -> Long.valueOf(e.getAssignee())).collect(Collectors.toList());
+            if(CollectionUtil.isNotEmpty(userIds)&&userIds.size()>0){
+                List<SysUser> sysUsers = iUserService.selectListUserByIds(userIds);
+                if(CollectionUtil.isNotEmpty(sysUsers)&&sysUsers.size()>0){
+                    tasks.forEach(e->{
+                        TaskVo taskVo = new TaskVo();
+                        SysUser sysUser = sysUsers.stream().filter(u -> u.getUserId().toString().equals(e.getAssignee())).findFirst().orElse(null);
+                        taskVo.setId(e.getId());
+                        taskVo.setExecutionId(e.getExecutionId());
+                        taskVo.setProcessInstanceId(e.getProcessInstanceId());
+                        taskVo.setName(e.getName());
+                        taskVo.setAssignee(e.getAssignee());
+                        if(ObjectUtil.isNotEmpty(sysUser)){
+                            taskVo.setAssignee(sysUser.getUserName());
+                        }
+                        taskListVo.add(taskVo);
+                    });
+                    return taskListVo;
+                }
+            }else{
+                return new ArrayList<>();
+            }
+        }else{
+            return new ArrayList<>();
+        }
+        return new ArrayList<>();
     }
 
     /**
@@ -865,10 +922,60 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R<Boolean> addMultiInstanceExecution(AddMultiREQ addMultiREQ) {
+        String taskId = addMultiREQ.getTaskId();
+        Task checkTask = taskService.createTaskQuery().taskId(taskId)
+            .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
+        if(ObjectUtil.isEmpty(checkTask)){
+            throw new ServiceException("当前任务不存在或你不是任务办理人");
+        }
+        if(CollectionUtil.isEmpty(addMultiREQ.getAssignees())){
+            throw new ServiceException("加签人员不能为空");
+        }
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        String taskDefinitionKey = task.getTaskDefinitionKey();
+        String processInstanceId = task.getProcessInstanceId();
+        String processDefinitionId = task.getProcessDefinitionId();
+        Boolean multiInstance = workFlowUtils.isMultiInstance(processDefinitionId, taskDefinitionKey);
+        if(!multiInstance){
+            throw new ServiceException("当前环节不是并行会签节点");
+        }
         try {
             for (String assignee : addMultiREQ.getAssignees()) {
-                runtimeService.addMultiInstanceExecution(addMultiREQ.getNodeId(), addMultiREQ.getProcessInstId(), Collections.singletonMap("assignee", assignee));
+                runtimeService.addMultiInstanceExecution(taskDefinitionKey, processInstanceId, Collections.singletonMap("assignee", assignee));
+            }
+            return R.ok();
+        }catch (Exception e){
+            e.printStackTrace();
+            return R.fail();
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R<Boolean> deleteMultiInstanceExecution(DeleteMultiREQ deleteMultiREQ) {
+        Task checkTask = taskService.createTaskQuery().taskId(deleteMultiREQ.getTaskId())
+            .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
+        if(ObjectUtil.isEmpty(checkTask)){
+            throw new ServiceException("当前任务不存在或你不是任务办理人");
+        }
+        if(CollectionUtil.isEmpty(deleteMultiREQ.getExecutionIds())){
+            throw new ServiceException("减签人员不能为空");
+        }
+        Task task = taskService.createTaskQuery().taskId(deleteMultiREQ.getTaskId()).singleResult();
+        String taskDefinitionKey = task.getTaskDefinitionKey();
+        String processDefinitionId = task.getProcessDefinitionId();
+        Boolean multiInstance = workFlowUtils.isMultiInstance(processDefinitionId, taskDefinitionKey);
+        if(!multiInstance){
+            throw new ServiceException("当前环节不是并行会签节点");
+        }
+        try {
+            for (String executionId : deleteMultiREQ.getExecutionIds()) {
+                runtimeService.deleteMultiInstanceExecution(executionId, false);
+            }
+            for (String taskId : deleteMultiREQ.getTaskIds()) {
+                historyService.deleteHistoricTaskInstance(taskId);
             }
             return R.ok();
         }catch (Exception e){
