@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 import java.util.List;
 
@@ -30,11 +30,11 @@ public class DeleteMultiREQ implements Serializable {
     @ApiModelProperty("当前任务id")
     private String taskId;
 
-    @NotNull(message = "减签人员不能为空",groups = AddGroup.class)
+    @NotEmpty(message = "减签人员不能为空",groups = AddGroup.class)
     @ApiModelProperty("减签任务ID")
     private List<String> taskIds;
 
-    @NotNull(message = "减签人员不能为空",groups = AddGroup.class)
+    @NotEmpty(message = "减签人员不能为空",groups = AddGroup.class)
     @ApiModelProperty("减签执行ID")
     private List<String> executionIds;
 }

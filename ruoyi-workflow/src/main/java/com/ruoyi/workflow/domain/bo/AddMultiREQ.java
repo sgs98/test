@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 import java.util.List;
 
@@ -30,7 +30,7 @@ public class AddMultiREQ implements Serializable {
     @ApiModelProperty("任务id")
     private String taskId;
 
-    @NotNull(message = "加签人员不能为空",groups = AddGroup.class)
+    @NotEmpty(message = "加签人员不能为空",groups = AddGroup.class)
     @ApiModelProperty("人员id")
     private List<String> assignees;
 }

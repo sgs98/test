@@ -930,9 +930,6 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         if(ObjectUtil.isEmpty(checkTask)){
             throw new ServiceException("当前任务不存在或你不是任务办理人");
         }
-        if(CollectionUtil.isEmpty(addMultiREQ.getAssignees())){
-            throw new ServiceException("加签人员不能为空");
-        }
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         String taskDefinitionKey = task.getTaskDefinitionKey();
         String processInstanceId = task.getProcessInstanceId();
@@ -959,9 +956,6 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
         if(ObjectUtil.isEmpty(checkTask)){
             throw new ServiceException("当前任务不存在或你不是任务办理人");
-        }
-        if(CollectionUtil.isEmpty(deleteMultiREQ.getExecutionIds())){
-            throw new ServiceException("减签人员不能为空");
         }
         Task task = taskService.createTaskQuery().taskId(deleteMultiREQ.getTaskId()).singleResult();
         String taskDefinitionKey = task.getTaskDefinitionKey();
