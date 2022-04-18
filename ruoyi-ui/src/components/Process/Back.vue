@@ -1,5 +1,5 @@
 <template>
-    <el-dialog title="审批驳回" :visible.sync="visible" width="600px" destroy-on-close>
+    <el-dialog title="审批驳回" :visible.sync="visible" :close-on-click-modal="false" width="600px" append-to-body destroy-on-close>
         <el-form v-loading="loading" :rules="rules" ref="formData" :model="formData" status-icon>
             <el-form-item label="审批意见" prop="message" label-width="120px">
                 <el-input type="textarea" v-model="formData.comment" maxlength="300"  placeholder="请输入审批意见" :autosize="{ minRows: 4}" show-word-limit></el-input>
@@ -23,7 +23,8 @@ import api from '@/api/workflow/task'
 
 export default {
     props: {
-        task: Object,
+        taskId: String,
+        backNodeList: Array,
     },
 
     data() {
@@ -47,10 +48,8 @@ export default {
       async visible(newVal) {
           if(newVal) {
             this.options = []
-            // 查询可驳回节点
-            const {data} = await api.getBackNodes(this.task.processInstanceId)
-            this.formData.targetActivityId = data[0].nodeId
-            this.options = data
+            this.formData.targetActivityId = this.backNodeList[0].nodeId
+            this.options = this.backNodeList
           }
       }
     },
@@ -64,17 +63,12 @@ export default {
                     this.loading = true
                     try {
                       const params = {
-                        taskId: this.task.id,
+                        taskId: this.taskId,
                         targetActivityId: this.formData.targetActivityId,
                         comment: this.formData.comment
                       }
                       let response = await api.backProcess(params)
                       if(response.code === 200) {
-                          if(response.data){
-                              //api.deleteByNodeIds(response.data)
-                          }
-                          // 刷新数据
-                          this.$parent.getList()
                           this.$message.success('提交成功')
                           // 将表单清空
                           this.$refs['formData'].resetFields()

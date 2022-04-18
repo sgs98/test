@@ -373,6 +373,9 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         Map<String, Object> map = new HashMap<>();
         //设置变量
         TaskEntity task = (TaskEntity)taskService.createTaskQuery().taskId(req.getTaskId()).singleResult();
+        //可驳回的节点
+        List<ActTaskNode> taskNodeList = iActTaskNodeService.getListByInstanceId(task.getProcessInstanceId()).stream().filter(e->e.getIsBack()).collect(Collectors.toList());
+        map.put("backNodeList",taskNodeList);
         //判断当前是否为并行会签
         Boolean isMultiInstance = workFlowUtils.isMultiInstance(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
         map.put("isMultiInstance",isMultiInstance);

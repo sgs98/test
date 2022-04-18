@@ -51,13 +51,6 @@
                         icon="el-icon-sort"
                     >办理</el-button>
                     <el-button
-                        v-if="scope.row.assignee"
-                        type="text"
-                        @click="clickBackPop(scope.row)"
-                        size="mini"
-                        icon="el-icon-sort"
-                    >驳回</el-button>
-                    <el-button
                         type="text"
                         @click="clickHistPop(scope.row)"
                         size="mini"
@@ -76,11 +69,11 @@
           @pagination="getList" />
         <!-- 通过 -->
         <verify ref="verifyRef" :taskId="taskId" :taskVariables="taskVariables"></verify>
-        <!-- 驳回 -->
-        <back ref="backRef" :task="task"></back>
+        <!-- 审批记录开始 -->
         <el-dialog title="审批记录" :visible.sync="visible" v-if="visible" width="60%" :close-on-click-modal="false">
-          <history :processInstanceId="processInstanceId"></history>
+           <history :processInstanceId="processInstanceId"></history>
         </el-dialog>
+         <!-- 审批记录结束 -->
         <approvalForm ref="approvalForm" :businessKey = 'businessKey' :taskId = 'taskId'
         @refresh = 'refresh' :currProcessForm = 'currProcessForm' :processInstanceId = 'processInstanceId'/>
     </div>
@@ -96,7 +89,6 @@
   export default {
     components: {
       verify,
-      Back,
       history,
       approvalForm
     },
@@ -130,8 +122,6 @@
         },
         // 任务id
         taskId:undefined,
-        // 点击的行数据
-        task: {},
         taskVariables: undefined,
         processInstanceId: undefined,
         businessKey: undefined, // 业务唯一标识
@@ -192,11 +182,6 @@
       clickHistPop(row){
          this.processInstanceId = row.processInstanceId
          this.visible = true
-      },
-      //驳回任务弹出层
-      clickBackPop(row){
-          this.task = row;
-          this.$refs.backRef.visible = true
       },
       //签收
       clickClaim(row){

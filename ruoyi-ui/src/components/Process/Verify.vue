@@ -36,8 +36,9 @@
       </el-form-item>
       <el-form-item align="center">
         <el-button type="primary" @click="submitForm('formData')" size="small">提交</el-button>
+        <el-button type="primary" v-if="backNodeList && backNodeList.length>0" @click="openBack()" size="small">退回</el-button>
         <el-button type="primary" v-if="isMultiInstance" @click="addMultiClick()" size="small">加签</el-button>
-        <el-button type="primary" v-if="multiList.length>0" @click="deleteMultiClick()" size="small">减签</el-button>
+        <el-button type="primary" v-if="multiList && multiList.length>0" @click="deleteMultiClick()" size="small">减签</el-button>
         <el-button type="primary" @click="transmitClick()" size="small">转发</el-button>
         <el-button size="small" @click="visible = false">取消</el-button>
       </el-form-item>
@@ -101,12 +102,16 @@
     </span>
   </el-dialog>
   <!-- 减签结束 -->
+  <!-- 驳回开始 -->
+  <back ref="backRef" :taskId = "taskId" @callBack="callBack()" :backNodeList = "backNodeList"/>
+  <!-- 驳回结束 -->
 </div>
 </template>
 <script>
 import api from "@/api/workflow/task";
 import ChooseWorkflowUser from "@/views/components/user/choose-workflow-user ";
 import  SysUser from "@/views/components/user/sys-user";
+import Back from "@/components/Process/Back";
 export default {
   props: {
     taskId: String,
@@ -114,7 +119,8 @@ export default {
   },
   components: {
     ChooseWorkflowUser,
-    SysUser
+    SysUser,
+    Back
   },
   data() {
     return {
@@ -163,7 +169,9 @@ export default {
       addMultiForm: {},//加签
       multiList: {},//可以减签的集合
       selectionMultiExecutionIds: [], //选中的减签减签执行ID
-      selectionMultiTaskIds: [] //选中的减签减签任务ID
+      selectionMultiTaskIds: [], //选中的减签减签任务ID
+      backNodeList: [] //可驳回的节点
+
     };
   },
 
@@ -181,6 +189,7 @@ export default {
           this.nextNodes = data.list;
           this.isMultiInstance = data.isMultiInstance;
           this.multiList = data.multiList;
+          this.backNodeList = data.backNodeList;
           this.loading = false;
         } catch (error) {
           this.loading = false;
@@ -433,6 +442,17 @@ export default {
             this.$emit("callSubmit")
         }
       })
+    },
+    //打开驳回弹窗
+    openBack(){
+        this.$refs.backRef.visible = true
+    },
+    //关闭退出弹窗
+    callBack(){
+        // 关闭窗口
+        this.visible = false;
+        // 回调事件
+        this.$emit("callSubmit")
     },
     //重置表单
     reset(){
