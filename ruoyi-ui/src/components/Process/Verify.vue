@@ -39,7 +39,7 @@
         <el-button type="primary" v-if="backNodeList && backNodeList.length>0" @click="openBack()" size="small">退回</el-button>
         <el-button type="primary" v-if="isMultiInstance" @click="addMultiClick()" size="small">加签</el-button>
         <el-button type="primary" v-if="multiList && multiList.length>0" @click="deleteMultiClick()" size="small">减签</el-button>
-        <el-button type="primary" @click="transmitClick()" size="small">转发</el-button>
+        <el-button type="primary" @click="transmitClick()" size="small">转办</el-button>
         <el-button size="small" @click="visible = false">取消</el-button>
       </el-form-item>
     </el-form>
