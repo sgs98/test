@@ -21,38 +21,47 @@ public interface ActConstant {
     /**
      * 并行网关
      */
-     String PARALLELGATEWAY = "parallelGateway";
+     String PARALLEL_GATEWAY = "parallelGateway";
 
     /**
      *排它网关
      */
-     String EXCLUSIVEGATEWAY = "exclusiveGateway";
+     String EXCLUSIVE_GATEWAY = "exclusiveGateway";
 
     /**
      *包含网关
      */
-    String INCLUSIVEGATEWAY = "InclusiveGateway";
+    String INCLUSIVE_GATEWAY = "InclusiveGateway";
 
     /**
      *连线
      */
-    String SEQUENCEFLOW = "sequenceFlow";
-
-    /**
-     *结束
-     */
-    String ENDTASK = "endTask";
-
-    /**
-     *用户任务
-     */
-    String USERTASK = "userTask";
+    String SEQUENCE_FLOW = "sequenceFlow";
 
     /**
      * 用户任务
      */
      String USER_TASK = "userTask";
 
+    /**
+     *  会签任务总数
+     */
+    String NUMBER_OF_INSTANCES = "nrOfInstances";
+
+    /**
+     *  正在执行的会签总数
+     */
+    String NUMBER_OF_ACTIVE_INSTANCES = "nrOfActiveInstances";
+
+    /**
+     *  已完成的会签任务总数
+     */
+    String NUMBER_OF_COMPLETED_INSTANCES = "nrOfCompletedInstances";
+
+    /**
+     *  循环的索引值，可以使用elementIndexVariable属性修改loopCounter的变量名
+     */
+    String LOOP_COUNTER = "loopCounter";
 
      Boolean TRUE=true;
 
