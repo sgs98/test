@@ -5,7 +5,12 @@ import org.flowable.common.engine.impl.interceptor.Command;
 import org.flowable.common.engine.impl.interceptor.CommandContext;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.engine.impl.util.condition.ConditionUtil;
-
+/**
+ * @program: ruoyi-vue-plus
+ * @description: 校验流程变量
+ * @author: gssong
+ * @created: 2022/4/14 20:26
+ */
 public class ExpressCmd implements Command<Boolean> {
 
     private SequenceFlow sequenceFlow;

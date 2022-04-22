@@ -41,4 +41,10 @@ public class TaskVo {
      */
     @ApiModelProperty("办理人或候选人")
     private String assignee;
+
+    /**
+     * 办理人或候选人Id
+     */
+    @ApiModelProperty("办理人或候选人Id")
+    private String assigneeId;
 }

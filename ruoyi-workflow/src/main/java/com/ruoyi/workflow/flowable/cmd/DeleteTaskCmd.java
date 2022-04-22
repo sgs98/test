@@ -6,7 +6,12 @@ import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.task.service.TaskService;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 
-
+/**
+ * @program: ruoyi-vue-plus
+ * @description: 删除任务数据
+ * @author: gssong
+ * @created: 2022/4/15 20:25
+ */
 public class DeleteTaskCmd extends NeedsActiveTaskCmd<String> {
 
     /**

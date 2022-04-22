@@ -86,7 +86,7 @@
         <el-button size="small" @click="addMultiVisible = false">取消</el-button>
       </el-form-item>
     </el-form>
-    <sys-user :propUserList="addMultiUserList" ref="addMultiUserRef" @confirmUser="confirmAddMultiUser"/>
+    <multi-user :taskId="taskId" :propUserList="addMultiUserList" ref="addMultiUserRef" @confirmUser="confirmAddMultiUser"/>
   </el-dialog>
   <!-- 加签结束 -->
   <!-- 减签开始 -->
@@ -95,6 +95,7 @@
       <el-table-column type="selection" width="55"/>
       <el-table-column prop="name" label="任务名称" width="180"/>
       <el-table-column prop="assignee" label="办理人" width="180"/>
+      <el-table-column prop="assigneeId" v-show="true" label="办理人ID" width="180"/>
     </el-table>
     <span slot="footer" class="dialog-footer">
       <el-button size="small" type="primary" @click="deleteMultiSubmit()">确定</el-button>
@@ -111,6 +112,7 @@
 import api from "@/api/workflow/task";
 import ChooseWorkflowUser from "@/views/components/user/choose-workflow-user ";
 import  SysUser from "@/views/components/user/sys-user";
+import  MultiUser from "@/views/components/user/multi-user";
 import Back from "@/components/Process/Back";
 export default {
   props: {
@@ -120,7 +122,8 @@ export default {
   components: {
     ChooseWorkflowUser,
     SysUser,
-    Back
+    Back,
+    MultiUser
   },
   data() {
     return {
@@ -168,8 +171,9 @@ export default {
       isMultiInstance: false, //是否为并行会签
       addMultiForm: {},//加签
       multiList: {},//可以减签的集合
-      selectionMultiExecutionIds: [], //选中的减签减签执行ID
-      selectionMultiTaskIds: [], //选中的减签减签任务ID
+      selectionMultiExecutionIds: [], //选中的减签执行ID
+      selectionMultiTaskIds: [], //选中的减签任务ID
+      selectionMultiAssigneeIds: [], //选中的减签人员ID
       backNodeList: [] //可驳回的节点
 
     };
@@ -416,12 +420,16 @@ export default {
     deleteMultiClick(){
        this.deleteMultiVisible = true
     },
+    //减签复选框
     handleSelectionMultiList(val){
       this.selectionMultiExecutionIds = val.map((item) => {
         return item.executionId;
       });
-       this.selectionMultiTaskIds = val.map((item) => {
+      this.selectionMultiTaskIds = val.map((item) => {
         return item.id;
+      });
+      this.selectionMultiAssigneeIds = val.map((item) => {
+        return item.assigneeId;
       });
     },
     //减签
@@ -429,7 +437,8 @@ export default {
       let params = {
         taskId: this.taskId,
         executionIds: this.selectionMultiExecutionIds,
-        taskIds: this.selectionMultiTaskIds
+        taskIds: this.selectionMultiTaskIds,
+        assigneeIds: this.selectionMultiAssigneeIds,
       }
       api.deleteMultiInstanceExecution(params).then(response => {
         if(response.code === 200){
