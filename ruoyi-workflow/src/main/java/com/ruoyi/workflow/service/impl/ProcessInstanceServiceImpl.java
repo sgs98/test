@@ -204,7 +204,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
                 List<String> highLightedNodes = new ArrayList<>();
                 //高亮
                 for (HistoricActivityInstance tempActivity : highLightedFlowList) {
-                    if (ActConstant.SEQUENCEFLOW.equals(tempActivity.getActivityType())) {
+                    if (ActConstant.SEQUENCE_FLOW.equals(tempActivity.getActivityType())) {
                         //高亮线
                         highLightedFlows.add(tempActivity.getActivityId());
                     } else{

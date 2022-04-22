@@ -16,6 +16,8 @@ import com.ruoyi.workflow.domain.ActNodeAssignee;
 import com.ruoyi.workflow.domain.ActTaskNode;
 import com.ruoyi.workflow.domain.bo.*;
 import com.ruoyi.workflow.domain.vo.*;
+import com.ruoyi.workflow.flowable.cmd.AddSequenceMultiInstanceCmd;
+import com.ruoyi.workflow.flowable.cmd.DeleteSequenceMultiInstanceCmd;
 import com.ruoyi.workflow.flowable.factory.WorkflowService;
 import com.ruoyi.workflow.service.*;
 import com.ruoyi.workflow.utils.WorkFlowUtils;
@@ -23,9 +25,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.*;
 import org.apache.commons.lang3.StringUtils;
-import org.flowable.engine.history.HistoricActivityInstance;
+import org.flowable.engine.ManagementService;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
+import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -35,10 +38,10 @@ import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.api.history.HistoricTaskInstanceQuery;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.constraints.NotBlank;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -68,6 +71,8 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     private final IActFullClassService iActFullClassService;
 
     private final IActHiTaskInstService iActHiTaskInstService;
+
+    private final ManagementService managementService;
 
 
 
@@ -376,20 +381,29 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         //可驳回的节点
         List<ActTaskNode> taskNodeList = iActTaskNodeService.getListByInstanceId(task.getProcessInstanceId()).stream().filter(e->e.getIsBack()).collect(Collectors.toList());
         map.put("backNodeList",taskNodeList);
-        //判断当前是否为并行会签
-        Boolean isMultiInstance = workFlowUtils.isMultiInstance(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
-        map.put("isMultiInstance",isMultiInstance);
         //委托流程
         if(ObjectUtil.isNotEmpty(task.getDelegationState())&&ActConstant.PENDING.equals(task.getDelegationState().name())){
             map.put("list",new ArrayList<>());
             map.put("isMultiInstance",false);
             return map;
         }
+        //判断当前是否为会签
+        MultiVo isMultiInstance = workFlowUtils.isMultiInstance(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+        if(ObjectUtil.isEmpty(isMultiInstance)){
+            map.put("isMultiInstance",false);
+        }else{
+            map.put("isMultiInstance",true);
+        }
         //查询任务
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
         //可以减签的人员
-        if(isMultiInstance){
-            map.put("multiList",multiList(task, taskList));
+        if(ObjectUtil.isNotEmpty(isMultiInstance)){
+            if(isMultiInstance.getType() instanceof ParallelMultiInstanceBehavior){
+                map.put("multiList",multiList(task, taskList,isMultiInstance.getType(),null));
+            }else if(isMultiInstance.getType() instanceof SequentialMultiInstanceBehavior){
+                List<Long> assigneeList = (List)runtimeService.getVariable(task.getExecutionId(), isMultiInstance.getAssigneeList());
+                map.put("multiList",multiList(task, taskList,isMultiInstance.getType(),assigneeList));
+            }
         }else{
             map.put("multiList",new ArrayList<>());
         }
@@ -421,7 +435,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             }
         }
         //排它网关  如果下已审批节点变量判断都为false  将保存的临时的节点赋予下一节点
-        List<String> exclusiveLists = nextNodes.stream().filter(e -> e.getNodeType().equals(ActConstant.EXCLUSIVEGATEWAY) && e.getExpression().equals(ActConstant.TRUE)).
+        List<String> exclusiveLists = nextNodes.stream().filter(e -> e.getNodeType().equals(ActConstant.EXCLUSIVE_GATEWAY) && e.getExpression().equals(ActConstant.TRUE)).
             map(ProcessNode::getNodeType).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(nextNodes) && CollectionUtil.isEmpty(exclusiveLists)) {
             nextNodes.addAll(tempNodes);
@@ -430,17 +444,17 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         List<ProcessNode> nodeList = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(nextNodes)) {
             //排它网关  如果下已审批节点变量判断都为false  将保存的临时的节点赋予下一节点
-            List<String> exclusiveList = nextNodes.stream().filter(e -> e.getNodeType().equals(ActConstant.EXCLUSIVEGATEWAY) && e.getExpression().equals(ActConstant.TRUE)).
+            List<String> exclusiveList = nextNodes.stream().filter(e -> e.getNodeType().equals(ActConstant.EXCLUSIVE_GATEWAY) && e.getExpression().equals(ActConstant.TRUE)).
                 map(ProcessNode::getNodeType).collect(Collectors.toList());
             if (!CollectionUtil.isEmpty(nextNodes) && CollectionUtil.isEmpty(exclusiveList)) {
                 nextNodes.addAll(tempNodes);
             }
             //排它网关
-            List<String> exclusiveGatewayList = nextNodes.stream().filter(e -> e.getNodeType().equals(ActConstant.EXCLUSIVEGATEWAY) && e.getExpression().equals(ActConstant.TRUE)).
+            List<String> exclusiveGatewayList = nextNodes.stream().filter(e -> e.getNodeType().equals(ActConstant.EXCLUSIVE_GATEWAY) && e.getExpression().equals(ActConstant.TRUE)).
                 map(ProcessNode::getNodeType).collect(Collectors.toList());
             if (CollectionUtil.isNotEmpty(exclusiveGatewayList)) {
                 nextNodes.forEach(node -> {
-                    if ((ActConstant.EXCLUSIVEGATEWAY.equals(node.getNodeType()) && node.getExpression())) {
+                    if ((ActConstant.EXCLUSIVE_GATEWAY.equals(node.getNodeType()) && node.getExpression())) {
                         nodeList.add(node);
                     }
                 });
@@ -465,36 +479,56 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
      * @param taskList 当前实例所有任务
      * @return
      */
-    private List<TaskVo> multiList(TaskEntity task, List<Task> taskList) {
+    private List<TaskVo> multiList(TaskEntity task, List<Task> taskList,Object type,List<Long> assigneeList) {
         List<TaskVo> taskListVo = new ArrayList<>();
-        List<Task> tasks = taskList.stream().filter(e -> !e.getExecutionId().equals(task.getExecutionId())
-            &&e.getTaskDefinitionKey().equals(task.getTaskDefinitionKey())).collect(Collectors.toList());
-        if(CollectionUtil.isNotEmpty(tasks)&&tasks.size()>0){
-
-            List<Long> userIds = tasks.stream().map(e -> Long.valueOf(e.getAssignee())).collect(Collectors.toList());
-            if(CollectionUtil.isNotEmpty(userIds)&&userIds.size()>0){
-                List<SysUser> sysUsers = iUserService.selectListUserByIds(userIds);
+        if(type instanceof SequentialMultiInstanceBehavior){
+            List<Long> userIds = assigneeList.stream().filter(userId -> !userId.toString().equals(task.getAssignee())).collect(Collectors.toList());
+            List<SysUser> sysUsers = null;
+            if(CollectionUtil.isNotEmpty(userIds)){
+                sysUsers = iUserService.selectListUserByIds(userIds);
+            }
+            for (Long userId : userIds) {
+                TaskVo taskVo = new TaskVo();
+                taskVo.setId("串行会签");
+                taskVo.setExecutionId("串行会签");
+                taskVo.setProcessInstanceId(task.getProcessInstanceId());
+                taskVo.setName(task.getName());
+                taskVo.setAssigneeId(String.valueOf(userId));
                 if(CollectionUtil.isNotEmpty(sysUsers)&&sysUsers.size()>0){
-                    tasks.forEach(e->{
-                        TaskVo taskVo = new TaskVo();
-                        SysUser sysUser = sysUsers.stream().filter(u -> u.getUserId().toString().equals(e.getAssignee())).findFirst().orElse(null);
-                        taskVo.setId(e.getId());
-                        taskVo.setExecutionId(e.getExecutionId());
-                        taskVo.setProcessInstanceId(e.getProcessInstanceId());
-                        taskVo.setName(e.getName());
-                        taskVo.setAssignee(e.getAssignee());
+                    SysUser sysUser = sysUsers.stream().filter(u -> u.getUserId().toString().equals(userId.toString())).findFirst().orElse(null);
+                    if(ObjectUtil.isNotEmpty(sysUser)){
+                        taskVo.setAssignee(sysUser.getUserName());
+                    }
+                }
+                taskListVo.add(taskVo);
+            }
+            return taskListVo;
+        }else if(type instanceof ParallelMultiInstanceBehavior){
+            List<Task> tasks = taskList.stream().filter(e -> !e.getExecutionId().equals(task.getExecutionId())
+                &&e.getTaskDefinitionKey().equals(task.getTaskDefinitionKey())).collect(Collectors.toList());
+            if(CollectionUtil.isNotEmpty(tasks)){
+                List<Long> userIds = tasks.stream().map(e -> Long.valueOf(e.getAssignee())).collect(Collectors.toList());
+                List<SysUser> sysUsers = null;
+                if(CollectionUtil.isNotEmpty(userIds)){
+                    sysUsers = iUserService.selectListUserByIds(userIds);
+                }
+                for (Task t : tasks) {
+                    TaskVo taskVo = new TaskVo();
+                    taskVo.setId(t.getId());
+                    taskVo.setExecutionId(t.getExecutionId());
+                    taskVo.setProcessInstanceId(t.getProcessInstanceId());
+                    taskVo.setName(t.getName());
+                    taskVo.setAssigneeId(t.getAssignee());
+                    if(CollectionUtil.isNotEmpty(sysUsers)){
+                        SysUser sysUser = sysUsers.stream().filter(u -> u.getUserId().toString().equals(t.getAssignee())).findFirst().orElse(null);
                         if(ObjectUtil.isNotEmpty(sysUser)){
                             taskVo.setAssignee(sysUser.getUserName());
                         }
-                        taskListVo.add(taskVo);
-                    });
-                    return taskListVo;
+                    }
+                    taskListVo.add(taskVo);
                 }
-            }else{
-                return new ArrayList<>();
+               return taskListVo;
             }
-        }else{
-            return new ArrayList<>();
         }
         return new ArrayList<>();
     }
@@ -928,22 +962,26 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     @Transactional(rollbackFor = Exception.class)
     public R<Boolean> addMultiInstanceExecution(AddMultiREQ addMultiREQ) {
         String taskId = addMultiREQ.getTaskId();
-        Task checkTask = taskService.createTaskQuery().taskId(taskId)
+        Task task = taskService.createTaskQuery().taskId(taskId)
             .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
-        if(ObjectUtil.isEmpty(checkTask)){
+        if(ObjectUtil.isEmpty(task)){
             throw new ServiceException("当前任务不存在或你不是任务办理人");
         }
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         String taskDefinitionKey = task.getTaskDefinitionKey();
         String processInstanceId = task.getProcessInstanceId();
         String processDefinitionId = task.getProcessDefinitionId();
-        Boolean multiInstance = workFlowUtils.isMultiInstance(processDefinitionId, taskDefinitionKey);
-        if(!multiInstance){
-            throw new ServiceException("当前环节不是并行会签节点");
+        MultiVo multiVo = workFlowUtils.isMultiInstance(processDefinitionId, taskDefinitionKey);
+        if(ObjectUtil.isEmpty(multiVo)){
+            throw new ServiceException("当前环节不是会签节点");
         }
         try {
-            for (String assignee : addMultiREQ.getAssignees()) {
-                runtimeService.addMultiInstanceExecution(taskDefinitionKey, processInstanceId, Collections.singletonMap("assignee", assignee));
+            if(multiVo.getType() instanceof ParallelMultiInstanceBehavior){
+                for (Long assignee : addMultiREQ.getAssignees()) {
+                    runtimeService.addMultiInstanceExecution(taskDefinitionKey, processInstanceId, Collections.singletonMap(multiVo.getAssignee(), assignee));
+                }
+            }else if(multiVo.getType() instanceof SequentialMultiInstanceBehavior){
+                AddSequenceMultiInstanceCmd addSequenceMultiInstanceCmd = new AddSequenceMultiInstanceCmd(task.getExecutionId(),multiVo.getAssigneeList(),addMultiREQ.getAssignees());
+                managementService.executeCommand(addSequenceMultiInstanceCmd);
             }
             return R.ok();
         }catch (Exception e){
@@ -955,24 +993,28 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R<Boolean> deleteMultiInstanceExecution(DeleteMultiREQ deleteMultiREQ) {
-        Task checkTask = taskService.createTaskQuery().taskId(deleteMultiREQ.getTaskId())
+        Task task = taskService.createTaskQuery().taskId(deleteMultiREQ.getTaskId())
             .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
-        if(ObjectUtil.isEmpty(checkTask)){
+        if(ObjectUtil.isEmpty(task)){
             throw new ServiceException("当前任务不存在或你不是任务办理人");
         }
-        Task task = taskService.createTaskQuery().taskId(deleteMultiREQ.getTaskId()).singleResult();
         String taskDefinitionKey = task.getTaskDefinitionKey();
         String processDefinitionId = task.getProcessDefinitionId();
-        Boolean multiInstance = workFlowUtils.isMultiInstance(processDefinitionId, taskDefinitionKey);
-        if(!multiInstance){
-            throw new ServiceException("当前环节不是并行会签节点");
+        MultiVo multiVo = workFlowUtils.isMultiInstance(processDefinitionId, taskDefinitionKey);
+        if(ObjectUtil.isEmpty(multiVo)){
+            throw new ServiceException("当前环节不是会签节点");
         }
         try {
-            for (String executionId : deleteMultiREQ.getExecutionIds()) {
-                runtimeService.deleteMultiInstanceExecution(executionId, false);
-            }
-            for (String taskId : deleteMultiREQ.getTaskIds()) {
-                historyService.deleteHistoricTaskInstance(taskId);
+            if(multiVo.getType() instanceof ParallelMultiInstanceBehavior){
+                for (String executionId : deleteMultiREQ.getExecutionIds()) {
+                    runtimeService.deleteMultiInstanceExecution(executionId, false);
+                }
+                for (String taskId : deleteMultiREQ.getTaskIds()) {
+                    historyService.deleteHistoricTaskInstance(taskId);
+                }
+            }else if(multiVo.getType() instanceof SequentialMultiInstanceBehavior){
+                DeleteSequenceMultiInstanceCmd deleteSequenceMultiInstanceCmd = new DeleteSequenceMultiInstanceCmd(task.getAssignee(),task.getExecutionId(),multiVo.getAssigneeList(),deleteMultiREQ.getAssigneeIds());
+                managementService.executeCommand(deleteSequenceMultiInstanceCmd);
             }
             return R.ok();
         }catch (Exception e){

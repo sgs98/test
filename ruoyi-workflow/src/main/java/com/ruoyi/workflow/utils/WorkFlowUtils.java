@@ -12,6 +12,7 @@ import com.ruoyi.system.domain.SysUserRole;
 import com.ruoyi.system.mapper.SysRoleMapper;
 import com.ruoyi.system.mapper.SysUserMapper;
 import com.ruoyi.system.mapper.SysUserRoleMapper;
+import com.ruoyi.workflow.domain.vo.MultiVo;
 import com.ruoyi.workflow.flowable.cmd.DeleteExecutionCmd;
 import com.ruoyi.workflow.flowable.cmd.DeleteTaskCmd;
 import com.ruoyi.workflow.flowable.cmd.ExpressCmd;
@@ -26,9 +27,11 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.*;
+import org.flowable.common.engine.api.delegate.Expression;
 import org.flowable.editor.language.json.converter.BpmnJsonConverter;
 import org.flowable.engine.*;
 import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
+import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.task.api.Task;
 import org.flowable.variable.api.persistence.entity.VariableInstance;
@@ -126,11 +129,11 @@ public class WorkFlowUtils {
             if (outFlowElement instanceof UserTask) {
                 buildNode(executionEntity, nextNodes, tempNodes, taskId, gateway, sequenceFlow, processNode, tempNode, outFlowElement);
             }else if (outFlowElement instanceof ExclusiveGateway) { // 排他网关
-                getNextNodes(outFlowElement, executionEntity, nextNodes, tempNodes, taskId, ActConstant.EXCLUSIVEGATEWAY);
+                getNextNodes(outFlowElement, executionEntity, nextNodes, tempNodes, taskId, ActConstant.EXCLUSIVE_GATEWAY);
             }else if (outFlowElement instanceof ParallelGateway) { //并行网关
-                getNextNodes(outFlowElement,executionEntity, nextNodes, tempNodes, taskId, ActConstant.PARALLELGATEWAY);
+                getNextNodes(outFlowElement,executionEntity, nextNodes, tempNodes, taskId, ActConstant.PARALLEL_GATEWAY);
             }else if(outFlowElement instanceof InclusiveGateway){ //包含网关
-                getNextNodes(outFlowElement,executionEntity, nextNodes, tempNodes, taskId, ActConstant.INCLUSIVEGATEWAY);
+                getNextNodes(outFlowElement,executionEntity, nextNodes, tempNodes, taskId, ActConstant.INCLUSIVE_GATEWAY);
             }else if (outFlowElement instanceof EndEvent) {
                 continue;
             }else if(outFlowElement instanceof SubProcess) {
@@ -165,7 +168,7 @@ public class WorkFlowUtils {
     private void buildNode(ExecutionEntityImpl executionEntity, List<ProcessNode> nextNodes, List<ProcessNode> tempNodes, String taskId, String gateway, SequenceFlow sequenceFlow, ProcessNode processNode, ProcessNode tempNode, FlowElement outFlowElement) {
         // 用户任务，则获取响应给前端设置办理人或者候选人
         // 判断是否为排它网关
-        if (ActConstant.EXCLUSIVEGATEWAY.equals(gateway)) {
+        if (ActConstant.EXCLUSIVE_GATEWAY.equals(gateway)) {
             String conditionExpression = sequenceFlow.getConditionExpression();
             //判断是否有条件
             if (StringUtils.isNotBlank(conditionExpression)) {
@@ -174,7 +177,7 @@ public class WorkFlowUtils {
                 if (condition) {
                     processNode.setNodeId(outFlowElement.getId());
                     processNode.setNodeName(outFlowElement.getName());
-                    processNode.setNodeType(ActConstant.EXCLUSIVEGATEWAY);
+                    processNode.setNodeType(ActConstant.EXCLUSIVE_GATEWAY);
                     processNode.setTaskId(taskId);
                     processNode.setExpression(true);
                     processNode.setChooseWay(ActConstant.WORKFLOW_ASSIGNEE);
@@ -184,7 +187,7 @@ public class WorkFlowUtils {
                 } else {
                     processNode.setNodeId(outFlowElement.getId());
                     processNode.setNodeName(outFlowElement.getName());
-                    processNode.setNodeType(ActConstant.EXCLUSIVEGATEWAY);
+                    processNode.setNodeType(ActConstant.EXCLUSIVE_GATEWAY);
                     processNode.setTaskId(taskId);
                     processNode.setExpression(false);
                     processNode.setChooseWay(ActConstant.WORKFLOW_ASSIGNEE);
@@ -195,7 +198,7 @@ public class WorkFlowUtils {
             } else {
                 tempNode.setNodeId(outFlowElement.getId());
                 tempNode.setNodeName(outFlowElement.getName());
-                tempNode.setNodeType(ActConstant.EXCLUSIVEGATEWAY);
+                tempNode.setNodeType(ActConstant.EXCLUSIVE_GATEWAY);
                 tempNode.setTaskId(taskId);
                 tempNode.setExpression(true);
                 tempNode.setChooseWay(ActConstant.WORKFLOW_ASSIGNEE);
@@ -204,12 +207,12 @@ public class WorkFlowUtils {
                 tempNodes.add(tempNode);
             }
         //包含网关
-        } else if(ActConstant.INCLUSIVEGATEWAY.equals(gateway)){
+        } else if(ActConstant.INCLUSIVE_GATEWAY.equals(gateway)){
             String conditionExpression = sequenceFlow.getConditionExpression();
             if(StringUtils.isBlank(conditionExpression)){
                 processNode.setNodeId(outFlowElement.getId());
                 processNode.setNodeName(outFlowElement.getName());
-                processNode.setNodeType(ActConstant.EXCLUSIVEGATEWAY);
+                processNode.setNodeType(ActConstant.EXCLUSIVE_GATEWAY);
                 processNode.setTaskId(taskId);
                 processNode.setExpression(true);
                 processNode.setChooseWay(ActConstant.WORKFLOW_ASSIGNEE);
@@ -222,7 +225,7 @@ public class WorkFlowUtils {
                 if (condition) {
                     processNode.setNodeId(outFlowElement.getId());
                     processNode.setNodeName(outFlowElement.getName());
-                    processNode.setNodeType(ActConstant.EXCLUSIVEGATEWAY);
+                    processNode.setNodeType(ActConstant.EXCLUSIVE_GATEWAY);
                     processNode.setTaskId(taskId);
                     processNode.setExpression(true);
                     processNode.setChooseWay(ActConstant.WORKFLOW_ASSIGNEE);
@@ -439,16 +442,35 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/4/16 13:31
      */
-    public Boolean isMultiInstance(String processDefinitionId,String taskDefinitionKey) {
+    public MultiVo isMultiInstance(String processDefinitionId, String taskDefinitionKey) {
         BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
         FlowNode flowNode = (FlowNode)bpmnModel.getFlowElement(taskDefinitionKey);
+        MultiVo multiVo = new MultiVo();
         //判断是否为并行会签节点
         if(flowNode.getBehavior()  instanceof ParallelMultiInstanceBehavior){
             ParallelMultiInstanceBehavior behavior = (ParallelMultiInstanceBehavior) flowNode.getBehavior();
             if (behavior != null && behavior.getCollectionExpression() != null) {
-                return true;
+                Expression collectionExpression = behavior.getCollectionExpression();
+                String assigneeList = collectionExpression.getExpressionText();
+                String assignee = behavior.getCollectionElementVariable();
+                multiVo.setType(behavior);
+                multiVo.setAssignee(assignee);
+                multiVo.setAssigneeList(assigneeList);
+                return multiVo;
+            }
+            //判断是否为串行会签节点
+        }else if(flowNode.getBehavior()  instanceof SequentialMultiInstanceBehavior){
+            SequentialMultiInstanceBehavior behavior = (SequentialMultiInstanceBehavior) flowNode.getBehavior();
+            if (behavior != null && behavior.getCollectionExpression() != null) {
+                Expression collectionExpression = behavior.getCollectionExpression();
+                String assigneeList = collectionExpression.getExpressionText();
+                String assignee = behavior.getCollectionElementVariable();
+                multiVo.setType(behavior);
+                multiVo.setAssignee(assignee);
+                multiVo.setAssigneeList(assigneeList);
+                return multiVo;
             }
         }
-        return false;
+        return null;
     }
 }

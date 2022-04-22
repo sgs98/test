@@ -13,8 +13,14 @@ import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.SysUserRole;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.workflow.domain.bo.SysUserBo;
+import com.ruoyi.workflow.domain.bo.SysUserMultiBo;
+import com.ruoyi.workflow.domain.vo.MultiVo;
 import com.ruoyi.workflow.service.IUserService;
+import com.ruoyi.workflow.utils.WorkFlowUtils;
 import lombok.RequiredArgsConstructor;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.TaskService;
+import org.flowable.task.api.Task;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -38,6 +44,9 @@ public class UserServiceImpl implements IUserService {
     private final SysRoleMapper roleMapper;
     private final SysDeptMapper deptMapper;
     private final SysUserRoleMapper userRoleMapper;
+    private final TaskService taskService;
+    private final RuntimeService runtimeService;
+    private final WorkFlowUtils workFlowUtils;
     @Override
     public List<SysUser> selectListUserByIds(List<Long> userIds) {
         List<SysUser> userList = userMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getUserId, userIds));
@@ -169,5 +178,30 @@ public class UserServiceImpl implements IUserService {
         });
         page.setRecords(records);
         return page;
+    }
+
+    @Override
+    public Map<String, Object> getWorkflowAddMultiListByPage(SysUserMultiBo sysUserMultiBo) {
+        Map<String, Object> map = new HashMap<>();
+        Task task = taskService.createTaskQuery().taskId(sysUserMultiBo.getTaskId()).singleResult();
+        MultiVo multiInstance = workFlowUtils.isMultiInstance(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+        //检索条件
+        queryWrapper.eq(StringUtils.isNotEmpty(sysUserMultiBo.getDeptId()),SysUser::getDeptId,sysUserMultiBo.getDeptId());
+        queryWrapper.eq(SysUser::getStatus,UserStatus.OK.getCode());
+        if(ObjectUtil.isNotEmpty(multiInstance)){
+            List<Long> assigneeList = (List)runtimeService.getVariable(task.getExecutionId(), multiInstance.getAssigneeList());
+            queryWrapper.notIn(CollectionUtil.isNotEmpty(assigneeList),SysUser::getUserId,assigneeList);
+        }
+        queryWrapper.like(StringUtils.isNotEmpty(sysUserMultiBo.getUserName()),SysUser::getUserName,sysUserMultiBo.getUserName());
+        queryWrapper.like(StringUtils.isNotEmpty(sysUserMultiBo.getPhonenumber()),SysUser::getPhonenumber,sysUserMultiBo.getPhonenumber());
+        Page<SysUser> page = new Page<>(sysUserMultiBo.getPageNum(), sysUserMultiBo.getPageSize());
+        Page<SysUser> userPage = userMapper.selectPage(page, queryWrapper);
+        if(CollectionUtil.isNotEmpty(sysUserMultiBo.getIds())){
+            List<SysUser> list = userMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getUserId, sysUserMultiBo.getIds()));
+            map.put("list",list);
+        }
+        map.put("page",TableDataInfo.build(recordPage(userPage)));
+        return map;
     }
 }
