@@ -554,10 +554,12 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     }
 
     /**
-     * 设置节点审批人员
-     * @param nodeList
-     * @param definitionId
-     * @return
+     * @Description: 设置节点审批人员
+     * @param: nodeList 节点列表
+     * @param: definitionId 流程定义id
+     * @return: java.util.List<com.ruoyi.workflow.domain.vo.ProcessNode>
+     * @author: gssong
+     * @Date: 2021/10/23
      */
     private List<ProcessNode> getProcessNodeAssigneeList(List<ProcessNode> nodeList, String definitionId) {
         List<ActNodeAssignee> actNodeAssignees = iActNodeAssigneeService.getInfoByProcessDefinitionId(definitionId);
@@ -730,7 +732,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     }
 
     /**
-     * @Description: 2021/11/6
+     * @Description: 驳回审批
      * @param: backProcessVo
      * @return: java.lang.String
      * @author: gssong
@@ -842,7 +844,9 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
     /**
      * @Description: 获取并行网关下一步审批节点信息
-     * @param: processDefinitionId  @param: targetActivityId  @param: task
+     * @param: processDefinitionId 流程定义id
+     * @param: targetActivityId 驳回的节点id
+     * @param: task 任务
      * @return: java.util.List<java.lang.String>
      * @author: gssong
      * @Date: 2022/4/10

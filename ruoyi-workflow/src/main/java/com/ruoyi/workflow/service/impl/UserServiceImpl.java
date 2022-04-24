@@ -47,18 +47,39 @@ public class UserServiceImpl implements IUserService {
     private final TaskService taskService;
     private final RuntimeService runtimeService;
     private final WorkFlowUtils workFlowUtils;
+    /**
+     * @Description: 按照用户id查询用户集合
+     * @param: userIds
+     * @return: java.util.List<com.ruoyi.common.core.domain.entity.SysUser>
+     * @author: gssong
+     * @Date: 2021/12/10
+     */
     @Override
     public List<SysUser> selectListUserByIds(List<Long> userIds) {
         List<SysUser> userList = userMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getUserId, userIds));
         return userList;
     }
 
+    /**
+     * @Description: 按照用户id查询用户
+     * @param: userId
+     * @return: com.ruoyi.common.core.domain.entity.SysUser
+     * @author: gssong
+     * @Date: 2021/12/10
+     */
     @Override
     public SysUser selectUserById(Long userId) {
         SysUser sysUser = userMapper.selectUserById(userId);
         return sysUser;
     }
 
+    /**
+     * @Description: 分页查询工作流选人,角色，部门等
+     * @param: sysUserBo
+     * @return: java.util.Map<java.lang.String,java.lang.Object>
+     * @Author: gssong
+     * @Date: 2021/12/10
+     */
     @Override
     public Map<String,Object> getWorkflowUserListByPage(SysUserBo sysUserBo) {
         Map<String, Object> map = new HashMap<>();
@@ -180,6 +201,13 @@ public class UserServiceImpl implements IUserService {
         return page;
     }
 
+    /**
+     * @Description: 分页查询工作流选择加签人员
+     * @param: sysUserMultiBo
+     * @return: java.util.Map<java.lang.String,java.lang.Object>
+     * @author: gssong
+     * @Date: 2022/4/22 21:17
+     */
     @Override
     public Map<String, Object> getWorkflowAddMultiListByPage(SysUserMultiBo sysUserMultiBo) {
         Map<String, Object> map = new HashMap<>();
