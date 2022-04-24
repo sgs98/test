@@ -62,8 +62,8 @@
 >[部署项目 必看](https://gitee.com/JavaLionLi/RuoYi-Vue-Plus/wikis/关于应用部署?sort_id=4219382)
 >>[https://gitee.com/JavaLionLi/RuoYi-Vue-Plus/wikis/关于应用部署?sort_id=4219382](https://gitee.com/JavaLionLi/RuoYi-Vue-Plus/wikis/关于应用部署?sort_id=4219382)
 > 
->[参考文档 Wiki](https://gitee.com/JavaLionLi/RuoYi-Vue-Plus/wikis/pages)
->>[https://gitee.com/JavaLionLi/RuoYi-Vue-Plus/wikis/pages](https://gitee.com/JavaLionLi/RuoYi-Vue-Plus/wikis/pages)
+>[参考文档 Wiki](https://gitee.com/sgs98/RuoYi-Vue-Plus-Activiti/wikis/pages)
+>>[https://gitee.com/sgs98/RuoYi-Vue-Plus-Activiti/wikis/pages](https://gitee.com/sgs98/RuoYi-Vue-Plus-Activiti/wikis/pages)
 
 ## 软件架构图
 
