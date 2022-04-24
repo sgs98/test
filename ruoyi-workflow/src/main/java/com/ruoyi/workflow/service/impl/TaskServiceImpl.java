@@ -38,7 +38,6 @@ import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.api.history.HistoricTaskInstanceQuery;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,10 +75,13 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
 
 
+
     /**
-     * 查询当前用户的待办任务
-     * @param req
-     * @return
+     * @Description: 查询当前用户的待办任务
+     * @param: req
+     * @return: com.ruoyi.common.core.page.TableDataInfo<com.ruoyi.workflow.domain.vo.TaskWaitingVo>
+     * @author: gssong
+     * @Date: 2021/10/17
      */
     @Override
     public TableDataInfo<TaskWaitingVo> getTaskWaitByPage(TaskREQ req) {
@@ -144,10 +146,13 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         return new TableDataInfo(list, total);
     }
 
+
     /**
-     * 完成任务
-     * @param req
-     * @return
+     * @Description: 办理任务
+     * @param: req
+     * @return: java.lang.Boolean
+     * @author: gssong
+     * @Date: 2021/10/21
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -308,10 +313,14 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         return true;
     }
 
+
     /**
-     * 设置下一环节人员
-     * @param task
-     * @param assignees
+     * @Description: 设置下一环节人员
+     * @param: task 任务
+     * @param: assignees 办理人
+     * @return: void
+     * @author: gssong
+     * @Date: 2021/10/21
      */
     public void settingAssignee(Task task,List<Long> assignees){
         if (assignees.size() == 1) {
@@ -324,10 +333,13 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         }
     }
 
+
     /**
-     * 查询当前用户的已办任务
-     * @param req
-     * @return
+     * @Description: 查询当前用户的已办任务
+     * @param: req
+     * @return: com.ruoyi.common.core.page.TableDataInfo<com.ruoyi.workflow.domain.vo.TaskFinishVo>
+     * @author: gssong
+     * @Date: 2021/10/23
      */
     @Override
     public TableDataInfo<TaskFinishVo> getTaskFinishByPage(TaskREQ req) {
@@ -368,10 +380,13 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         return new TableDataInfo(taskFinishVoList, total);
     }
 
+
     /**
-     * 获取目标节点（下一个节点）
-     * @param req
-     * @return
+     * @Description: 获取目标节点（下一个节点）
+     * @param: req
+     * @return: java.util.Map<java.lang.String,java.lang.Object>
+     * @author: gssong
+     * @Date: 2021/10/23
      */
     @Override
     public Map<String,Object> getNextNodeInfo(NextNodeREQ req) {
@@ -473,11 +488,16 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         return map;
     }
 
+
     /**
-     * 可减签人员集合
-     * @param task 当前任务
-     * @param taskList 当前实例所有任务
-     * @return
+     * @Description: 可减签人员集合
+     * @param: task  当前任务
+     * @param: taskList  当前实例所有任务
+     * @param: type  会签类型
+     * @param: assigneeList 串行会签人员
+     * @return: java.util.List<com.ruoyi.workflow.domain.vo.TaskVo>
+     * @author: gssong
+     * @Date: 2022/4/24 11:17
      */
     private List<TaskVo> multiList(TaskEntity task, List<Task> taskList,Object type,List<Long> assigneeList) {
         List<TaskVo> taskListVo = new ArrayList<>();
@@ -611,9 +631,11 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     }
 
     /**
-     * 查询所有用户的已办任务
-     * @param req
-     * @return
+     * @Description: 查询所有用户的已办任务
+     * @param: req
+     * @return: com.ruoyi.common.core.page.TableDataInfo<com.ruoyi.workflow.domain.vo.TaskFinishVo>
+     * @author: gssong
+     * @Date: 2021/10/23
      */
     @Override
     public TableDataInfo<TaskFinishVo> getAllTaskFinishByPage(TaskREQ req) {
@@ -653,9 +675,11 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     }
 
     /**
-     * 查询所有用户的待办任务
-     * @param req
-     * @return
+     * @Description: 查询所有用户的待办任务
+     * @param: req
+     * @return: com.ruoyi.common.core.page.TableDataInfo<com.ruoyi.workflow.domain.vo.TaskWaitingVo>
+     * @author: gssong
+     * @Date: 2021/10/17
      */
     @Override
     public TableDataInfo<TaskWaitingVo> getAllTaskWaitByPage(TaskREQ req) {
@@ -706,9 +730,11 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     }
 
     /**
-     * 驳回审批
-     * @param backProcessVo
-     * @return
+     * @Description: 2021/11/6
+     * @param: backProcessVo
+     * @return: java.lang.String
+     * @author: gssong
+     * @Date: 2021/11/6
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -815,11 +841,11 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     }
 
     /**
-     * 获取并行网关下一步审批节点信息
-     * @param processDefinitionId
-     * @param targetActivityId
-     * @param task
-     * @return
+     * @Description: 获取并行网关下一步审批节点信息
+     * @param: processDefinitionId  @param: targetActivityId  @param: task
+     * @return: java.util.List<java.lang.String>
+     * @author: gssong
+     * @Date: 2022/4/10
      */
     public List<String>  getPrevUserTaskList(String processDefinitionId, String targetActivityId, Task task){
         List<String> nodeListId = new ArrayList<>();
@@ -864,9 +890,11 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     }
 
     /**
-     * 获取历史任务节点，用于驳回功能
-     * @param processInstId
-     * @return
+     * @Description: 获取历史任务节点，用于驳回功能
+     * @param: processInstId
+     * @return: java.util.List<com.ruoyi.workflow.domain.ActTaskNode>
+     * @author: gssong
+     * @Date: 2021/11/6
      */
     @Override
     public List<ActTaskNode> getBackNodes(String processInstId) {
@@ -874,6 +902,13 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         return list;
     }
 
+    /**
+     * @Description: 委派任务
+     * @param: taskREQ
+     * @return: java.lang.Boolean
+     * @author: gssong
+     * @Date: 2022/3/4
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean delegateTask(TaskREQ taskREQ) {
@@ -903,6 +938,13 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         }
     }
 
+    /**
+     * @Description: 转办任务
+     * @param: transmitREQ
+     * @return: com.ruoyi.common.core.domain.R<java.lang.Boolean>
+     * @author: gssong
+     * @Date: 2022/3/13 13:18
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R<Boolean> transmitTask(TransmitREQ transmitREQ) {
@@ -925,10 +967,11 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     }
 
     /**
-     * 创建流程任务
-     * @param parentTask
-     * @param createTime
-     * @return
+     * @Description: 创建流程任务
+     * @param: parentTask  @param: createTime
+     * @return: org.flowable.task.service.impl.persistence.entity.TaskEntity
+     * @author: gssong
+     * @Date: 2022/3/13
      */
     private TaskEntity createSubTask(Task parentTask,Date createTime){
         TaskEntity task = null;
@@ -958,6 +1001,13 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         return  task;
     }
 
+    /**
+     * @Description: 会签任务加签
+     * @param: addMultiREQ
+     * @return: com.ruoyi.common.core.domain.R<java.lang.Boolean>
+     * @author: gssong
+     * @Date: 2022/4/15 13:06
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R<Boolean> addMultiInstanceExecution(AddMultiREQ addMultiREQ) {
@@ -990,6 +1040,13 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         }
     }
 
+    /**
+     * @Description: 会签任务减签
+     * @param: deleteMultiREQ
+     * @return: com.ruoyi.common.core.domain.R<java.lang.Boolean>
+     * @author: gssong
+     * @Date: 2022/4/16 10:59
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R<Boolean> deleteMultiInstanceExecution(DeleteMultiREQ deleteMultiREQ) {
