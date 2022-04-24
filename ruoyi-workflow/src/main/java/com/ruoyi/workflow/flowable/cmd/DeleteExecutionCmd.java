@@ -14,6 +14,9 @@ import java.io.Serializable;
  */
 public class DeleteExecutionCmd implements Command<String>, Serializable {
 
+    /**
+     * 执行id
+     */
     private String executionId;
 
     public DeleteExecutionCmd(String executionId) {

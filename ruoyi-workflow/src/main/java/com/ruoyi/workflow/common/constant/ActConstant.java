@@ -12,7 +12,6 @@ public interface ActConstant {
 
      String ZIP = "ZIP";
 
-
     /**
      * bpmn2.0命名空间
      */
@@ -63,9 +62,9 @@ public interface ActConstant {
      */
     String LOOP_COUNTER = "loopCounter";
 
-     Boolean TRUE=true;
+    Boolean TRUE=true;
 
-     Boolean FALSE=false;
+    Boolean FALSE=false;
 
     /**
      * 流程自定义人员
@@ -122,10 +121,5 @@ public interface ActConstant {
     String PARAM_BOOLEAN = "Boolean";
 
     String PARAM_CHARACTER = "Character";
-
-
-
-
-
 
 }

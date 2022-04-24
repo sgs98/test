@@ -792,7 +792,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 historyService.deleteHistoricTaskInstance(e.getId());
             });
         }
-       // 判断是否会签
+        //判断是否会签
         LambdaQueryWrapper<ActNodeAssignee> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ActNodeAssignee::getNodeId,backProcessVo.getTargetActivityId());
         wrapper.eq(ActNodeAssignee::getProcessDefinitionId,task.getProcessDefinitionId());
@@ -811,12 +811,12 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         if(ObjectUtil.isNotEmpty(actNodeAssignee)&&!actNodeAssignee.getMultiple()){
             List<Task> runTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
             for (Task runTask : runTaskList) {
-                // 取之前的历史办理人
+                //取之前的历史办理人
                 List<HistoricTaskInstance> oldTargerTaskList = historyService.createHistoricTaskInstanceQuery()
                     .taskDefinitionKey(runTask.getTaskDefinitionKey()) // 节点id
                     .processInstanceId(processInstanceId)
-                    .finished() // 已经完成才是历史
-                    .orderByTaskCreateTime().desc() // 最新办理的在最前面
+                    .finished() //已经完成才是历史
+                    .orderByTaskCreateTime().desc() //最新办理的在最前面
                     .list();
                 if(CollectionUtil.isNotEmpty(oldTargerTaskList)){
                     HistoricTaskInstance oldTargerTask = oldTargerTaskList.get(0);
@@ -826,7 +826,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             }
         }
 
-        // 13. 删除驳回后的流程节点
+        //删除驳回后的流程节点
         ActTaskNode actTaskNode = iActTaskNodeService.getListByInstanceIdAndNodeId(task.getProcessInstanceId(), backProcessVo.getTargetActivityId());
         if (ObjectUtil.isNotNull(actTaskNode) && actTaskNode.getOrderNo() == 0) {
             ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();

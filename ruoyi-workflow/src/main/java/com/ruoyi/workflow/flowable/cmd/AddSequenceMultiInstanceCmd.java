@@ -21,7 +21,7 @@ import static com.ruoyi.workflow.common.constant.ActConstant.NUMBER_OF_INSTANCES
 public class AddSequenceMultiInstanceCmd implements Command<Void> {
 
     /**
-     * 执行实例id
+     * 执行id
      */
     private String executionId;
 

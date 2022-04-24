@@ -29,7 +29,7 @@ public class DeleteSequenceMultiInstanceCmd implements Command<Void> {
     private String currentUserId;
 
     /**
-     * 执行实例id
+     * 执行id
      */
     private String executionId;
 
@@ -66,9 +66,7 @@ public class DeleteSequenceMultiInstanceCmd implements Command<Void> {
                 userIdList.add(e);
             }
         });
-        /**
-         *  当前任务执行位置
-         */
+        //当前任务执行位置
         int loopCounterIndex = -1;
         for (int i = 0; i < userIdList.size() ; i++) {
             Long userId = userIdList.get(i);
