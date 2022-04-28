@@ -401,11 +401,6 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
     }
 
     /**
-     * 删除已完成的实例，删除历史记录，删除业务与流程关联信息
-     * @param processInstId
-     * @return
-     */
-    /**
      * @Description: 已完成的实例 删除程实例，删除历史记录，删除业务与流程关联信息
      * @param: processInstId
      * @return: boolean
