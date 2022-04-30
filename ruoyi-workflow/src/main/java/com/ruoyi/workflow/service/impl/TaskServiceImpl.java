@@ -752,7 +752,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         }
         //判断是否有多个任务
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
-        List<String> preUserTaskList = getPrevUserTaskList(task.getProcessDefinitionId(), backProcessVo.getTargetActivityId(),task);
+        List<String> preUserTaskList = getPrevUserNodeList(task.getProcessDefinitionId(), backProcessVo.getTargetActivityId(),task);
         //当前单个任务驳回到并行网关
         taskService.addComment(task.getId(), processInstanceId, StringUtils.isNotBlank(backProcessVo.getComment()) ? backProcessVo.getComment() : "驳回");
         if(CollectionUtil.isNotEmpty(preUserTaskList)&&taskList.size()==1){
@@ -844,14 +844,14 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
     /**
      * @Description: 获取并行网关下一步审批节点信息
-     * @param: processDefinitionId 流程定义id
-     * @param: targetActivityId 驳回的节点id
+     * @param: processDefinitionId 流程定义id
+     * @param: targetActivityId 驳回的节点id
      * @param: task 任务
      * @return: java.util.List<java.lang.String>
      * @author: gssong
      * @Date: 2022/4/10
      */
-    public List<String>  getPrevUserTaskList(String processDefinitionId, String targetActivityId, Task task){
+    public List<String>  getPrevUserNodeList(String processDefinitionId, String targetActivityId, Task task){
         List<String> nodeListId = new ArrayList<>();
 
         BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
@@ -972,7 +972,8 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
     /**
      * @Description: 创建流程任务
-     * @param: parentTask  @param: createTime
+     * @param: parentTask
+     * @param: createTime
      * @return: org.flowable.task.service.impl.persistence.entity.TaskEntity
      * @author: gssong
      * @Date: 2022/3/13
@@ -999,6 +1000,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 hiTaskInst.setProcDefId(task.getProcessDefinitionId());
                 hiTaskInst.setProcInstId(task.getProcessInstanceId());
                 hiTaskInst.setTaskDefKey(task.getTaskDefinitionKey());
+                hiTaskInst.setStartTime(createTime);
                 iActHiTaskInstService.updateById(hiTaskInst);
             }
         }
