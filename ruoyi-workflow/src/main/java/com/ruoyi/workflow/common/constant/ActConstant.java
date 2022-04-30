@@ -1,6 +1,5 @@
 package com.ruoyi.workflow.common.constant;
 
-import org.flowable.bpmn.model.InclusiveGateway;
 
 public interface ActConstant {
 
