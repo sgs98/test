@@ -76,8 +76,8 @@
       <!-- <el-form-item label-width="80px" label="审批意见">
         <el-input  type="textarea" v-model="transmitForm.message" maxlength="300"  placeholder="请输入审批意见" :autosize="{ minRows: 4 }" show-word-limit ></el-input>
       </el-form-item> -->
-      <el-form-item label-width="80px" label="加签人" prop="userName">
-        <el-input placeholder="请选择加签人" readonly v-model="addMultiForm.userName" >
+      <el-form-item label-width="80px" label="加签人" prop="nickNames">
+        <el-input placeholder="请选择加签人" readonly v-model="addMultiForm.nickNames" >
             <el-button  @click="addMultiPeople() " slot="append" icon="el-icon-search" >选择</el-button>
         </el-input>
       </el-form-item>
@@ -95,7 +95,7 @@
       <el-table-column type="selection" width="55"/>
       <el-table-column prop="name" label="任务名称" width="180"/>
       <el-table-column prop="assignee" label="办理人" width="180"/>
-      <el-table-column prop="assigneeId" v-show="true" label="办理人ID" width="180"/>
+      <el-table-column prop="assigneeId" v-show="false" label="办理人ID" width="180"/>
     </el-table>
     <span slot="footer" class="dialog-footer">
       <el-button size="small" type="primary" @click="deleteMultiSubmit()">确定</el-button>
@@ -170,12 +170,9 @@ export default {
       isDelegate: false, //是否委托
       isMultiInstance: false, //是否为并行会签
       addMultiForm: {},//加签
+      deleteMultiForm: {},//减签
       multiList: {},//可以减签的集合
-      selectionMultiExecutionIds: [], //选中的减签执行ID
-      selectionMultiTaskIds: [], //选中的减签任务ID
-      selectionMultiAssigneeIds: [], //选中的减签人员ID
       backNodeList: [] //可驳回的节点
-
     };
   },
 
@@ -388,21 +385,22 @@ export default {
       let assignees = data.map((item) => {
         return item.userId;
       });
-      let nickNames = data.map((item) => {
+      let assigneeNames = data.map((item) => {
         return item.nickName;
       });
-      this.addMultiForm.assignees = assignees
-      this.addMultiForm.userName = nickNames.join(",")
+      this.addMultiForm = {
+        taskId: this.taskId,
+        assignees: assignees,
+        assigneeNames: assigneeNames,
+        nickNames: assigneeNames.join(",")
+      }
+      console.log(this.addMultiForm)
       this.$forceUpdate()
       this.$refs.addMultiUserRef.visible = false
     },
     //加签
     addMultiSubmit(){
-      let params = {
-        taskId: this.taskId,
-        assignees: this.addMultiForm.assignees
-      }
-      api.addMultiInstanceExecution(params).then(response => {
+      api.addMultiInstanceExecution(this.addMultiForm).then(response => {
         if(response.code === 200){
           // 刷新数据
             this.$message.success("办理成功");
@@ -422,25 +420,29 @@ export default {
     },
     //减签复选框
     handleSelectionMultiList(val){
-      this.selectionMultiExecutionIds = val.map((item) => {
+      let executionIds = val.map((item) => {
         return item.executionId;
       });
-      this.selectionMultiTaskIds = val.map((item) => {
+      let taskIds = val.map((item) => {
         return item.id;
       });
-      this.selectionMultiAssigneeIds = val.map((item) => {
+      let assigneeIds = val.map((item) => {
         return item.assigneeId;
       });
+      let assigneeNames = val.map((item) => {
+        return item.assignee;
+      });
+      this.deleteMultiForm = {
+        taskId: this.taskId,
+        taskIds: taskIds,
+        executionIds: executionIds,
+        assigneeIds: assigneeIds,
+        assigneeNames: assigneeNames
+      }
     },
     //减签
     deleteMultiSubmit(){
-      let params = {
-        taskId: this.taskId,
-        executionIds: this.selectionMultiExecutionIds,
-        taskIds: this.selectionMultiTaskIds,
-        assigneeIds: this.selectionMultiAssigneeIds,
-      }
-      api.deleteMultiInstanceExecution(params).then(response => {
+      api.deleteMultiInstanceExecution(this.deleteMultiForm).then(response => {
         if(response.code === 200){
           // 刷新数据
             this.$message.success("办理成功");

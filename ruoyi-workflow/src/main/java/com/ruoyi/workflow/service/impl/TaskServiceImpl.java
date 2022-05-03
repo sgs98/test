@@ -517,7 +517,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 if(CollectionUtil.isNotEmpty(sysUsers)&&sysUsers.size()>0){
                     SysUser sysUser = sysUsers.stream().filter(u -> u.getUserId().toString().equals(userId.toString())).findFirst().orElse(null);
                     if(ObjectUtil.isNotEmpty(sysUser)){
-                        taskVo.setAssignee(sysUser.getUserName());
+                        taskVo.setAssignee(sysUser.getNickName());
                     }
                 }
                 taskListVo.add(taskVo);
@@ -542,7 +542,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                     if(CollectionUtil.isNotEmpty(sysUsers)){
                         SysUser sysUser = sysUsers.stream().filter(u -> u.getUserId().toString().equals(t.getAssignee())).findFirst().orElse(null);
                         if(ObjectUtil.isNotEmpty(sysUser)){
-                            taskVo.setAssignee(sysUser.getUserName());
+                            taskVo.setAssignee(sysUser.getNickName());
                         }
                     }
                     taskListVo.add(taskVo);
@@ -1039,6 +1039,11 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 AddSequenceMultiInstanceCmd addSequenceMultiInstanceCmd = new AddSequenceMultiInstanceCmd(task.getExecutionId(),multiVo.getAssigneeList(),addMultiREQ.getAssignees());
                 managementService.executeCommand(addSequenceMultiInstanceCmd);
             }
+            List<String> assigneeNames = addMultiREQ.getAssigneeNames();
+            String username = LoginHelper.getUsername();
+            TaskEntity subTask = createSubTask(task, new Date());
+            taskService.addComment(subTask.getId(),processInstanceId,username+"加签【"+String.join(",",assigneeNames)+"】");
+            taskService.complete(subTask.getId());
             return R.ok();
         }catch (Exception e){
             e.printStackTrace();
@@ -1062,6 +1067,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             throw new ServiceException("当前任务不存在或你不是任务办理人");
         }
         String taskDefinitionKey = task.getTaskDefinitionKey();
+        String processInstanceId = task.getProcessInstanceId();
         String processDefinitionId = task.getProcessDefinitionId();
         MultiVo multiVo = workFlowUtils.isMultiInstance(processDefinitionId, taskDefinitionKey);
         if(ObjectUtil.isEmpty(multiVo)){
@@ -1079,6 +1085,11 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 DeleteSequenceMultiInstanceCmd deleteSequenceMultiInstanceCmd = new DeleteSequenceMultiInstanceCmd(task.getAssignee(),task.getExecutionId(),multiVo.getAssigneeList(),deleteMultiREQ.getAssigneeIds());
                 managementService.executeCommand(deleteSequenceMultiInstanceCmd);
             }
+            List<String> assigneeNames = deleteMultiREQ.getAssigneeNames();
+            String username = LoginHelper.getUsername();
+            TaskEntity subTask = createSubTask(task, new Date());
+            taskService.addComment(subTask.getId(),processInstanceId,username+"减签【"+String.join(",",assigneeNames)+"】");
+            taskService.complete(subTask.getId());
             return R.ok();
         }catch (Exception e){
             e.printStackTrace();
