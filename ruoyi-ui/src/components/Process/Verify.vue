@@ -1,7 +1,7 @@
 <template>
 <div v-if="visible">
   <!-- 提交申请开始 -->
-  <el-dialog  title="提交申请" :visible.sync="visible"  width="800px" :close-on-click-modal="false"
+  <el-dialog  v-if="visible"  title="提交申请" :visible.sync="visible"  width="800px" :close-on-click-modal="false"
   append-to-body destroy-on-close @close="closeDialog" >
     <el-form v-loading="loading"  :rules="rules" ref="formData" :model="formData" status-icon >
       <el-form-item label="审批意见" prop="message" label-width="120px">
@@ -474,6 +474,6 @@ export default {
         this.formData.assigneeMap = {}
         this.nickName = {}
     }
-  },
+  }
 };
 </script>

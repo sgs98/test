@@ -8,12 +8,16 @@
           <code class="xml-data-code" v-if="url" v-html="parseXML" />
        </div>
       </div>
+      <span slot="footer" v-if="type==='xml'" class="dialog-footer">
+        <el-button class="copyText" :data-clipboard-text="copyText" type="primary" size="mini" @click="copy">复制</el-button>
+      </span>
   </el-dialog>
 </template>
 
 <script>
 import 'highlight.js/styles/a11y-dark.css'
 import Hljs from 'highlight.js'
+import ClipboardJS from 'clipboard'
 export default {
     props: {
       url: String,
@@ -24,7 +28,8 @@ export default {
         visible: false,
         previewType: 'xml',
         width: '450px',
-        height: '300px'
+        height: '300px',
+        copyText: ''
       }
     },
     computed: {
@@ -36,6 +41,20 @@ export default {
         return Hljs.highlightAuto(this.url).value
       }
     },
+    methods: {
+      copy(){
+          const clipboard = new ClipboardJS('.copyText');
+          this.copyText= this.url
+          clipboard.on('success', e => {
+            this.$message.success('复制成功');
+            clipboard.destroy();
+          });
+          clipboard.on('error', e => {
+            this.$message.error('复制失败');
+            clipboard.destroy();
+          });
+      }
+    }
 }
 </script>
 <style>
