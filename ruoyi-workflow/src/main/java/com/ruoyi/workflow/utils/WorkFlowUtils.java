@@ -34,6 +34,7 @@ import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.task.api.Task;
+import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.flowable.variable.api.persistence.entity.VariableInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -472,5 +473,28 @@ public class WorkFlowUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * @Description: 创建子任务
+     * @param: parentTask
+     * @return: org.flowable.task.api.Task
+     * @author: gssong
+     * @Date: 2022/5/6 19:18
+     */
+    public List<Task> createSubTask(List<Task> parentTaskList,List<Long> assignees){
+       List<Task> list = new ArrayList<>();
+        for (Task parentTask : parentTaskList) {
+            TaskEntity newTask = (TaskEntity)taskService.newTask();
+            newTask.setParentTaskId(parentTask.getId());
+            newTask.setAssignee(String.join(",",assignees.stream().map(id->String.valueOf(id)).collect(Collectors.toList())));
+            newTask.setName(parentTask.getName());
+            newTask.setProcessDefinitionId(parentTask.getProcessDefinitionId());
+            newTask.setProcessInstanceId(parentTask.getProcessInstanceId());
+            newTask.setTaskDefinitionKey(parentTask.getTaskDefinitionKey());
+            taskService.saveTask(newTask);
+            list.add(newTask);
+        }
+        return list;
     }
 }

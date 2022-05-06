@@ -2,11 +2,11 @@
 package com.ruoyi.workflow.flowable.config;
 
 import org.flowable.spring.SpringProcessEngineConfiguration;
-import org.flowable.spring.boot.ProcessEngineConfigurationConfigurer;
+import org.flowable.spring.boot.EngineConfigurationConfigurer;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class FlowableConfig implements ProcessEngineConfigurationConfigurer {
+public class FlowableConfig implements EngineConfigurationConfigurer<SpringProcessEngineConfiguration> {
 
 
     /**

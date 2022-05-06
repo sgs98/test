@@ -1,10 +1,12 @@
 package com.ruoyi.workflow.domain.bo;
 
+import com.ruoyi.common.core.validate.AddGroup;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.validation.constraints.NotEmpty;
 import java.util.*;
 
 @Data
@@ -12,6 +14,15 @@ import java.util.*;
 public class TaskCompleteREQ {
     @ApiModelProperty("任务ID")
     private String taskId;
+
+    @ApiModelProperty("是否抄送")
+    private Boolean isCopy = true;
+
+    @ApiModelProperty("抄送人员id")
+    private List<Long> assigneeIds;
+
+    @ApiModelProperty("抄送人员名称")
+    private List<String> assigneeNames;
 
     @ApiModelProperty("审批意见")
     private String message;
