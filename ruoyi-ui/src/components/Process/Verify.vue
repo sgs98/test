@@ -16,7 +16,7 @@
           </el-input>
         </div>
       </el-form-item>
-       <el-form-item label="是否委托" prop="delegate" label-width="120px" >
+      <el-form-item label="是否委托" prop="delegate" label-width="120px" >
          <el-col :span="12">
            <div class="grid-content bg-purple">
              <el-radio-group v-model="delegate" @change="changeDelegate" size="small">
@@ -29,7 +29,25 @@
            <div class="grid-content bg-purple">
              <el-input v-show="false" v-model="formData.delegateUserId"/>
              <el-input size="small" v-model="formData.delegateUserName" readonly placeholder="请选择人员" class="input-with-select">
-              <el-button slot="append" @click="chooseUser" icon="el-icon-search"></el-button>
+              <el-button slot="append" @click="chooseDelegateUser" icon="el-icon-search"></el-button>
+            </el-input>
+           </div>
+        </el-col>
+      </el-form-item>
+      <el-form-item label="是否抄送" prop="copy" label-width="120px" >
+         <el-col :span="12">
+           <div class="grid-content bg-purple">
+             <el-radio-group v-model="copy" @change="changeCopy" size="small">
+              <el-radio label="1" border>是</el-radio>
+              <el-radio label="2" border>否</el-radio>
+            </el-radio-group>
+           </div>
+        </el-col>
+         <el-col :span="12" v-show="isCopy">
+           <div class="grid-content bg-purple">
+             <el-input v-show="false" v-model="formData.assigneeIds"/>
+             <el-input size="small" v-model="formData.assigneeNames" readonly placeholder="请选择人员" class="input-with-select">
+              <el-button slot="append" @click="chooseCopyUser" icon="el-icon-search"></el-button>
             </el-input>
            </div>
         </el-col>
@@ -48,7 +66,8 @@
 
   <!-- 选择人员组件开始 -->
   <chooseWorkflowUser :dataObj="dataObj" :nodeId="nodeId" @confirmUser="clickUser" ref="wfUserRef"/>
-  <sys-user :propUserList="delegateUserList" :multiple = false ref="userRef" @confirmUser="confirmUser"/>
+  <sys-user :propUserList="delegateUserList" :multiple = false ref="userDelegateRef" @confirmUser="confirmDelegateUser"/>
+  <sys-user :propUserList="copyUserList" ref="userCopyRef" @confirmUser="confirmCopyUser"/>
   <!-- 选择人员组件结束 -->
 
   <!-- 转办申请开始 -->
@@ -136,8 +155,14 @@ export default {
         // 提交表单数据
         message: null,
         assigneeMap: {},
+        // 委托人id
         delegateUserId: undefined,
-        delegateUserName: undefined
+        // 委托人名称
+        delegateUserName: undefined,
+        // 抄送人id
+        assigneeIds: undefined,
+        // 抄送人名称
+        assigneeNames: undefined
       },
       transmitForm: {
         message: null,
@@ -145,6 +170,7 @@ export default {
         userName: null
       },
       delegate: '2',//是否委托
+      copy: '2',//是否抄送
       nextNodes: [], // 下一节点是否为结束节点
       rules: {
         assigneeMap: [
@@ -163,11 +189,14 @@ export default {
       nodeId: undefined,
       // 委托用户反选
       delegateUserList: [],
+      // 抄送用户反选
+      copyUserList: [],
       // 转发用户反选
       transmitUserList: [],
       // 加签用户反选
       addMultiUserList: [],
       isDelegate: false, //是否委托
+      isCopy: false, //是否抄送
       isMultiInstance: false, //是否为并行会签
       addMultiForm: {},//加签
       deleteMultiForm: {},//减签
@@ -310,16 +339,16 @@ export default {
       this.$forceUpdate();
     },
     //选择委托人
-    chooseUser(){
+    chooseDelegateUser(){
       this.delegateUserList = []
       this.delegateUserList.push(this.formData.delegateUserId)
-      this.$refs.userRef.visible = true
+      this.$refs.userDelegateRef.visible = true
     },
     //确认委托人员
-    confirmUser(data){
+    confirmDelegateUser(data){
       this.formData.delegateUserId = data[0].userId
       this.formData.delegateUserName = data[0].nickName
-      this.$refs.userRef.visible = false
+      this.$refs.userDelegateRef.visible = false
     },
     //是否显示选择委托人
     changeDelegate(val){
@@ -327,6 +356,26 @@ export default {
         this.isDelegate = true
       }else{
         this.isDelegate = false
+      }
+    },
+    //选择抄送人
+    chooseCopyUser(){
+      this.copyUserList = []
+      this.copyUserList.push(this.formData.delegateUserId)
+      this.$refs.userCopyRef.visible = true
+    },
+    //确认抄送人员
+    confirmCopyUser(data){
+      this.formData.assigneeIds = data[0].userId
+      this.formData.assigneeNames = data[0].nickName
+      this.$refs.userCopyRef.visible = false
+    },
+    //是否显示抄送
+    changeCopy(val){
+      if(val == 1){
+        this.isCopy = true
+      }else{
+        this.isCopy = false
       }
     },
     //打开转发窗口

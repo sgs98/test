@@ -369,6 +369,13 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
             .processInstanceId(processInstId).singleResult();
         //2.删除流程实例
+        List<Task> list = taskService.createTaskQuery().processInstanceId(processInstId).list();
+        List<Task> subTasks = list.stream().filter(e -> StringUtils.isNotBlank(e.getParentTaskId())).collect(Collectors.toList());
+        if(CollectionUtil.isNotEmpty(subTasks)){
+            subTasks.forEach(e->{
+                taskService.deleteTask(e.getId());
+            });
+        }
         runtimeService.deleteProcessInstance(processInstId, LoginHelper.getUserId() + "作废了当前流程申请");
         //3. 更新业务状态
         return iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.INVALID);
@@ -388,6 +395,13 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
             .processInstanceId(processInstId).singleResult();
         //2.删除流程实例
+        List<Task> list = taskService.createTaskQuery().processInstanceId(processInstId).list();
+        List<Task> subTasks = list.stream().filter(e -> StringUtils.isNotBlank(e.getParentTaskId())).collect(Collectors.toList());
+        if(CollectionUtil.isNotEmpty(subTasks)){
+            subTasks.forEach(e->{
+                taskService.deleteTask(e.getId());
+            });
+        }
         runtimeService.deleteProcessInstance(processInstId, LoginHelper.getUserId() + "删除了当前流程申请");
         //3.删除历史记录
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstId).singleResult();

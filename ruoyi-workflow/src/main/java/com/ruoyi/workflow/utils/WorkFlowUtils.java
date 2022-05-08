@@ -488,7 +488,7 @@ public class WorkFlowUtils {
             TaskEntity newTask = (TaskEntity)taskService.newTask();
             newTask.setParentTaskId(parentTask.getId());
             newTask.setAssignee(String.join(",",assignees.stream().map(id->String.valueOf(id)).collect(Collectors.toList())));
-            newTask.setName(parentTask.getName());
+            newTask.setName("【抄送】-"+parentTask.getName());
             newTask.setProcessDefinitionId(parentTask.getProcessDefinitionId());
             newTask.setProcessInstanceId(parentTask.getProcessInstanceId());
             newTask.setTaskDefinitionKey(parentTask.getTaskDefinitionKey());

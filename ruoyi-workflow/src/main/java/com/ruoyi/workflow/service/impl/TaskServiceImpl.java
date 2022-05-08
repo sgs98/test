@@ -247,9 +247,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
         //抄送
         if(req.getIsCopy()){
-            List<Long> objects = new ArrayList<>();
-            objects.add(2L);
-            workFlowUtils.createSubTask(taskList,objects);
+            workFlowUtils.createSubTask(taskList,req.getAssigneeIds());
         }
         // 8. 如果不为空 指定办理人
         if (CollectionUtil.isNotEmpty(taskList)) {
