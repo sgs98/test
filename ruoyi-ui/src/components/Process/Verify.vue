@@ -57,6 +57,7 @@
         <el-button type="primary" v-if="backNodeList && backNodeList.length>0" @click="openBack()" size="small">退回</el-button>
         <el-button type="primary" v-if="isMultiInstance" @click="addMultiClick()" size="small">加签</el-button>
         <el-button type="primary" v-if="multiList && multiList.length>0" @click="deleteMultiClick()" size="small">减签</el-button>
+        <el-button type="primary" @click="transmitClick()" size="small">委托</el-button>
         <el-button type="primary" @click="transmitClick()" size="small">转办</el-button>
         <el-button size="small" @click="visible = false">取消</el-button>
       </el-form-item>
@@ -66,10 +67,27 @@
 
   <!-- 选择人员组件开始 -->
   <chooseWorkflowUser :dataObj="dataObj" :nodeId="nodeId" @confirmUser="clickUser" ref="wfUserRef"/>
-  <sys-user :propUserList="delegateUserList" :multiple = false ref="userDelegateRef" @confirmUser="confirmDelegateUser"/>
   <sys-user :propUserList="copyUserList" ref="userCopyRef" @confirmUser="confirmCopyUser"/>
   <!-- 选择人员组件结束 -->
-
+  <!-- 委托申请开始 -->
+  <el-dialog :close-on-click-modal="false" title="转发申请" :visible.sync="delegateVisible" width="500px"  append-to-body>
+    <el-form  ref="delegateData" :model="delegateForm" :rules="delegateRules"  status-icon >
+      <el-form-item label-width="80px" label="审批意见">
+        <el-input  type="textarea" v-model="delegateForm.message" maxlength="300"  placeholder="请输入审批意见" :autosize="{ minRows: 4 }" show-word-limit ></el-input>
+      </el-form-item>
+      <el-form-item label-width="80px" label="委托人" prop="userName">
+        <el-input  placeholder="请选择委托人" readonly v-model="delegateForm.userName" >
+            <el-button  @click="delegatePeople() " slot="append" icon="el-icon-search" >选择</el-button>
+        </el-input>
+      </el-form-item>
+      <el-form-item align="center">
+        <el-button type="primary" @click="delegateSubmit('delegateData')" size="small">提交</el-button>
+        <el-button size="small" @click="delegateVisible = false">取消</el-button>
+      </el-form-item>
+    </el-form>
+    <sys-user :propUserList="delegateUserList" :multiple = false ref="delegateUserRef" @confirmUser="confirmDelegateUser"/>
+  </el-dialog>
+  <!-- 委托申请结束 -->
   <!-- 转办申请开始 -->
   <el-dialog :close-on-click-modal="false" title="转发申请" :visible.sync="transmitVisible" width="500px"  append-to-body>
     <el-form  ref="transmitData" :model="transmitForm" :rules="transmitRules"  status-icon >
@@ -149,10 +167,11 @@ export default {
       visible: false, // 弹出窗口，true弹出
       loading: false,
       transmitVisible: false,
+      delegateVisible: false,
       addMultiVisible: false,
       deleteMultiVisible: false,
+      // 提交表单数据
       formData: {
-        // 提交表单数据
         message: null,
         assigneeMap: {},
         // 委托人id
@@ -164,14 +183,24 @@ export default {
         // 抄送人名称
         assigneeNames: undefined
       },
+      // 转办
       transmitForm: {
         message: null,
         userId: null,
         userName: null
       },
-      delegate: '2',//是否委托
-      copy: '2',//是否抄送
-      nextNodes: [], // 下一节点是否为结束节点
+      // 委托
+      delegateForm:{
+        message: null,
+        userId: null,
+        userName: null
+      },
+      // 是否委托
+      delegate: '2',
+      // 是否抄送
+      copy: '2',
+      // 下一节点
+      nextNodes: [], 
       rules: {
         assigneeMap: [
           { required: true, message: "请输入下一步审批人", trigger: "blur" },
@@ -337,6 +366,10 @@ export default {
       this.formData.assigneeMap[nodeId] = arrAssignee;
       this.nickName[nodeId] = arrNickName
       this.$forceUpdate();
+    },
+    // 提交委托申请
+    delegateSubmit(){
+
     },
     //选择委托人
     chooseDelegateUser(){
