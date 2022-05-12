@@ -169,7 +169,6 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         }
         //办理委托任务
         if(ObjectUtil.isNotEmpty(task.getDelegationState())&&ActConstant.PENDING.equals(task.getDelegationState().name())){
-            taskService.addComment(task.getId(),task.getProcessInstanceId(),req.getMessage());
             taskService.resolveTask(req.getTaskId());
             ActHiTaskInst hiTaskInst = iActHiTaskInstService.getById(task.getId());
             TaskEntity subTask = createNewTask(task, hiTaskInst.getStartTime());

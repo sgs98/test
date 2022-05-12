@@ -545,7 +545,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
                 taskService.setAssignee(task.getId(), LoginHelper.getUserId().toString());
                 taskService.setVariables(task.getId(),variables);
             }
-            iActTaskNodeService.deleteBackTaskNode(variablesTaskList.get(0).getProcessDefinitionId(),variablesTaskList.get(0).getTaskDefinitionKey());
+            iActTaskNodeService.deleteByInstanceId(processInstId);
         }
         boolean b = iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.CANCEL);
         return b;
