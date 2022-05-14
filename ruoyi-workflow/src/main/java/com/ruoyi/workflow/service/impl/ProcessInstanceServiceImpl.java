@@ -20,6 +20,7 @@ import com.ruoyi.workflow.domain.vo.ProcessInstRunningVo;
 import com.ruoyi.workflow.flowable.factory.WorkflowService;
 import com.ruoyi.workflow.service.*;
 import com.ruoyi.workflow.utils.WorkFlowUtils;
+import liquibase.pro.packaged.L;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -148,19 +149,18 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
         }
         //翻译人员名称
         if(CollectionUtil.isNotEmpty(actHistoryInfoVoList)){
-            List<String> collect = actHistoryInfoVoList.stream().filter(e->StringUtils.isNotBlank(e.getAssignee())).map(ActHistoryInfoVo::getAssignee).collect(Collectors.toList());
-            List<Long> userIds = new ArrayList<>();
-            for (String userId : collect) {
-                userIds.add(Long.valueOf(userId));
-            }
-            List<SysUser> sysUsers = iUserService.selectListUserByIds(userIds);
             for (ActHistoryInfoVo actHistoryInfoVo : actHistoryInfoVoList) {
-                SysUser sysUser = sysUsers.stream().filter(e -> e.getUserId().toString().equals(actHistoryInfoVo.getAssignee())).findFirst().orElse(null);
-                if(ObjectUtil.isNotEmpty(sysUser)){
-                    actHistoryInfoVo.setNickName(sysUser.getNickName());
+                if(StringUtils.isNotBlank(actHistoryInfoVo.getAssignee())){
+                    List<Long> userIds = new ArrayList<>();
+                    Arrays.asList(actHistoryInfoVo.getAssignee().split(",")).forEach(id->{
+                        userIds.add(Long.valueOf(id));
+                    });
+                    List<SysUser> sysUsers = iUserService.selectListUserByIds(userIds);
+                    if(CollectionUtil.isNotEmpty(sysUsers)){
+                        actHistoryInfoVo.setNickName(sysUsers.stream().map(SysUser::getNickName).collect(Collectors.joining(",")));
+                    }
                 }
             }
-
         }
         List<ActHistoryInfoVo> collect = new ArrayList<>();
         //待办理
@@ -302,7 +302,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
             String currTaskInfoId = "";
             //办理人集合
             List<String> nickNameList = null;
-            for (Task task : taskList) {
+            for (Task task : taskList.stream().filter(e->StringUtils.isBlank(e.getParentTaskId())).collect(Collectors.toList())) {
                 if (StringUtils.isNotBlank(task.getAssignee())) {
                     String[] split = task.getAssignee().split(",");
                     List<Long> userIds = new ArrayList<>();

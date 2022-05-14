@@ -19,10 +19,10 @@ public class TaskCompleteREQ {
     private Boolean isCopy = true;
 
     @ApiModelProperty("抄送人员id")
-    private List<Long> assigneeIds;
+    private String assigneeIds;
 
     @ApiModelProperty("抄送人员名称")
-    private List<String> assigneeNames;
+    private String assigneeNames;
 
     @ApiModelProperty("审批意见")
     private String message;

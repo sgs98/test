@@ -358,8 +358,14 @@ export default {
     },
     //确认抄送人员
     confirmCopyUser(data){
-      this.formData.assigneeIds = data[0].userId
-      this.formData.assigneeNames = data[0].nickName
+      let assignee = data.map((item) => {
+        return item.userId;
+      });
+      let nickName = data.map((item) => {
+        return item.nickName;
+      });
+      this.formData.assigneeIds = assignee.join(",")
+      this.formData.assigneeNames = nickName.join(",")
       this.$refs.userCopyRef.visible = false
     },
     //打开转发窗口

@@ -86,9 +86,9 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     @Override
     public TableDataInfo<TaskWaitingVo> getTaskWaitByPage(TaskREQ req) {
         //当前登录人
-        String username = LoginHelper.getLoginUser().getUserId().toString();
+        String currentUserId = LoginHelper.getLoginUser().getUserId().toString();
         TaskQuery query = taskService.createTaskQuery()
-            .taskCandidateOrAssigned(String.valueOf(username)) // 候选人或者办理人
+            .taskCandidateOrAssigned(currentUserId) // 候选人或者办理人
             .orderByTaskCreateTime().asc();
         if (StringUtils.isNotEmpty(req.getTaskName())) {
             query.taskNameLikeIgnoreCase("%" + req.getTaskName() + "%");
@@ -113,7 +113,6 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                     taskWaitingVo.setAssignee(StringUtils.join(nickNames, ","));
                     taskWaitingVo.setAssigneeId(StringUtils.join(userIds, ","));
                 }
-
             }
             // 查询流程实例
             ProcessInstance pi = runtimeService.createProcessInstanceQuery()
@@ -246,6 +245,13 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
         //抄送
         if(req.getIsCopy()){
+            if(StringUtils.isBlank(req.getAssigneeIds())){
+                throw new ServiceException("抄送人不能为空 ");
+            }
+            TaskEntity newTask = createNewTask(task, new Date());
+            taskService.addComment(newTask.getId(),task.getProcessInstanceId(),
+                LoginHelper.getUsername().toString()+"【抄送】给"+req.getAssigneeNames());
+            taskService.complete(newTask.getId());
             workFlowUtils.createSubTask(taskList,req.getAssigneeIds());
         }
         // 8. 如果不为空 指定办理人

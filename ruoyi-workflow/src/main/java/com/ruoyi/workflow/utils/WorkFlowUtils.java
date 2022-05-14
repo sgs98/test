@@ -482,18 +482,21 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/5/6 19:18
      */
-    public List<Task> createSubTask(List<Task> parentTaskList,List<Long> assignees){
+    public List<Task> createSubTask(List<Task> parentTaskList,String assignees){
        List<Task> list = new ArrayList<>();
         for (Task parentTask : parentTaskList) {
-            TaskEntity newTask = (TaskEntity)taskService.newTask();
-            newTask.setParentTaskId(parentTask.getId());
-            newTask.setAssignee(String.join(",",assignees.stream().map(id->String.valueOf(id)).collect(Collectors.toList())));
-            newTask.setName("【抄送】-"+parentTask.getName());
-            newTask.setProcessDefinitionId(parentTask.getProcessDefinitionId());
-            newTask.setProcessInstanceId(parentTask.getProcessInstanceId());
-            newTask.setTaskDefinitionKey(parentTask.getTaskDefinitionKey());
-            taskService.saveTask(newTask);
-            list.add(newTask);
+            List<String> userIds = Arrays.asList(assignees.split(","));
+            for (String userId : userIds) {
+                TaskEntity newTask = (TaskEntity)taskService.newTask();
+                newTask.setParentTaskId(parentTask.getId());
+                newTask.setAssignee(userId);
+                newTask.setName("【抄送】-"+parentTask.getName());
+                newTask.setProcessDefinitionId(parentTask.getProcessDefinitionId());
+                newTask.setProcessInstanceId(parentTask.getProcessInstanceId());
+                newTask.setTaskDefinitionKey(parentTask.getTaskDefinitionKey());
+                taskService.saveTask(newTask);
+                list.add(newTask);
+            }
         }
         return list;
     }
