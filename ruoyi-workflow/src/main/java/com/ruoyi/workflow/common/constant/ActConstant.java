@@ -61,10 +61,6 @@ public interface ActConstant {
      */
     String LOOP_COUNTER = "loopCounter";
 
-    Boolean TRUE=true;
-
-    Boolean FALSE=false;
-
     /**
      * 流程自定义人员
      */

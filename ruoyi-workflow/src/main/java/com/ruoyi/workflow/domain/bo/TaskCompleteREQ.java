@@ -1,12 +1,10 @@
 package com.ruoyi.workflow.domain.bo;
 
-import com.ruoyi.common.core.validate.AddGroup;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.validation.constraints.NotEmpty;
 import java.util.*;
 
 @Data

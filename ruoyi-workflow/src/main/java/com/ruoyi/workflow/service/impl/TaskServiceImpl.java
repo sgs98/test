@@ -454,13 +454,13 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             Iterator<ProcessNode> iterator = nextNodes.iterator();
             while (iterator.hasNext()) {
                 ProcessNode node = iterator.next();
-                if (ActConstant.FALSE.equals(node.getExpression())){
+                if (!node.getExpression()){
                     iterator.remove();
                 }
             }
         }
         //排它网关  如果下已审批节点变量判断都为false  将保存的临时的节点赋予下一节点
-        List<String> exclusiveLists = nextNodes.stream().filter(e -> e.getNodeType().equals(ActConstant.EXCLUSIVE_GATEWAY) && e.getExpression().equals(ActConstant.TRUE)).
+        List<String> exclusiveLists = nextNodes.stream().filter(e -> e.getNodeType().equals(ActConstant.EXCLUSIVE_GATEWAY) && e.getExpression()).
             map(ProcessNode::getNodeType).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(nextNodes) && CollectionUtil.isEmpty(exclusiveLists)) {
             nextNodes.addAll(tempNodes);
@@ -469,13 +469,13 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         List<ProcessNode> nodeList = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(nextNodes)) {
             //排它网关  如果下已审批节点变量判断都为false  将保存的临时的节点赋予下一节点
-            List<String> exclusiveList = nextNodes.stream().filter(e -> e.getNodeType().equals(ActConstant.EXCLUSIVE_GATEWAY) && e.getExpression().equals(ActConstant.TRUE)).
+            List<String> exclusiveList = nextNodes.stream().filter(e -> e.getNodeType().equals(ActConstant.EXCLUSIVE_GATEWAY) && e.getExpression()).
                 map(ProcessNode::getNodeType).collect(Collectors.toList());
             if (!CollectionUtil.isEmpty(nextNodes) && CollectionUtil.isEmpty(exclusiveList)) {
                 nextNodes.addAll(tempNodes);
             }
             //排它网关
-            List<String> exclusiveGatewayList = nextNodes.stream().filter(e -> e.getNodeType().equals(ActConstant.EXCLUSIVE_GATEWAY) && e.getExpression().equals(ActConstant.TRUE)).
+            List<String> exclusiveGatewayList = nextNodes.stream().filter(e -> e.getNodeType().equals(ActConstant.EXCLUSIVE_GATEWAY) && e.getExpression()).
                 map(ProcessNode::getNodeType).collect(Collectors.toList());
             if (CollectionUtil.isNotEmpty(exclusiveGatewayList)) {
                 nextNodes.forEach(node -> {
