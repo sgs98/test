@@ -113,6 +113,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                     taskWaitingVo.setAssignee(StringUtils.join(nickNames, ","));
                     taskWaitingVo.setAssigneeId(StringUtils.join(userIds, ","));
                 }
+
             }
             // 查询流程实例
             ProcessInstance pi = runtimeService.createProcessInstanceQuery()
@@ -250,7 +251,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             }
             TaskEntity newTask = createNewTask(task, new Date());
             taskService.addComment(newTask.getId(),task.getProcessInstanceId(),
-                LoginHelper.getUsername().toString()+"【抄送】给"+req.getAssigneeNames());
+                LoginHelper.getUsername()+"【抄送】给"+req.getAssigneeNames());
             taskService.complete(newTask.getId());
             workFlowUtils.createSubTask(taskList,req.getAssigneeIds());
         }
@@ -534,7 +535,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             }
             return taskListVo;
         }else if(type instanceof ParallelMultiInstanceBehavior){
-            List<Task> tasks = taskList.stream().filter(e -> !e.getExecutionId().equals(task.getExecutionId())
+            List<Task> tasks = taskList.stream().filter(e ->StringUtils.isBlank(e.getParentTaskId())&& !e.getExecutionId().equals(task.getExecutionId())
                 &&e.getTaskDefinitionKey().equals(task.getTaskDefinitionKey())).collect(Collectors.toList());
             if(CollectionUtil.isNotEmpty(tasks)){
                 List<Long> userIds = tasks.stream().map(e -> Long.valueOf(e.getAssignee())).collect(Collectors.toList());
