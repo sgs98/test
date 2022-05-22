@@ -1,9 +1,7 @@
 
 package com.ruoyi.workflow.flowable.config;
 
-import cn.hutool.core.lang.Snowflake;
-import cn.hutool.core.util.IdUtil;
-import org.flowable.common.engine.impl.cfg.IdGenerator;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import org.flowable.spring.SpringProcessEngineConfiguration;
 import org.flowable.spring.boot.EngineConfigurationConfigurer;
 import org.springframework.context.annotation.Configuration;
@@ -32,10 +30,7 @@ public class FlowableConfig implements EngineConfigurationConfigurer<SpringProce
         /**
          * 自定义id
          */
-        processEngineConfiguration.setIdGenerator(() -> {
-            Snowflake snowflake = IdUtil.getSnowflake(1, 1);
-            return snowflake.nextIdStr();
-        });
+        processEngineConfiguration.setIdGenerator(() -> IdWorker.getIdStr());
     }
 }
 

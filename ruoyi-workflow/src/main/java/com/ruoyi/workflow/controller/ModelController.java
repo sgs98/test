@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 @Validated
 @Api(value = "模型控制器", tags = {"模型控制器"})
@@ -39,6 +40,33 @@ public class ModelController extends BaseController {
 
 
     /**
+     * @Description:  保存模型
+     * @param: data
+     * @return: void
+     * @author: gssong
+     * @Date: 2022/5/22 13:47
+     */
+    @PutMapping
+    @ApiOperation("保存模型")
+    @Log(title = "保存模型", businessType = BusinessType.INSERT)
+    @RepeatSubmit
+    public R<Void> saveModelXml(@RequestBody Map<String,String> data) {
+        return iModelService.saveModelXml(data);
+    }
+
+    /**
+     * @Description: 查询模型信息
+     * @param: modelId 模型id
+     * @return: com.ruoyi.common.core.domain.R<java.lang.String>
+     * @author: gssong
+     * @Date: 2022/5/22 13:42
+     */
+    @GetMapping("/getInfo/{modelId}/xml")
+    public R<String> getEditorXml(@PathVariable String modelId) {
+        return iModelService.getEditorXml(modelId);
+    }
+
+    /**
      * @Description: 查询模型列表
      * @param: modelReq 请求参数
      * @return: com.ruoyi.common.core.page.TableDataInfo<org.flowable.engine.repository.Model>
@@ -50,7 +78,6 @@ public class ModelController extends BaseController {
     public TableDataInfo<Model> getByPage(ModelREQ modelReq) {
         return iModelService.getByPage(modelReq);
     }
-
 
     /**
      * @Description: 新建模型

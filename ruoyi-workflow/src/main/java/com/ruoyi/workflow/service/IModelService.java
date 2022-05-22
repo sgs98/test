@@ -9,8 +9,25 @@ import org.flowable.engine.repository.Model;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 public interface IModelService {
+
+
+    /**
+     * 保存模型
+     * @param data
+     * @return
+     */
+    R<Void> saveModelXml(Map<String, String> data);
+
+    /**
+     * 查询模型信息
+     * @param modelId
+     * @return
+     */
+    R<String> getEditorXml(String modelId);
+
     /**
      * 分页查询模型
      * @param modelReq

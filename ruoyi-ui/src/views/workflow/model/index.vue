@@ -253,8 +253,10 @@ export default {
       },
       // 设计流程
       clickDesign(id) {
-          this.modelId = id
-          this.$refs.designModel.visible = true
+       // console.log(id)
+        //this.modelId = id
+         // this.$refs.designModel.visible = true
+          this.$router.push({ path: '/workflow/model-bpmnJs/bpmnJs/'+ id})
       },
       // 导出流程模型
       clickExportZip(data){
