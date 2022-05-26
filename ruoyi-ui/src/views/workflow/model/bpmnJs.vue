@@ -2,6 +2,7 @@
   <div id="bpmn">
     <my-process-palette />
     <my-process-designer
+      :style="{ height: `${getScreenHeight}px` }"
       :key="`designer-${reloadIndex}`"
       :options="{
         taskResizingEnabled: true,
@@ -16,7 +17,7 @@
       @init-finished="initModeler"
       @saveBpmnMode="saveMode"
     />
-    <my-properties-panel :key="`penal-${reloadIndex}`" :bpmn-modeler="modeler" :prefix="controlForm.prefix" class="process-panel" />
+    <my-properties-panel :key="`penal-${reloadIndex}`" :model="model" :bpmn-modeler="modeler" :prefix="controlForm.prefix" class="process-panel" />
   </div>
 </template>
 
@@ -45,6 +46,9 @@ export default {
   directives: {
     clickoutside: clickoutside
   },
+  props: {
+      modelId: String,
+  },
   data() {
     return {
       xmlString: "",
@@ -70,25 +74,36 @@ export default {
         CustomContentPadProvider,
         CustomPaletteProvider
       },
-      modelId: undefined
+      screenHeight: document.body.clientHeight,
+      model: {}
     };
   },
   created() {
-    this.modelId = this.$route.params.modelId
     this.getModelEditorXml()
+    window.onresize = () => {
+      //获取body的高度
+      this.screenHeight = document.body.clientHeight
+    }
+  },
+  computed: {
+    getScreenHeight() {
+        return this.screenHeight - 50
+    }
   },
   methods: {
     //读取xml
     getModelEditorXml(){
       getEditorXml(this.modelId).then(response=>{
-        this.xmlString = response.data
+        this.xmlString = response.data.xml
+        this.model = response.data.model
         this.$refs.processDesigner.createNewDiagram(this.xmlString)
       })
     },
-    saveMode(xml){
+    saveMode(xml,svg){
       let params = {
         modelId: this.modelId,
-        xml: xml
+        xml: xml,
+        svg: svg
       }
       saveModelXml(params).then(response=>{
         if(response.code === 200){

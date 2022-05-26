@@ -39,14 +39,12 @@ export default {
         this.$router.push({name:"/workflow/model"})
       },
 
-      handleClose(done) {
+      handleClose() {
         this.$confirm('请记得点击左上角保存按钮，确定关闭设计窗口?', '确认关闭',{
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-            // 关闭
-            done();
             // 刷新数据
             this.$parent.getList()
         }).catch(() => {})

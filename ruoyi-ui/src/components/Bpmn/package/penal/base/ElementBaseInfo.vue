@@ -2,10 +2,10 @@
   <div class="panel-tab__content">
     <el-form size="mini" label-width="90px" @submit.native.prevent>
       <el-form-item label="ID">
-        <el-input v-model="elementBaseInfo.id" :disabled="idEditDisabled" clearable @change="updateBaseInfo('id')" />
+        <el-input v-model="elementBaseInfo.id" disabled clearable @change="updateBaseInfo('id')" />
       </el-form-item>
       <el-form-item label="名称">
-        <el-input v-model="elementBaseInfo.name" clearable @change="updateBaseInfo('name')" />
+        <el-input v-model="elementBaseInfo.name" disabled clearable @change="updateBaseInfo('name')" />
       </el-form-item>
       <!--流程的基础属性-->
       <template v-if="elementBaseInfo.$type === 'bpmn:Process'">
@@ -30,8 +30,9 @@ export default {
     type: String,
     idEditDisabled: {
       type: Boolean,
-      default: true
-    }
+      default: false
+    },
+    model: Object
   },
   data() {
     return {
@@ -55,6 +56,8 @@ export default {
       if (this.elementBaseInfo && this.elementBaseInfo.$type === "bpmn:SubProcess") {
         this.$set(this.elementBaseInfo, "isExpanded", this.elementBaseInfo.di?.isExpanded);
       }
+      this.elementBaseInfo.id = this.model.id
+      this.elementBaseInfo.name = this.model.name
     },
     updateBaseInfo(key) {
       if (key === "id") {

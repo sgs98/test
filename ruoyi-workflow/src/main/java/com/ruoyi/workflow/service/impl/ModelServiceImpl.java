@@ -2,6 +2,7 @@ package com.ruoyi.workflow.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -15,6 +16,9 @@ import com.ruoyi.workflow.domain.bo.ModelREQ;
 import com.ruoyi.workflow.service.IModelService;
 import com.ruoyi.workflow.utils.WorkFlowUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
@@ -33,6 +37,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import java.io.*;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -62,13 +67,29 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
         try {
             String modelId = data.get("modelId");
             String xml = data.get("xml");
+            String svg = data.get("svg");
             Model model = repositoryService.getModel(modelId);
-            InputStream in = new ByteArrayInputStream(xml.getBytes("UTF-8"));
+            InputStream in = new ByteArrayInputStream(StrUtil.utf8Bytes(xml));
             InputStreamSource xmlSource = new InputStreamSource(in);
             BpmnXMLConverter bpmnXMLConverter = new BpmnXMLConverter();
             BpmnModel bpmnModel = bpmnXMLConverter.convertToBpmnModel(xmlSource, true, false, "UTF-8");
             byte[] bytes = new BpmnXMLConverter().convertToXML(bpmnModel);
             repositoryService.addModelEditorSource(model.getId(), bytes);
+
+            InputStream svgStream = new ByteArrayInputStream(StrUtil.utf8Bytes(svg));
+            TranscoderInput input = new TranscoderInput(svgStream);
+
+            PNGTranscoder transcoder = new PNGTranscoder();
+            // Setup output
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            TranscoderOutput output = new TranscoderOutput(outStream);
+
+            // Do the transformation
+            transcoder.transcode(input, output);
+            final byte[] result = outStream.toByteArray();
+            repositoryService.addModelEditorSourceExtra(model.getId(), result);
+            outStream.close();
+            //repositoryService.addModelEditorSourceExtra(model.getId(),);
             return R.ok();
         } catch (Exception e) {
             throw new FlowableException("Error saving model", e);
@@ -83,13 +104,15 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
      * @Date: 2022/5/22 13:54
      */
     @Override
-    public R<String> getEditorXml(String modelId) {
+    public R<Map<String,Object>> getEditorXml(String modelId) {
+        Map<String, Object> map = new HashMap<>();
         Model model = repositoryService.getModel(modelId);
         if (model != null) {
             try {
                 byte[] modelEditorSource = repositoryService.getModelEditorSource(model.getId());
-                String xml = new String(modelEditorSource);
-                return R.ok("操作成功",xml);
+                map.put("xml",StrUtil.utf8Str(modelEditorSource));
+                map.put("model",model);
+                return R.ok("操作成功",map);
             } catch (Exception e) {
                 throw new FlowableImageException(e.getMessage());
             }
@@ -113,6 +136,7 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
         if (StringUtils.isNotEmpty(modelReq.getKey())) {
             query.modelKey(modelReq.getKey());
         }
+        query.orderByLastUpdateTime().desc();
         //创建时间降序排列
         query.orderByCreateTime().desc();
         // 分页查询
@@ -175,7 +199,7 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
         propertiesNode.put("name", modelAdd.getName());
         editorNode.replace("properties", propertiesNode);
 
-        repositoryService.addModelEditorSource(model.getId(), editorNode.toString().getBytes(ActConstant.UTF_8));
+        repositoryService.addModelEditorSource(model.getId(), StrUtil.utf8Bytes(editorNode.toString()));
         return R.ok(model);
     }
 
@@ -188,23 +212,17 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R deploy(String id) throws IOException {
-        //1.查询流程定义模型json字节码
-        byte[] jsonBytes = repositoryService.getModelEditorSource(id);
-        if (jsonBytes == null) {
-            return R.fail("模型数据为空，请先设计流程定义模型，再进行部署");
-        }
-        // 将json字节码转为 xml 字节码，因为bpmn2.0规范中关于流程模型的描述是xml格式的，而activiti遵守了这个规范
-        byte[] xmlBytes = workFlowUtils.bpmnJsonXmlBytes(jsonBytes);
+    public R<Void> deploy(String id) throws IOException {
+        //1.查询流程定义模型xml
+        byte[] xmlBytes = repositoryService.getModelEditorSource(id);
         if (xmlBytes == null) {
-            return R.fail("数据模型不符合要求，请至少设计一条主线流程");
+            return R.fail("模型数据为空，请先设计流程定义模型，再进行部署");
         }
         // 2. 查询流程定义模型的图片
         byte[] pngBytes = repositoryService.getModelEditorSourceExtra(id);
 
         // 查询模型的基本信息
         Model model = repositoryService.getModel(id);
-
         // xml资源的名称 ，对应act_ge_bytearray表中的name_字段
         String processName = model.getName() + ".bpmn20.xml";
         // 图片资源名称，对应act_ge_bytearray表中的name_字段
@@ -214,12 +232,10 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
         Deployment deployment = repositoryService.createDeployment()
             .name(model.getName()) // 部署名称
             .key(model.getKey()) // 部署标识key
-            .addString(processName, new String(xmlBytes, Constants.UTF8)) // bpmn20.xml资源
+            .addString(processName, StrUtil.utf8Str(xmlBytes)) // bpmn20.xml资源
             .addBytes(pngName, pngBytes) // png资源
             .deploy();
-        ProcessDefinitionQuery definitionQuery = repositoryService.createProcessDefinitionQuery();
-        ProcessDefinition processDefinition = definitionQuery.deploymentId(deployment.getId()).singleResult();
-        System.out.println(processDefinition.getName());
+
         // 更新 部署id 到流程定义模型数据表中
         model.setDeploymentId(deployment.getId());
         repositoryService.saveModel(model);

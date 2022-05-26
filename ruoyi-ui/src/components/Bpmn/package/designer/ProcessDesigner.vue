@@ -306,10 +306,10 @@ export default {
       try {
         let { warnings } = await this.bpmnModeler.importXML(xmlString);
         if (warnings && warnings.length) {
-          warnings.forEach(warn => console.warn(warn));
+          //warnings.forEach(warn => console.warn(warn));
         }
       } catch (e) {
-        console.error(`[Process Designer Warn]: ${e?.message || e}`);
+        //console.error(`[Process Designer Warn]: ${e?.message || e}`);
       }
     },
 
@@ -470,14 +470,19 @@ export default {
      * 保存xml
      */
     async saveModel() {
-      const { err, xml } = await this.bpmnModeler.saveXML();
+      const { xmlErr, xml } = await this.bpmnModeler.saveXML();
+      const { svgErr, svg } = await this.bpmnModeler.saveSVG();
       // 读取异常时抛出异常
-      if (err) {
+      if (xmlErr) {
+        this.$modal.msgError('保存模型失败，请重试！')
+        return
+      }
+       if (svgErr) {
         this.$modal.msgError('保存模型失败，请重试！')
         return
       }
       // 触发 save 事件
-      this.$emit('saveBpmnMode', xml)
+      this.$emit('saveBpmnMode', xml,svg)
     },
   }
 };

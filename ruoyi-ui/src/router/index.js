@@ -161,20 +161,6 @@ export const dynamicRoutes = [
         meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
       }
     ]
-  },
-  {
-    path: '/workflow/model-bpmnJs',
-    component: Layout,
-    hidden: false,
-    permissions: ['workflow:model:list'],
-    children: [
-      {
-        path: 'bpmnJs/:modelId(\\d+)',
-        component: () => import('@/views/workflow/model/bpmnJs'),
-        name: 'bpmnJs',
-        meta: { title: '模型设计', activeMenu: '/workflow/model' }
-      }
-    ]
   }
 ]
 

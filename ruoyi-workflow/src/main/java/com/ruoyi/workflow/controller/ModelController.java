@@ -62,7 +62,7 @@ public class ModelController extends BaseController {
      * @Date: 2022/5/22 13:42
      */
     @GetMapping("/getInfo/{modelId}/xml")
-    public R<String> getEditorXml(@PathVariable String modelId) {
+    public R<Map<String,Object>> getEditorXml(@PathVariable String modelId) {
         return iModelService.getEditorXml(modelId);
     }
 

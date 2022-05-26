@@ -50,7 +50,7 @@
             <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
         </el-row>
 
-        <el-table v-loading="loading" :data="modelList" @selection-change="handleSelectionChange">
+        <el-table :max-height="getTableHeight" v-loading="loading" :data="modelList" @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="55" align="center" />
             <el-table-column fixed align="center" type="index" label="序号" width="50"></el-table-column>
             <el-table-column fixed align="center" prop="name" label="模型名称"></el-table-column>
@@ -108,15 +108,19 @@
         </el-dialog>
         <!-- 设计流程 -->
         <design ref="designModel" :modelId="modelId"/>
+        <el-dialog title="设计模型" :before-close="handleClose" :visible.sync="bpmnJsModelVisible" v-if="bpmnJsModelVisible" fullscreen append-to-body>
+            <bpmnJs ref="bpmnJsModel" :modelId="modelId"/>
+        </el-dialog>
     </div>
 </template>
 
 <script>
 import {list,add,del,deploy} from "@/api/workflow/model";
 import Design from './design'
+import BpmnJs from './bpmnJs'
 export default {
     name: 'Model', // 和对应路由表中配置的name值一致
-    components: {Design},
+    components: {Design,BpmnJs},
     data() {
         return {
             //按钮loading
@@ -137,6 +141,7 @@ export default {
             total: 0,
             // 是否显示弹出层
             open: false,
+            bpmnJsModelVisible: false,
             // 模型定义表格数据
             modelList: [],
             // 查询参数
@@ -158,10 +163,20 @@ export default {
               ],
             },
             modelId: null, // 模型id
+            screenHeight: document.body.clientHeight
         }
     },
     created() {
       this.getList();
+      window.onresize = () => {
+        //获取body的高度
+        this.screenHeight = document.body.clientHeight
+      }
+    },
+    computed: {
+      getTableHeight() {
+        return this.screenHeight - 300
+      }
     },
     methods: {
       /** 搜索按钮操作 */
@@ -253,10 +268,19 @@ export default {
       },
       // 设计流程
       clickDesign(id) {
-       // console.log(id)
-        //this.modelId = id
-         // this.$refs.designModel.visible = true
-          this.$router.push({ path: '/workflow/model-bpmnJs/bpmnJs/'+ id})
+        this.modelId = id
+        this.bpmnJsModelVisible = true
+      },
+      handleClose() {
+        this.$confirm('请记得点击保存按钮，确定关闭设计窗口?', '确认关闭',{
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.bpmnJsModelVisible = false
+          // 刷新数据
+          this.getList()
+        }).catch(() => {})
       },
       // 导出流程模型
       clickExportZip(data){

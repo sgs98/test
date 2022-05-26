@@ -26,7 +26,7 @@ public interface IModelService {
      * @param modelId
      * @return
      */
-    R<String> getEditorXml(String modelId);
+    R<Map<String,Object>> getEditorXml(String modelId);
 
     /**
      * 分页查询模型
@@ -48,7 +48,7 @@ public interface IModelService {
      * @param id
      * @return
      */
-    R deploy(String id) throws IOException;
+    R<Void> deploy(String id) throws IOException;
 
     /**
      * 导出流程定义模型zip压缩包
