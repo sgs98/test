@@ -168,7 +168,8 @@ export default {
       previewResult: "",
       previewType: "xml",
       recoverable: false,
-      revocable: false
+      revocable: false,
+      model: {}
     };
   },
   computed: {

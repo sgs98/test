@@ -18,7 +18,6 @@ export function list(query) {
  * @returns
  */
 export function add(data) {
-  console.log(data)
   return request({
     url: '/workflow/model',
     method: 'post',
@@ -67,10 +66,10 @@ export function deploy(id) {
  * @returns
  */
 export function getEditorXml(modelId) {
-    return request({
-      url: `workflow/model/getInfo/${modelId}/xml`,
-      method: 'get'
-    })
+  return request({
+    url: `workflow/model/getInfo/${modelId}/xml`,
+    method: 'get'
+  })
 }
 
 /**
@@ -78,10 +77,16 @@ export function getEditorXml(modelId) {
  * @param {参数} data
  * @returns
  */
- export function saveModelXml(data) {
+export function saveModelXml(data) {
   return request({
     url: `workflow/model`,
     method: 'put',
     data: data
+  })
+}
+export function generalModelId() {
+  return request({
+    url: `workflow/model/generalModelId`,
+    method: 'get'
   })
 }

@@ -1,14 +1,14 @@
 <template>
   <div class="process-panel__container" :style="{ width: `${this.width}px` }">
-   <div class="fold" @click="clickFold" style="border:0px ">
+   <!-- <div class="fold" @click="clickFold" style="border:0px ">
       <i class="el-icon-s-unfold" style="cursor:pointer" v-show="!isCollapse"></i>
       <i class="el-icon-s-fold" style="cursor:pointer" v-show="isCollapse"></i>
     </div>
-   <el-menu :style="{ width: `${this.width}px` }" :collapse="isCollapse">
+   <el-menu :style="{ width: `${this.width}px` }" :collapse="isCollapse"> -->
     <el-collapse  class="el-menu-vertical-demo" v-model="activeTab">
       <el-collapse-item name="base">
         <div slot="title" class="panel-tab__title"><i class="el-icon-info"></i>常规</div>
-        <element-base-info :id-edit-disabled="idEditDisabled" :model="model" :business-object="elementBusinessObject" :type="elementType" />
+        <element-base-info :id-edit-disabled="idEditDisabled" :business-object="elementBusinessObject" :type="elementType" />
       </el-collapse-item>
       <el-collapse-item name="condition" v-if="elementType === 'Process'" key="message">
         <div slot="title" class="panel-tab__title"><i class="el-icon-s-comment"></i>消息与信号</div>
@@ -47,7 +47,7 @@
         <element-other-config :id="elementId" />
       </el-collapse-item>
     </el-collapse>
-   </el-menu>
+   <!-- </el-menu> -->
   </div>
 </template>
 <script>
@@ -96,8 +96,7 @@ export default {
     idEditDisabled: {
       type: Boolean,
       default: false
-    },
-    model: Object
+    }
   },
   provide() {
     return {

@@ -1,16 +1,16 @@
 <template>
   <div class="panel-tab__content">
     <el-form size="mini" label-width="90px" @submit.native.prevent>
-      <el-form-item label="ID">
-        <el-input v-model="elementBaseInfo.id" disabled clearable @change="updateBaseInfo('id')" />
+      <el-form-item label="Key">
+        <el-input v-model="elementBaseInfo.id" clearable @change="updateBaseInfo('id')" />
       </el-form-item>
       <el-form-item label="名称">
-        <el-input v-model="elementBaseInfo.name" disabled clearable @change="updateBaseInfo('name')" />
+        <el-input v-model="elementBaseInfo.name" clearable @change="updateBaseInfo('name')" />
       </el-form-item>
       <!--流程的基础属性-->
       <template v-if="elementBaseInfo.$type === 'bpmn:Process'">
-        <el-form-item label="版本标签">
-          <el-input v-model="elementBaseInfo.versionTag" clearable @change="updateBaseInfo('versionTag')" />
+        <el-form-item label="备注">
+          <el-input type="textarea" :rows="2" v-model="elementBaseInfo.versionTag" clearable @change="updateBaseInfo('versionTag')" />
         </el-form-item>
         <el-form-item label="可执行">
           <el-switch v-model="elementBaseInfo.isExecutable" active-text="是" inactive-text="否" @change="updateBaseInfo('isExecutable')" />
@@ -31,8 +31,7 @@ export default {
     idEditDisabled: {
       type: Boolean,
       default: false
-    },
-    model: Object
+    }
   },
   data() {
     return {
@@ -56,8 +55,6 @@ export default {
       if (this.elementBaseInfo && this.elementBaseInfo.$type === "bpmn:SubProcess") {
         this.$set(this.elementBaseInfo, "isExpanded", this.elementBaseInfo.di?.isExpanded);
       }
-      this.elementBaseInfo.id = this.model.id
-      this.elementBaseInfo.name = this.model.name
     },
     updateBaseInfo(key) {
       if (key === "id") {

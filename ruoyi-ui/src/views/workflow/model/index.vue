@@ -88,39 +88,19 @@
           :page.sync="queryParams.pageNum"
           :limit.sync="queryParams.pageSize"
           @pagination="getList" />
-           <!-- 添加模型对话框 -->
-        <el-dialog title="新增模型" :visible.sync="open" width="650px" append-to-body>
-          <el-form ref="form" :model="form" :rules="rules" label-width="100px">
-             <el-form-item label="模型名称：" prop="name"  >
-                <el-input v-model="form.name"  maxlength="20" show-word-limit/>
-            </el-form-item>
-            <el-form-item label="标识Key：" prop="key">
-                <el-input v-model="form.key" maxlength="20" show-word-limit/>
-            </el-form-item>
-            <el-form-item label="备注：" prop="description">
-                <el-input type="textarea" v-model="form.description" maxlength="30" show-word-limit></el-input>
-            </el-form-item>
-          </el-form>
-          <div slot="footer" class="dialog-footer">
-            <el-button :loading="buttonLoading" type="primary" @click="submitForm">确 定</el-button>
-            <el-button @click="cancel">取 消</el-button>
-          </div>
-        </el-dialog>
         <!-- 设计流程 -->
-        <design ref="designModel" :modelId="modelId"/>
         <el-dialog title="设计模型" :before-close="handleClose" :visible.sync="bpmnJsModelVisible" v-if="bpmnJsModelVisible" fullscreen append-to-body>
-            <bpmnJs ref="bpmnJsModel" :modelId="modelId"/>
+            <bpmnJs ref="bpmnJsModel" @close-bpmn="closeBpmn" :modelId="modelId"/>
         </el-dialog>
     </div>
 </template>
 
 <script>
 import {list,add,del,deploy} from "@/api/workflow/model";
-import Design from './design'
 import BpmnJs from './bpmnJs'
 export default {
     name: 'Model', // 和对应路由表中配置的name值一致
-    components: {Design,BpmnJs},
+    components: {BpmnJs},
     data() {
         return {
             //按钮loading
@@ -140,7 +120,6 @@ export default {
             // 总条数
             total: 0,
             // 是否显示弹出层
-            open: false,
             bpmnJsModelVisible: false,
             // 模型定义表格数据
             modelList: [],
@@ -198,12 +177,12 @@ export default {
       },
       //分页
       getList(){
-          this.loading = true;
-          list(this.queryParams).then(response => {
-            this.modelList = response.rows;
-            this.total = response.total;
-            this.loading = false;
-          })
+        this.loading = true;
+        list(this.queryParams).then(response => {
+          this.modelList = response.rows;
+          this.total = response.total;
+          this.loading = false;
+        })
       },
       /** 删除按钮操作 */
       handleDelete(row) {
@@ -233,23 +212,8 @@ export default {
          });
       },
       handleAdd(){
-        this.reset();
-        this.open = true;
-        this.title = "添加测试单表";
-      },
-      // 表单重置
-      reset() {
-        this.form = {
-          name: undefined,
-          key: undefined,
-          description: undefined,
-        };
-        this.resetForm("form");
-      },
-      // 取消按钮
-      cancel() {
-        this.open = false;
-        this.reset();
+        this.modelId = "new"
+        this.bpmnJsModelVisible = true
       },
       /** 提交按钮 */
       submitForm() {
@@ -266,10 +230,15 @@ export default {
             }
         });
       },
-      // 设计流程
+      // 打开设计流程
       clickDesign(id) {
         this.modelId = id
         this.bpmnJsModelVisible = true
+      },
+      // 关闭设计流程
+      closeBpmn(){
+        this.getList()
+        this.bpmnJsModelVisible = false
       },
       handleClose() {
         this.$confirm('请记得点击保存按钮，确定关闭设计窗口?', '确认关闭',{

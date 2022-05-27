@@ -40,7 +40,7 @@ import minimapModule from "diagram-js-minimap";
 // clickoutside
 import clickoutside from "element-ui/lib/utils/clickoutside";
 
-import {getEditorXml,saveModelXml} from "@/api/workflow/model";
+import {getEditorXml,saveModelXml,add} from "@/api/workflow/model";
 export default {
   name: "App",
   directives: {
@@ -79,7 +79,9 @@ export default {
     };
   },
   created() {
-    this.getModelEditorXml()
+    if(this.modelId !== 'new'){
+        this.getModelEditorXml()
+    }
     window.onresize = () => {
       //获取body的高度
       this.screenHeight = document.body.clientHeight
@@ -87,29 +89,43 @@ export default {
   },
   computed: {
     getScreenHeight() {
-        return this.screenHeight - 50
+      return this.screenHeight - 50
     }
   },
   methods: {
     //读取xml
     getModelEditorXml(){
       getEditorXml(this.modelId).then(response=>{
-        this.xmlString = response.data.xml
+
         this.model = response.data.model
-        this.$refs.processDesigner.createNewDiagram(this.xmlString)
+        //if(response.data.xml!==null||response.data.xml!==''){
+           // this.$refs.processDesigner.model = response.data.model
+            this.xmlString = response.data.xml
+            this.$refs.processDesigner.createNewDiagram(this.xmlString)
+       // }
+
       })
     },
     saveMode(xml,svg){
-      let params = {
-        modelId: this.modelId,
-        xml: xml,
-        svg: svg
-      }
-      saveModelXml(params).then(response=>{
-        if(response.code === 200){
-           this.$modal.msgSuccess("保存成功")
-        }
-      })
+      this.$modal.confirm('是否确认保存模型？').then(() => {
+           if(this.modelId === 'new'){
+              let params = {xml: xml,svg: svg}
+              add(params).then(response=>{
+                if(response.code === 200){
+                  this.$modal.msgSuccess("保存成功")
+                  this.$emit("close-bpmn")
+                }
+              })
+            }else{
+              let params = {modelId: this.modelId,xml: xml,svg: svg}
+              saveModelXml(params).then(response=>{
+                if(response.code === 200){
+                  this.$modal.msgSuccess("保存成功")
+                  this.$emit("close-bpmn")
+                }
+              })
+            }
+         })
     },
     initModeler(modeler) {
       setTimeout(() => {

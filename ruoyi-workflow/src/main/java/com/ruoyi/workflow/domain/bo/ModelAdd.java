@@ -33,6 +33,18 @@ public class ModelAdd  implements Serializable {
     private String key;
 
     /**
+     * xml
+     */
+    @ApiModelProperty("模型xml")
+    private String xml;
+
+    /**
+     * svg
+     */
+    @ApiModelProperty("模型图片")
+    private String svg;
+
+    /**
      * 描述
      */
     @ApiModelProperty("描述")
