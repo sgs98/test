@@ -463,7 +463,7 @@ export default {
             entity: entity
         }
         const data = {
-            processKey: 'leave', // key
+            processKey: 'huiqian', // key
             businessKey: entity.id, // 业务id
             variables: variables,
             classFullName: 'com.ruoyi.demo.domain.BsLeave'
@@ -477,7 +477,7 @@ export default {
             // 查询下一节点的变量
             this.taskVariables = {
                 entity: entity,  // 变量
-                assignee: '1', // key
+                //assignee: '1', // key
                 //assigneeList: assigneeList
             }
             this.$refs.verifyRef.visible = true

@@ -66,6 +66,9 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
             JSONObject jsonObject = JSONUtil.xmlToJson(xml);
             JSONObject bpmn2 = (JSONObject) jsonObject.get("bpmn2:definitions");
             JSONObject process =  (JSONObject)bpmn2.get("bpmn2:process");
+            if(!process.containsKey("id")||!process.containsKey("name")||StringUtils.isBlank(process.get("id").toString())||StringUtils.isBlank(process.get("name").toString())){
+                return R.fail("模型Key或者模型名称不能为空");
+            }
             String key = process.get("id").toString();
             String name = process.get("name").toString();
             String description = "";
@@ -186,6 +189,9 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
             JSONObject jsonObject = JSONUtil.xmlToJson(xml);
             JSONObject bpmn2 = (JSONObject) jsonObject.get("bpmn2:definitions");
             JSONObject process =  (JSONObject)bpmn2.get("bpmn2:process");
+            if(!process.containsKey("id")||!process.containsKey("name")||StringUtils.isBlank(process.get("id").toString())||StringUtils.isBlank(process.get("name").toString())){
+                return R.fail("模型Key或者模型名称不能为空");
+            }
             String key = process.get("id").toString();
             String name = process.get("name").toString();
             String description = "";
