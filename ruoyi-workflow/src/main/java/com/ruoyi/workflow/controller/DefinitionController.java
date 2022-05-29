@@ -12,8 +12,6 @@ import com.ruoyi.workflow.domain.vo.ProcessDefinitionVo;
 import com.ruoyi.workflow.service.IDefinitionService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.flowable.engine.repository.Model;
-import org.flowable.engine.repository.ProcessDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;

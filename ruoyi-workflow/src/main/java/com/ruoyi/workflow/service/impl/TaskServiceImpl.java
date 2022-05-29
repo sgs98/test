@@ -420,8 +420,10 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     @Override
     public Map<String,Object> getNextNodeInfo(NextNodeREQ req) {
         Map<String, Object> map = new HashMap<>();
-        //设置变量
         TaskEntity task = (TaskEntity)taskService.createTaskQuery().taskId(req.getTaskId()).singleResult();
+        if (task.isSuspended()) {
+            throw new ServiceException("当前任务已被挂起");
+        }
         //可驳回的节点
         List<ActTaskNode> taskNodeList = iActTaskNodeService.getListByInstanceId(task.getProcessInstanceId()).stream().filter(e->e.getIsBack()).collect(Collectors.toList());
         map.put("backNodeList",taskNodeList);

@@ -1,20 +1,13 @@
 package com.ruoyi.workflow.flowable.factory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.flowable.engine.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.annotation.Resource;
 
 /**
  * 统一管理flowable提供的服务接口
  */
 public class WorkflowService {
-
-
-    @Autowired
-    public  ObjectMapper objectMapper;
 
     /**
      * 流程引擎

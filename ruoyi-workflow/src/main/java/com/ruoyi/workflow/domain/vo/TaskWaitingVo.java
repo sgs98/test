@@ -98,7 +98,6 @@ public class TaskWaitingVo implements Serializable {
     @ApiModelProperty("父级任务id")
     private String parentTaskId;
 
-
     /**
      * 认领或归还 ture已认领，false未认领 ，空没有候选人
      */

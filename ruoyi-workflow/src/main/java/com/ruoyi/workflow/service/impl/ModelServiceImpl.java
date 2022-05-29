@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.common.utils.JsonUtils;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.flowable.factory.WorkflowService;
 import com.ruoyi.workflow.domain.bo.ModelREQ;
@@ -88,6 +89,7 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
             model.setName(name);
             model.setVersion(model.getVersion()+1);
             //封装模型json对象
+            ObjectMapper objectMapper = JsonUtils.getObjectMapper();
             ObjectNode objectNode = objectMapper.createObjectNode();
             objectNode.put(ModelDataJsonConstants.MODEL_NAME, name);
             objectNode.put(ModelDataJsonConstants.MODEL_REVISION, model.getVersion()+1);
@@ -209,6 +211,7 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
             model.setName(name);
             model.setVersion(version);
             //封装模型json对象
+            ObjectMapper objectMapper = JsonUtils.getObjectMapper();
             ObjectNode objectNode = objectMapper.createObjectNode();
             objectNode.put(ModelDataJsonConstants.MODEL_NAME, name);
             objectNode.put(ModelDataJsonConstants.MODEL_REVISION, version);
