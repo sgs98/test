@@ -34,7 +34,7 @@ Log.prototype.isArray = function(obj) {
 Log.prototype.print = function(text, type = "default", back = false) {
   if (typeof text === "object") {
     // 如果是對象則調用打印對象方式
-    this.isArray(text) ? console.table(text) : console.dir(text);
+    //this.isArray(text) ? console.table(text) : console.dir(text);
     return;
   }
   if (back) {

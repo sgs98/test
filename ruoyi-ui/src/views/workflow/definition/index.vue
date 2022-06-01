@@ -110,19 +110,6 @@
                 icon="el-icon-setting"
                 @click="handleSetting(scope.row)"
                 >设置</el-button>
-              <!-- <el-dropdown>
-              <span class="el-dropdown-link">
-                更多<i class="el-icon-arrow-down el-icon--right"></i>
-              </span>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item>
-                  <el-button  size="mini" type="text" icon="el-icon-setting" @click="handleSetting(scope.row)" >设置</el-button>
-                </el-dropdown-item>
-                <el-dropdown-item>
-                  <el-button  size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)" >删除</el-button>
-                </el-dropdown-item>
-              </el-dropdown-menu>
-              </el-dropdown> -->
             </el-col>
           </el-row>
         </template>
