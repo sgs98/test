@@ -34,8 +34,6 @@ import org.flowable.engine.task.Comment;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskQuery;
 import org.flowable.task.api.history.HistoricTaskInstance;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +56,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ProcessInstanceServiceImpl extends WorkflowService implements IProcessInstanceService {
-    protected static final Logger logger = LoggerFactory.getLogger(ProcessInstanceServiceImpl.class);
 
     private final IActBusinessStatusService iActBusinessStatusService;
     private final IUserService iUserService;
@@ -104,18 +101,16 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
         runtimeService.setProcessInstanceName(pi.getProcessInstanceId(), pi.getProcessDefinitionName());
         // 申请人执行流程
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(pi.getId()).list();
+        if(taskList.size()>1){
+            throw new ServiceException("请检查流程第一个环节是否为申请人！");
+        }
         for (Task task : taskList) {
             taskService.setAssignee(task.getId(),LoginHelper.getUserId().toString());
-        }
-
-        //查询下一个任务
-        List<Task> nextList = taskService.createTaskQuery().processInstanceId(pi.getId()).list();
-        for (Task task : nextList) {
             // 更新业务状态
             iActBusinessStatusService.updateState(startReq.getBusinessKey(), BusinessStatusEnum.DRAFT, task.getProcessInstanceId(), startReq.getClassFullName());
         }
         map.put("processInstanceId",pi.getProcessInstanceId());
-        map.put("taskId",nextList.get(0).getId());
+        map.put("taskId",taskList.get(0).getId());
         return map;
     }
 
