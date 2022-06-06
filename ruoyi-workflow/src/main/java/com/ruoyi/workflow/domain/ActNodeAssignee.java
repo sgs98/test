@@ -6,15 +6,11 @@ import com.ruoyi.common.core.domain.BaseEntity;
 import com.ruoyi.common.core.validate.AddGroup;
 import com.ruoyi.common.core.validate.EditGroup;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.experimental.Accessors;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.io.Serializable;
 
 /**
  * 流程定义设置对象 act_node_assignee
@@ -26,7 +22,7 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = true)
 @TableName("act_node_assignee")
 @ApiModel("流程定义设置对象")
-public class ActNodeAssignee extends BaseEntity implements Serializable {
+public class ActNodeAssignee extends BaseEntity{
 
     private static final long serialVersionUID=1L;
 
@@ -97,6 +93,5 @@ public class ActNodeAssignee extends BaseEntity implements Serializable {
      */
     @NotNull(message = "是否可退回不能为空", groups = { AddGroup.class, EditGroup.class })
     private Boolean isBack;
-
 
 }
