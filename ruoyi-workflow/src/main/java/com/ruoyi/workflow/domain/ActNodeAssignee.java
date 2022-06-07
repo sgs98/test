@@ -91,7 +91,25 @@ public class ActNodeAssignee extends BaseEntity{
     /**
      * 是否可退回
      */
-    @NotNull(message = "是否可退回不能为空", groups = { AddGroup.class, EditGroup.class })
+    @NotNull(message = "是否能退回不能为空", groups = { AddGroup.class, EditGroup.class })
     private Boolean isBack;
+
+    /**
+     * 是否可委托
+     */
+    @NotNull(message = "是否能委托不能为空", groups = { AddGroup.class, EditGroup.class })
+    private Boolean isDelegate;
+
+    /**
+     * 是否可转办
+     */
+    @NotNull(message = "是否能转办不能为空", groups = { AddGroup.class, EditGroup.class })
+    private Boolean isTransmit;
+
+    /**
+     * 是否可抄送
+     */
+    @NotNull(message = "是否能抄送不能为空", groups = { AddGroup.class, EditGroup.class })
+    private Boolean isCopy;
 
 }

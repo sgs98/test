@@ -21,19 +21,36 @@
             <el-row>
               <el-col class="line" :span="6">
                 <el-form-item label="是否弹窗选人" prop="isShow">
-                  <el-switch :disabled = "isShowDisabled" v-model="form.isShow"></el-switch>
+                  <el-switch v-model="form.isShow"></el-switch>
                 </el-form-item>
               </el-col>
               <el-col class="line" :span="6">
-                <el-form-item label="是否会签" prop="multiple">
+                <el-form-item label="是否能会签" prop="multiple">
                   <el-switch v-model="form.multiple"></el-switch>
                 </el-form-item>
-            </el-col>
-            <el-col class="line" :span="6">
-                <el-form-item label="是否可退回" prop="isBack">
-                  <el-switch v-model="form.isBack"></el-switch>
+              </el-col>
+              <el-col class="line" :span="6">
+                  <el-form-item label="是否能退回" prop="isBack">
+                    <el-switch v-model="form.isBack"></el-switch>
+                  </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col class="line" :span="6">
+                <el-form-item label="是否可以委托" prop="isDelegate">
+                  <el-switch v-model="form.isDelegate"></el-switch>
                 </el-form-item>
-            </el-col>
+              </el-col>
+              <el-col class="line" :span="6">
+                <el-form-item label="是否能转办" prop="isTransmit">
+                  <el-switch v-model="form.isTransmit"></el-switch>
+                </el-form-item>
+              </el-col>
+              <el-col class="line" :span="6">
+                  <el-form-item label="是否能抄送" prop="isCopy">
+                    <el-switch v-model="form.isCopy"></el-switch>
+                  </el-form-item>
+              </el-col>
             </el-row>
             <el-row v-if="form.multiple">
               <el-col :span="20">
@@ -97,12 +114,14 @@ export default {
         nodeList: [],
         visible: false,
         active: null,
-        isShowDisabled: false,
         form: {
           isShow: true,
           isBack: false,
           multiple: false,
-          chooseWay: undefined
+          chooseWay: undefined,
+          isDelegate: false,
+          isTransmit: false,
+          isCopy: false
         },
         definitionId: null,
         assignee: null,
