@@ -42,7 +42,6 @@ public class ActNodeAssignee extends BaseEntity{
     /**
      * 选择方式  role按角色选人  dept按部门选人  person自定义选人
      */
-    @NotBlank(message = "选择方式不能为空", groups = { AddGroup.class, EditGroup.class })
     private String chooseWay;
 
     /**

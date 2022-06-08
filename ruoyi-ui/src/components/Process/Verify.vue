@@ -16,7 +16,7 @@
           </el-input>
         </div>
       </el-form-item>
-      <el-form-item label="是否抄送" prop="isCopy" label-width="120px" >
+      <el-form-item label="是否抄送" prop="isCopy" label-width="120px" v-if="setting.isCopy">
          <el-col :span="12">
            <div class="grid-content bg-purple">
              <el-radio-group v-model="formData.isCopy" size="small">
@@ -39,8 +39,8 @@
         <el-button type="primary" v-if="backNodeList && backNodeList.length>0" @click="openBack()" size="small">退回</el-button>
         <el-button type="primary" v-if="isMultiInstance" @click="addMultiClick()" size="small">加签</el-button>
         <el-button type="primary" v-if="multiList && multiList.length>0" @click="deleteMultiClick()" size="small">减签</el-button>
-        <el-button type="primary" @click="delegateClick()" size="small">委托</el-button>
-        <el-button type="primary" @click="transmitClick()" size="small">转办</el-button>
+        <el-button type="primary" v-if="setting.isDelegate" @click="delegateClick()" size="small">委托</el-button>
+        <el-button type="primary" v-if="setting.isTransmit" @click="transmitClick()" size="small">转办</el-button>
         <el-button size="small" @click="closeDialog()">取消</el-button>
       </el-form-item>
     </el-form>
@@ -209,7 +209,9 @@ export default {
       //可以减签的集合
       multiList: [],
       //可驳回的集合
-      backNodeList: []
+      backNodeList: [],
+      //按钮设置
+      setting: {}
     };
   },
 
@@ -228,6 +230,7 @@ export default {
           this.isMultiInstance = data.isMultiInstance;
           this.multiList = data.multiList;
           this.backNodeList = data.backNodeList;
+          this.setting = data.setting
           this.loading = false;
         } catch (error) {
           this.loading = false;

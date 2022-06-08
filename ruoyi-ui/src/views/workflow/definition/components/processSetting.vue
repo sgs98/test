@@ -8,9 +8,13 @@
               <el-tag v-if="nodeName">{{nodeName}}</el-tag><el-tag v-else>无</el-tag>
             </el-form-item>
             <el-row>
-              <el-col :span="24"><el-alert title="每个节点设置，如有修改都请保存一次，跳转节点后数据不会自动保存！" type="warning" show-icon :closable="false"/></el-col>
+              <el-form-item>
+                  <el-col :span="24" style="line-height: 20px">
+                    <el-alert title="每个节点设置，如有修改都请保存一次，跳转节点后数据不会自动保存！" type="warning" show-icon :closable="false"/>
+                  </el-col>
+              </el-form-item>
             </el-row>
-            <el-form-item prop="chooseWay" label="选人方式">
+            <el-form-item v-if="node.index === 1" prop="chooseWay" label="选人方式">
               <el-radio-group @change="clearSelect" v-model="form.chooseWay">
                 <el-radio border label="person">选择人员</el-radio>
                 <el-radio border label="role">选择角色</el-radio>
@@ -18,7 +22,7 @@
                 <el-radio border label="rule">业务规则</el-radio>
               </el-radio-group>
             </el-form-item>
-            <el-row>
+            <el-row v-if="node.index === 1">
               <el-col class="line" :span="6">
                 <el-form-item label="是否弹窗选人" prop="isShow">
                   <el-switch v-model="form.isShow"></el-switch>
@@ -59,7 +63,7 @@
                 </el-form-item>
               </el-col>
             </el-row>
-            <el-row>
+            <el-row v-if="node.index === 1">
               <el-col :span="20">
                 <el-form-item label-width="100px" label="审批人员" prop="assignee">
                   <el-input readonly v-model="form.assignee" placeholder="审批人员">
@@ -123,9 +127,12 @@ export default {
           isTransmit: false,
           isCopy: false
         },
+        // 流程定义id
         definitionId: null,
-        assignee: null,
+        // 环节名称
         nodeName: null,
+        // 下标
+        index: 0,
         // 人员选择
         propUserList: [],
         // 角色选择
@@ -156,6 +163,7 @@ export default {
           this.form.multiple = false
           this.loading = true
           this.nodeName = this.nodeList[this.activeName].nodeName
+          this.index = this.nodeList[this.activeName].index
           getInfo(this.definitionId,this.nodeList[this.activeName].nodeId).then(response => {
             if(response.data){
               this.form = response.data
@@ -174,17 +182,18 @@ export default {
         //保存设置
         onSubmit(){
           if(this.nodeName){
-            if(this.form.chooseWay !== 'rule'){
+            if(this.index === 1){
+              if(this.form.chooseWay !== 'rule'){
                 this.form.fullClassId = undefined
+              }
+              if(this.form.chooseWay === null || this.form.chooseWay === ''||this.form.chooseWay === undefined){
+                  this.$modal.msgError("请选择选人方式")
+                  return false
+              }
+              if(this.form.isBack === null || this.form.isBack === ''||this.form.isBack === undefined){
+                  this.form.isBack = false
+              }
             }
-            if(this.form.chooseWay === null || this.form.chooseWay === ''||this.form.chooseWay === undefined){
-                this.$modal.msgError("请选择选人方式")
-                return false
-            }
-            if(this.form.isBack === null || this.form.isBack === ''||this.form.isBack === undefined){
-                this.form.isBack = false
-            }
-
             if(this.form.id){
               del(this.form.id)
               this.form.id = undefined
