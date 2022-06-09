@@ -22,13 +22,6 @@ public interface IActNodeAssigneeService extends IService<ActNodeAssignee> {
     ActNodeAssignee add(ActNodeAssignee actNodeAssignee);
 
     /**
-     * 修改流程定义设置
-     * @param actNodeAssignee
-     * @return
-     */
-    ActNodeAssignee edit(ActNodeAssignee actNodeAssignee);
-
-    /**
      * 按照流程定义id和流程节点id查询流程定义设置
      * @param processDefinitionId
      * @param nodeId

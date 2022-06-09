@@ -8,14 +8,6 @@ export function add(data) {
   })
 }
 
-export function edit(data) {
-  return request({
-    url: '/workflow/actNodeAssignee',
-    method: 'put',
-    data: data
-  })
-}
-
 export function del(id) {
   return request({
     url: '/workflow/actNodeAssignee/'+id,

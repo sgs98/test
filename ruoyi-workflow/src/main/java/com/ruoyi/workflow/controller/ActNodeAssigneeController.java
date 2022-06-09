@@ -4,7 +4,6 @@ import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.validate.AddGroup;
-import com.ruoyi.common.core.validate.EditGroup;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.workflow.domain.ActNodeAssignee;
 import com.ruoyi.workflow.service.IActNodeAssigneeService;
@@ -43,20 +42,6 @@ public class ActNodeAssigneeController extends BaseController {
     @Log(title = "流程定义设置", businessType = BusinessType.INSERT)
     public R<ActNodeAssignee> add(@Validated(AddGroup.class) @RequestBody ActNodeAssignee actNodeAssignee){
         return R.ok(iActNodeAssigneeService.add(actNodeAssignee));
-    }
-
-    /**
-     * @Description: 修改流程定义设置
-     * @param: actNodeAssignee
-     * @return: com.ruoyi.common.core.domain.R<com.ruoyi.workflow.domain.ActNodeAssignee>
-     * @Author: gssong
-     * @Date: 2021/11/21
-     */
-    @PutMapping
-    @ApiOperation("修改流程定义设置")
-    @Log(title = "流程定义设置", businessType = BusinessType.UPDATE)
-    public R<ActNodeAssignee> edit(@Validated(EditGroup.class)  @RequestBody ActNodeAssignee actNodeAssignee){
-        return R.ok(iActNodeAssigneeService.edit(actNodeAssignee));
     }
 
     /**

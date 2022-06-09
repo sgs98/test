@@ -431,9 +431,11 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         //委托流程
         if(ObjectUtil.isNotEmpty(task.getDelegationState())&&ActConstant.PENDING.equals(task.getDelegationState().name())){
             ActNodeAssignee actNodeAssignee = new ActNodeAssignee();
-            actNodeAssignee.setIsCopy(false);
             actNodeAssignee.setIsDelegate(false);
             actNodeAssignee.setIsTransmit(false);
+            actNodeAssignee.setIsCopy(false);
+            actNodeAssignee.setAddMultiInstance(false);
+            actNodeAssignee.setDeleteMultiInstance(false);
             map.put("setting",actNodeAssignee);
             map.put("list",new ArrayList<>());
             map.put("isMultiInstance",false);
@@ -444,9 +446,11 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             map.put("setting",nodeAssignee);
         }else{
             ActNodeAssignee actNodeAssignee = new ActNodeAssignee();
-            actNodeAssignee.setIsCopy(false);
             actNodeAssignee.setIsDelegate(false);
             actNodeAssignee.setIsTransmit(false);
+            actNodeAssignee.setIsCopy(false);
+            actNodeAssignee.setAddMultiInstance(false);
+            actNodeAssignee.setDeleteMultiInstance(false);
             map.put("setting",actNodeAssignee);
         }
 
