@@ -3,7 +3,7 @@
     <div class="container" v-loading="loading">
        <el-tabs :tab-position="tabPosition" v-model="activeName" @tab-click="changeSteps">
         <el-tab-pane v-for="(node, index) in nodeList" :key="index" :name="node.id" :label="node.nodeName">
-          <el-form ref="form" size="small" label-position="left" :model="form">
+          <el-form style="height:inherit" ref="form" size="small" label-position="left" :model="form">
             <el-form-item label="环节名称">
               <el-tag v-if="nodeName">{{nodeName}}</el-tag><el-tag v-else>无</el-tag>
             </el-form-item>
@@ -30,7 +30,7 @@
               </el-col>
               <el-col class="line" :span="8">
                 <el-form-item label="是否能会签" prop="multiple">
-                  <el-switch v-model="form.multiple"></el-switch>
+                  <el-switch @change="changeMultiple" disabled v-model="form.multiple"></el-switch>
                 </el-form-item>
               </el-col>
               <el-col class="line" :span="8">
@@ -59,7 +59,7 @@
             <el-row v-if="form.multiple">
               <el-col class="line" :span="8">
                 <el-form-item label-width="100px" label="会签集合" prop="multipleColumn">
-                  <el-input @input="onInput()" style="width:200px" v-model="form.multipleColumn" placeholder="请输入会签集合变量"/>
+                  <el-tag>{{form.multipleColumn}}</el-tag>
                 </el-form-item>
               </el-col>
               <el-col class="line" :span="8">
@@ -82,17 +82,15 @@
                   </el-input>
                   <el-input v-model="form.assigneeId" v-show="false" placeholder="审批人员ID"/>
                 </el-form-item>
-            </el-col>
+              </el-col>
             </el-row>
-            <el-form-item>
-              <div style="float:right;">
-                <el-button type="primary" @click="onSubmit">保存</el-button>
-                <el-button type="danger" v-if="node.index === 1" @click="del">重置</el-button>
-              </div>
-            </el-form-item>
           </el-form>
         </el-tab-pane>
       </el-tabs>
+      <div style="float:right;position:relative;bottom:20px;">
+        <el-button type="primary" size="small" @click="onSubmit">保存</el-button>
+        <el-button type="danger" size="small" v-if="index === 1" @click="del">重置</el-button>
+      </div>
     </div>
     <!-- 选择人员 -->
     <sys-user ref="userRef" @confirmUser="clickUser" :propUserList = 'propUserList'/>
@@ -110,8 +108,8 @@ import  SysUser from "@/views/components/user/sys-user";
 import  SysRole from "@/views/components/role/sys-role";
 import  SysDept from "@/views/components/dept/sys-dept";
 import  ProcessRule from "@/views/workflow/definition/components/processRule";
-import {setting} from "@/api/workflow/definition";
-import {getInfo,add,del} from "@/api/workflow/actNodeAssginee";
+import {setting,getMultiInstanceCollect} from "@/api/workflow/definition";
+import {getInfoSetting,add,del} from "@/api/workflow/actNodeAssginee";
 
 export default {
     components: {
@@ -156,9 +154,6 @@ export default {
       }
     },
     methods: {
-        onInput(){
-           this.$forceUpdate();
-        },
         // 查询流程节点
         async init(definitionId) {
            this.loading = true
@@ -178,8 +173,8 @@ export default {
           this.loading = true
           this.nodeName = this.nodeList[this.activeName].nodeName
           this.index = this.nodeList[this.activeName].index
-          getInfo(this.definitionId,this.nodeList[this.activeName].nodeId).then(response => {
-            if(response.data){
+          getInfoSetting(this.definitionId,this.nodeList[this.activeName].nodeId).then(response => {
+            if(response.code === 200){
               this.form = response.data
               this.form.nodeName = response.data.nodeName
               this.loading = false
@@ -196,19 +191,13 @@ export default {
                 this.btnText = "选择规则"
               }
               this.$forceUpdate()
-            }else{
-              this.form.id = undefined
-              this.form.isBack = false
-              this.form.nodeId = this.nodeList[this.activeName].nodeId
-              this.form.nodeName = this.nodeList[this.activeName].nodeName
-              this.reset()
-              this.loading = false
             }
           })
         },
         //保存设置
         onSubmit(){
           if(this.nodeName){
+            this.form.nodeName = this.nodeName
             this.form.index = this.index
             add(this.form).then(response => {
               this.form = response.data
@@ -216,6 +205,27 @@ export default {
             })
           }else{
             this.$modal.msgError("请选择节点")
+          }
+        },
+        //获取会签集合变量
+        changeMultiple(val){
+          if(val){
+            getMultiInstanceCollect(this.definitionId,this.form.nodeId).then(response => {
+              if(response.code === 200){
+                this.form.multipleColumn = response.data
+              }else{
+                this.form.multipleColumn = ''
+                this.form.multiple = false
+                this.form.addMultiInstance = false
+                this.form.deleteMultiInstance = false
+                this.$modal.msgError(response.msg)
+              }
+            })
+          }else{
+            this.form.multipleColumn = ''
+            this.form.multiple = false
+            this.form.addMultiInstance = false
+            this.form.deleteMultiInstance = false
           }
         },
         // 删除

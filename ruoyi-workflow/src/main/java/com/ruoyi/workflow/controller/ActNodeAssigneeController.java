@@ -53,8 +53,8 @@ public class ActNodeAssigneeController extends BaseController {
      */
     @GetMapping("/{processDefinitionId}/{nodeId}")
     @ApiOperation("按照流程定义id和流程节点id查询流程定义设置")
-    public R<ActNodeAssignee> getInfo(@PathVariable String processDefinitionId,@PathVariable String nodeId){
-        ActNodeAssignee nodeAssignee = iActNodeAssigneeService.getInfo(processDefinitionId,nodeId);
+    public R<ActNodeAssignee> getInfoSetting(@PathVariable String processDefinitionId,@PathVariable String nodeId){
+        ActNodeAssignee nodeAssignee = iActNodeAssigneeService.getInfoSetting(processDefinitionId,nodeId);
         return R.ok(nodeAssignee);
     }
 

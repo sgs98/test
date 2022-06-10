@@ -30,6 +30,14 @@ public interface IActNodeAssigneeService extends IService<ActNodeAssignee> {
     ActNodeAssignee getInfo(String processDefinitionId, String nodeId);
 
     /**
+     * 按照流程定义id和流程节点id查询流程定义设置
+     * @param processDefinitionId
+     * @param nodeId
+     * @return
+     */
+    ActNodeAssignee getInfoSetting(String processDefinitionId, String nodeId);
+
+    /**
      * 按照流程定义id查询
      * @param processDefinitionId
      * @return

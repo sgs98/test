@@ -27,66 +27,61 @@
                     <el-tag type="danger" v-else>挂起</el-tag>
                 </template>
                 </el-table-column>
-                <el-table-column align="center" prop="deploymentTime" label="部署时间" width="160"></el-table-column>
-                <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
-                <template slot-scope="scope">
-                  <el-dropdown>
-                  <span class="el-dropdown-link">
-                    更多<i class="el-icon-arrow-down el-icon--right"></i>
-                  </span>
-                  <el-dropdown-menu slot="dropdown">
-                      <el-dropdown-item>
-                      <el-button
-                        v-if="scope.row.suspensionState == 1"
-                        @click="clickUpdateProcDefState(scope.row)"
-                        type="text"
-                        size="mini"
-                        icon="el-icon-lock"
-                    >挂起</el-button>
-                    <el-button
-                        v-else type="text"
-                        @click="clickUpdateProcDefState(scope.row)"
-                        size="mini"
-                        icon="el-icon-unlock"
-                    >激活</el-button>
-                    </el-dropdown-item>
-                    <el-dropdown-item>
-                      <el-button
+                <el-table-column align="center" prop="deploymentTime" label="部署时间" width="150"></el-table-column>
+                <el-table-column label="操作" align="center" width="220" class-name="small-padding fixed-width">
+                  <template slot-scope="scope">
+                    <el-row :gutter="20" class="mb8">
+                      <el-col :span="1.5">
+                        <el-button
+                          v-if="scope.row.suspensionState == 1"
+                          @click="clickUpdateProcDefState(scope.row)"
+                          type="text"
+                          size="mini"
+                          icon="el-icon-lock"
+                        >挂起</el-button>
+                        <el-button
+                          v-else type="text"
+                          @click="clickUpdateProcDefState(scope.row)"
+                          size="mini"
+                          icon="el-icon-unlock"
+                        >激活</el-button>
+                      </el-col>
+                      <el-col :span="1.5">
+                        <el-button
                           type="text"
                           @click="convertToModel(scope.row)"
                           size="mini"
                           icon="el-icon-sort"
-                      >转换模型</el-button>
-                    </el-dropdown-item>
-                    <el-dropdown-item>
-                      <el-button
-                          size="mini"
-                          type="text"
-                          icon="el-icon-copy-document"
-                          @click="copySetting(scope.row)"
-                      >复制流程</el-button>
-                      </el-dropdown-item>
-
-                    <el-dropdown-item>
-                      <el-button
-                          size="mini"
-                          type="text"
-                          icon="el-icon-setting"
-                          @click="handleSetting(scope.row)"
-                      >设置</el-button>
-                    </el-dropdown-item>
-
-                    <el-dropdown-item>
-                      <el-button
+                        >转换模型</el-button>
+                      </el-col>
+                      <el-col :span="1.5">
+                        <el-button
                           size="mini"
                           type="text"
                           icon="el-icon-delete"
                           @click="handleDelete(scope.row)"
-                      >删除</el-button>
-                    </el-dropdown-item>
-                  </el-dropdown-menu>
-                  </el-dropdown>
-                </template>
+                        >删除</el-button>
+                      </el-col>
+                    </el-row>
+                    <el-row :gutter="20" class="mb8">
+                      <el-col :span="1.5">
+                        <el-button
+                          size="mini"
+                          type="text"
+                          icon="el-icon-setting"
+                          @click="handleSetting(scope.row)"
+                        >设置</el-button>
+                      </el-col>
+                      <el-col :span="1.5">
+                        <el-button
+                          size="mini"
+                          type="text"
+                          icon="el-icon-copy-document"
+                          @click="copySetting(scope.row)"
+                        >复制流程</el-button>
+                      </el-col>
+                    </el-row>
+                  </template>
                 </el-table-column>
             </el-table>
 

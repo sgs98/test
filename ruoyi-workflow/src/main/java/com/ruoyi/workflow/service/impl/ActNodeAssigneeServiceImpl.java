@@ -8,8 +8,10 @@ import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.domain.ActNodeAssignee;
 import com.ruoyi.workflow.domain.vo.ActProcessNodeVo;
+import com.ruoyi.workflow.domain.vo.MultiVo;
 import com.ruoyi.workflow.mapper.ActNodeAssigneeMapper;
 import com.ruoyi.workflow.service.IActNodeAssigneeService;
+import com.ruoyi.workflow.utils.WorkFlowUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.BpmnModel;
@@ -23,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 
@@ -38,6 +39,8 @@ import java.util.List;
 public class ActNodeAssigneeServiceImpl extends ServiceImpl<ActNodeAssigneeMapper, ActNodeAssignee> implements IActNodeAssigneeService {
 
     private final RepositoryService repositoryService;
+
+    private final WorkFlowUtils workFlowUtils;
 
     /**
      * @Description: 保存流程定义设置
@@ -85,6 +88,51 @@ public class ActNodeAssigneeServiceImpl extends ServiceImpl<ActNodeAssigneeMappe
         wrapper.eq(ActNodeAssignee::getProcessDefinitionId,processDefinitionId);
         wrapper.eq(ActNodeAssignee::getNodeId,nodeId);
         ActNodeAssignee nodeAssignee = baseMapper.selectOne(wrapper);
+        return nodeAssignee;
+    }
+
+    /**
+     * @Description: 按照流程定义id和流程节点id查询流程定义设置
+     * @param: actNodeAssignee
+     * @return: com.ruoyi.workflow.domain.ActNodeAssignee
+     * @Author: gssong
+     * @Date: 2022/6/10 23:22
+     */
+    @Override
+    public ActNodeAssignee getInfoSetting(String processDefinitionId, String nodeId) {
+        LambdaQueryWrapper<ActNodeAssignee> wrapper = new LambdaQueryWrapper();
+        wrapper.eq(ActNodeAssignee::getProcessDefinitionId,processDefinitionId);
+        wrapper.eq(ActNodeAssignee::getNodeId,nodeId);
+        ActNodeAssignee nodeAssignee = baseMapper.selectOne(wrapper);
+
+        if(ObjectUtil.isEmpty(nodeAssignee)){
+            nodeAssignee = new ActNodeAssignee();
+            nodeAssignee.setProcessDefinitionId(processDefinitionId);
+            nodeAssignee.setNodeId(nodeId);
+            nodeAssignee.setChooseWay(ActConstant.WORKFLOW_PERSON);
+            nodeAssignee.setIsBack(false);
+            nodeAssignee.setIsShow(false);
+            nodeAssignee.setIsTransmit(false);
+            nodeAssignee.setIsCopy(false);
+            nodeAssignee.setIsDelegate(false);
+            nodeAssignee.setMultiple(false);
+            nodeAssignee.setAddMultiInstance(false);
+            nodeAssignee.setDeleteMultiInstance(false);
+        }
+        MultiVo multiInstance = workFlowUtils.isMultiInstance(processDefinitionId, nodeId);
+        if(ObjectUtil.isNotEmpty(multiInstance)){
+            nodeAssignee.setMultiple(true);
+            if(StringUtils.isBlank(multiInstance.getAssigneeList())){
+                nodeAssignee.setMultipleColumn("获取会签集合变量为空，请检查流程");
+            }else{
+                nodeAssignee.setMultipleColumn(multiInstance.getAssigneeList());
+            }
+        }else{
+            nodeAssignee.setMultiple(false);
+            nodeAssignee.setMultipleColumn("");
+            nodeAssignee.setAddMultiInstance(false);
+            nodeAssignee.setDeleteMultiInstance(false);
+        }
         return nodeAssignee;
     }
 
@@ -180,15 +228,14 @@ public class ActNodeAssigneeServiceImpl extends ServiceImpl<ActNodeAssigneeMappe
             BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinition.getId());
             List<Process> processes = bpmnModel.getProcesses();
             List<ActProcessNodeVo> processNodeVoList = new ArrayList<>();
-            Collection<FlowElement> elements = processes.get(0).getFlowElements();
-            for (FlowElement element : elements) {
+            List<UserTask> userTaskList = processes.get(0).findFlowElementsOfType(UserTask.class);
+
+            for (FlowElement element : userTaskList) {
                 ActProcessNodeVo actProcessNodeVo = new ActProcessNodeVo();
-                if (element instanceof UserTask) {
                     actProcessNodeVo.setNodeId(element.getId());
                     actProcessNodeVo.setNodeName(element.getName());
                     actProcessNodeVo.setProcessDefinitionId(processDefinition.getId());
                     processNodeVoList.add(actProcessNodeVo);
-                }
             }
             delByDefinitionId(processDefinition.getId());
             List<ActNodeAssignee> actNodeAssigneeList = new ArrayList<>();
@@ -200,6 +247,9 @@ public class ActNodeAssigneeServiceImpl extends ServiceImpl<ActNodeAssigneeMappe
                     BeanUtils.copyProperties(oldNodeAssignee,actNodeAssignee);
                     actNodeAssignee.setId("");
                     actNodeAssignee.setProcessDefinitionId(processDefinition.getId());
+                    if(actNodeAssignee.getMultiple()){
+                        actNodeAssignee.setMultipleColumn("");
+                    }
                     actNodeAssigneeList.add(actNodeAssignee);
                 }
             }

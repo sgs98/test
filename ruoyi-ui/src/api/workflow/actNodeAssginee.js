@@ -15,7 +15,7 @@ export function del(id) {
   })
 }
 
-export function getInfo(processDefinitionId,nodeId) {
+export function getInfoSetting(processDefinitionId,nodeId) {
   return request({
     url: `/workflow/actNodeAssignee/${processDefinitionId}/${nodeId}`,
     method: 'get'
