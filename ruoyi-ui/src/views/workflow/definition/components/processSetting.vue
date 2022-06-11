@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="设置" class="self_dialog" :visible.sync="visible" v-if="visible" width="70%" :close-on-click-modal="false" append-to-body>
+  <el-dialog title="设置" :visible.sync="visible" v-if="visible" width="70%" :close-on-click-modal="false" append-to-body>
     <div class="container" v-loading="loading">
        <el-tabs :tab-position="tabPosition" class="tabs" v-model="activeName" @tab-click="changeSteps">
         <el-tab-pane v-for="(node, index) in nodeList" :key="index" :name="node.id" :label="node.nodeName">

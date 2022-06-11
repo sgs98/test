@@ -47,7 +47,7 @@
             <el-table-column  align="center" prop="currTaskInfo" :show-overflow-tooltip="true" label="当前办理人" width="160"></el-table-column>
             <el-table-column  align="center" prop="businessKey" :show-overflow-tooltip="true" label="流程关联业务ID" width="160"></el-table-column>
             <el-table-column  align="center" prop="startTime" label="流程启动时间" width="160"></el-table-column>
-            <el-table-column  align="center" prop="actBusinessStatus.suspendedDescription" :show-overflow-tooltip="true" label="挂起或激活原因" width="150"></el-table-column>
+            <el-table-column  align="center" prop="actBusinessStatus.suspendedReason" :show-overflow-tooltip="true" label="挂起或激活原因" width="150"></el-table-column>
             <el-table-column label="操作" align="center" width="160" class-name="small-padding fixed-width">
             <template slot-scope="scope">
               <el-row :gutter="10" class="mb8">
@@ -86,7 +86,7 @@
             v-if="dialogVisible"
             v-loading="loading"
             width="60%">
-            <el-input  type="textarea" v-model="description" maxlength="300" placeholder="请输入原因"
+            <el-input  type="textarea" v-model="reason" maxlength="300" placeholder="请输入原因"
             :autosize="{ minRows: 4 }" show-word-limit ></el-input>
             <span slot="footer" class="dialog-footer">
               <el-button size="small" @click="dialogVisible = false">取 消</el-button>
@@ -105,7 +105,7 @@
         // 弹窗
         dialogVisible: false,
         // 原因
-        description: '',
+        reason: '',
         //按钮loading
         buttonLoading: false,
         // 遮罩层
@@ -182,7 +182,7 @@
       //打开弹窗
       openDialog(row){
         this.processInstanceData = row
-        this.description = row.actBusinessStatus.suspendedDescription
+        this.reason = row.actBusinessStatus.suspendedReason
         this.dialogVisible = true
       },
       // 激活或挂起流程
@@ -195,7 +195,7 @@
         }
         let params = {
           processInstId: this.processInstanceData.processInstanceId,
-          description: this.description
+          reason: this.reason
         }
         this.$modal.confirm(msg).then(() => {
            this.loading = true;

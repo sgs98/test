@@ -31,6 +31,8 @@ alter table act_node_assignee add is_copy bigint(1) not null default 0 comment '
 alter table act_node_assignee add add_multi_instance bigint(1) not null  comment '是否可加签,0不可加签,1可加签';
 alter table act_node_assignee add delete_multi_instance bigint(1) not null comment '是否可减签,0不可减签,1可减签';
 
+alter table act_business_status add suspended_reason VARCHAR(1000)  comment '挂起或激活原因';
+
 commit;
 
 

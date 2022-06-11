@@ -344,7 +344,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
     @Transactional(rollbackFor = Exception.class)
     public void updateProcInstState(Map<String,Object> data) {
         String processInstId = data.get("processInstId").toString();
-        String description = data.get("description").toString();
+        String reason = data.get("reason").toString();
         // 1. 查询指定流程实例的数据
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
             .processInstanceId(processInstId)
@@ -361,7 +361,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
         if(ObjectUtil.isEmpty(businessStatus)){
             throw new ServiceException("当前流程异常，未生成act_business_status对象");
         }
-        businessStatus.setSuspendedDescription(description);
+        businessStatus.setSuspendedReason(reason);
         iActBusinessStatusService.updateById(businessStatus);
     }
 
