@@ -1,7 +1,7 @@
 <template>
-  <el-dialog title="设置" :visible.sync="visible" v-if="visible" width="70%" :close-on-click-modal="false" append-to-body>
+  <el-dialog title="设置" class="self_dialog" :visible.sync="visible" v-if="visible" width="70%" :close-on-click-modal="false" append-to-body>
     <div class="container" v-loading="loading">
-       <el-tabs :tab-position="tabPosition" v-model="activeName" @tab-click="changeSteps">
+       <el-tabs :tab-position="tabPosition" class="tabs" v-model="activeName" @tab-click="changeSteps">
         <el-tab-pane v-for="(node, index) in nodeList" :key="index" :name="node.id" :label="node.nodeName">
           <el-form style="height:inherit" ref="form" size="small" label-position="left" :model="form">
             <el-form-item label="环节名称">
@@ -30,7 +30,7 @@
               </el-col>
               <el-col class="line" :span="8">
                 <el-form-item label="是否能会签" prop="multiple">
-                  <el-switch @change="changeMultiple" disabled v-model="form.multiple"></el-switch>
+                  <el-switch disabled v-model="form.multiple"></el-switch>
                 </el-form-item>
               </el-col>
               <el-col class="line" :span="8">
@@ -108,7 +108,7 @@ import  SysUser from "@/views/components/user/sys-user";
 import  SysRole from "@/views/components/role/sys-role";
 import  SysDept from "@/views/components/dept/sys-dept";
 import  ProcessRule from "@/views/workflow/definition/components/processRule";
-import {setting,getMultiInstanceCollect} from "@/api/workflow/definition";
+import {setting} from "@/api/workflow/definition";
 import {getInfoSetting,add,del} from "@/api/workflow/actNodeAssginee";
 
 export default {
@@ -205,27 +205,6 @@ export default {
             })
           }else{
             this.$modal.msgError("请选择节点")
-          }
-        },
-        //获取会签集合变量
-        changeMultiple(val){
-          if(val){
-            getMultiInstanceCollect(this.definitionId,this.form.nodeId).then(response => {
-              if(response.code === 200){
-                this.form.multipleColumn = response.data
-              }else{
-                this.form.multipleColumn = ''
-                this.form.multiple = false
-                this.form.addMultiInstance = false
-                this.form.deleteMultiInstance = false
-                this.$modal.msgError(response.msg)
-              }
-            })
-          }else{
-            this.form.multipleColumn = ''
-            this.form.multiple = false
-            this.form.addMultiInstance = false
-            this.form.deleteMultiInstance = false
           }
         },
         // 删除
@@ -348,6 +327,14 @@ export default {
     }
 }
 </script>
+<style scoped>
+    .container {
+        height: 550px;
+    }
+    .tabs{
+        height: 550px;
+    }
+</style>
 
 
 

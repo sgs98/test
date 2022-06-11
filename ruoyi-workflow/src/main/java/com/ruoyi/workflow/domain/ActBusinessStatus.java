@@ -46,4 +46,9 @@ public class ActBusinessStatus  extends BaseEntity{
      */
     private String classFullName;
 
+    /**
+     * 挂起流程原因
+     */
+    private String suspendedDescription;
+
 }

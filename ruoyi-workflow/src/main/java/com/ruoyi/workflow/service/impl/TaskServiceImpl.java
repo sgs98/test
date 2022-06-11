@@ -428,6 +428,13 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         //可驳回的节点
         List<ActTaskNode> taskNodeList = iActTaskNodeService.getListByInstanceId(task.getProcessInstanceId()).stream().filter(e->e.getIsBack()).collect(Collectors.toList());
         map.put("backNodeList",taskNodeList);
+        //当前流程实例状态
+        ActBusinessStatus actBusinessStatus = iActBusinessStatusService.getInfoByProcessInstId(task.getProcessInstanceId());
+        if(ObjectUtil.isEmpty(actBusinessStatus)){
+            throw new ServiceException("当前流程异常，未生成act_business_status对象");
+        }else{
+            map.put("businessStatus",actBusinessStatus);
+        }
         //委托流程
         if(ObjectUtil.isNotEmpty(task.getDelegationState())&&ActConstant.PENDING.equals(task.getDelegationState().name())){
             ActNodeAssignee actNodeAssignee = new ActNodeAssignee();

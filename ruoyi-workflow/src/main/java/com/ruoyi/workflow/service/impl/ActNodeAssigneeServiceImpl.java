@@ -220,45 +220,41 @@ public class ActNodeAssigneeServiceImpl extends ServiceImpl<ActNodeAssigneeMappe
         wrapper.eq(ActNodeAssignee::getProcessDefinitionId,id);
         List<ActNodeAssignee> oldNodeAssigneeList = baseMapper.selectList(wrapper);
 
-        if(CollectionUtil.isNotEmpty(oldNodeAssigneeList)){
-            ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(key).latestVersion().singleResult();
-            if(ObjectUtil.isEmpty(processDefinition)){
-                throw new ServiceException("流程定义不存在");
-            }
-            BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinition.getId());
-            List<Process> processes = bpmnModel.getProcesses();
-            List<ActProcessNodeVo> processNodeVoList = new ArrayList<>();
-            List<UserTask> userTaskList = processes.get(0).findFlowElementsOfType(UserTask.class);
-
-            for (FlowElement element : userTaskList) {
-                ActProcessNodeVo actProcessNodeVo = new ActProcessNodeVo();
-                    actProcessNodeVo.setNodeId(element.getId());
-                    actProcessNodeVo.setNodeName(element.getName());
-                    actProcessNodeVo.setProcessDefinitionId(processDefinition.getId());
-                    processNodeVoList.add(actProcessNodeVo);
-            }
-            delByDefinitionId(processDefinition.getId());
-            List<ActNodeAssignee> actNodeAssigneeList = new ArrayList<>();
-            for (ActNodeAssignee oldNodeAssignee : oldNodeAssigneeList) {
-                ActProcessNodeVo actProcessNodeVo = processNodeVoList.stream().filter(e -> e.getNodeId().equals(oldNodeAssignee.getNodeId())).findFirst().orElse(null);
-                if(ObjectUtil.isNotEmpty(actProcessNodeVo)){
-
-                    ActNodeAssignee actNodeAssignee = new ActNodeAssignee();
-                    BeanUtils.copyProperties(oldNodeAssignee,actNodeAssignee);
-                    actNodeAssignee.setId("");
-                    actNodeAssignee.setProcessDefinitionId(processDefinition.getId());
-                    if(actNodeAssignee.getMultiple()){
-                        actNodeAssignee.setMultipleColumn("");
-                    }
-                    actNodeAssigneeList.add(actNodeAssignee);
-                }
-            }
-            if(CollectionUtil.isNotEmpty(actNodeAssigneeList)){
-                saveBatch(actNodeAssigneeList);
-            }
-            return true;
-        }else{
-            return false;
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(key).latestVersion().singleResult();
+        if(ObjectUtil.isEmpty(processDefinition)){
+            throw new ServiceException("流程定义不存在");
         }
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinition.getId());
+        List<Process> processes = bpmnModel.getProcesses();
+        List<ActProcessNodeVo> processNodeVoList = new ArrayList<>();
+        List<UserTask> userTaskList = processes.get(0).findFlowElementsOfType(UserTask.class);
+
+        for (FlowElement element : userTaskList) {
+            ActProcessNodeVo actProcessNodeVo = new ActProcessNodeVo();
+                actProcessNodeVo.setNodeId(element.getId());
+                actProcessNodeVo.setNodeName(element.getName());
+                actProcessNodeVo.setProcessDefinitionId(processDefinition.getId());
+                processNodeVoList.add(actProcessNodeVo);
+        }
+        delByDefinitionId(processDefinition.getId());
+        List<ActNodeAssignee> actNodeAssigneeList = new ArrayList<>();
+        for (ActNodeAssignee oldNodeAssignee : oldNodeAssigneeList) {
+            ActProcessNodeVo actProcessNodeVo = processNodeVoList.stream().filter(e -> e.getNodeId().equals(oldNodeAssignee.getNodeId())).findFirst().orElse(null);
+            if(ObjectUtil.isNotEmpty(actProcessNodeVo)){
+
+                ActNodeAssignee actNodeAssignee = new ActNodeAssignee();
+                BeanUtils.copyProperties(oldNodeAssignee,actNodeAssignee);
+                actNodeAssignee.setId("");
+                actNodeAssignee.setProcessDefinitionId(processDefinition.getId());
+                if(actNodeAssignee.getMultiple()){
+                    actNodeAssignee.setMultipleColumn("");
+                }
+                actNodeAssigneeList.add(actNodeAssignee);
+            }
+        }
+        if(CollectionUtil.isNotEmpty(actNodeAssigneeList)){
+            return saveBatch(actNodeAssigneeList);
+        }
+        return false;
     }
 }
