@@ -10,15 +10,14 @@ import com.ruoyi.workflow.domain.bo.DefREQ;
 import com.ruoyi.workflow.domain.vo.ActProcessNodeVo;
 import com.ruoyi.workflow.domain.vo.ProcessDefinitionVo;
 import com.ruoyi.workflow.service.IDefinitionService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.annotations.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.InputStream;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Map;
 
@@ -30,12 +29,12 @@ import java.util.Map;
  */
 @Validated
 @Api(value = "流程定义控制器", tags = {"流程定义控制器"})
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/workflow/definition")
 public class DefinitionController extends BaseController {
 
-    @Autowired
-    private IDefinitionService iDefinitionService;
+    private final IDefinitionService iDefinitionService;
 
     /**
      * @Description: 查询流程定义列表
@@ -77,7 +76,8 @@ public class DefinitionController extends BaseController {
     @DeleteMapping("/{deploymentId}/{definitionId}")
     @Log(title = "流程定义", businessType = BusinessType.DELETE)
     @RepeatSubmit
-    public R<Void> deleteDeployment(@PathVariable String deploymentId,@PathVariable String definitionId) {
+    public R<Void> deleteDeployment(@ApiParam(value = "流程部署id",required = true) @NotBlank(message = "流程部署id不能为空")  @PathVariable String deploymentId,
+                                    @ApiParam(value = "流程定义id",required = true) @NotBlank(message = "流程定义id不能为空") @PathVariable String definitionId) {
         return iDefinitionService.deleteDeployment(deploymentId,definitionId);
     }
 
@@ -92,6 +92,9 @@ public class DefinitionController extends BaseController {
     @ApiOperation("通过zip或xml部署流程定义")
     @PostMapping("/deployByFile")
     @Log(title = "流程定义", businessType = BusinessType.INSERT)
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "file", value = "导入文件", dataType = "java.io.File", required = true),
+    })
     @RepeatSubmit
     public R<Void> deployByFile(@RequestParam("file") MultipartFile file) {
         return iDefinitionService.deployByFile(file);
@@ -109,8 +112,8 @@ public class DefinitionController extends BaseController {
      */
     @ApiOperation("导出流程定义文件（xml,png)")
     @GetMapping("/export/{type}/{definitionId}")
-    public void exportFile(@PathVariable String type,
-                           @PathVariable String definitionId,
+    public void exportFile(@ApiParam(value = "文件类型",required = true) @NotBlank(message = "文件类型不能为空") @PathVariable String type,
+                           @ApiParam(value = "流程定义id",required = true) @NotBlank(message = "流程定义id不能为空") @PathVariable String definitionId,
                            HttpServletResponse response) {
         iDefinitionService.exportFile(type,definitionId,response);
     }
@@ -124,7 +127,7 @@ public class DefinitionController extends BaseController {
      */
     @ApiOperation("查看xml文件")
     @GetMapping("/getXml/{definitionId}")
-    public R<String> getXml(@PathVariable String definitionId) {
+    public R<String> getXml(@ApiParam(value = "流程定义id",required = true) @NotBlank(message = "流程定义id不能为空")  @PathVariable String definitionId) {
         String  xmlStr = iDefinitionService.getXml(definitionId);
         return R.ok("操作成功",xmlStr);
     }
@@ -152,7 +155,8 @@ public class DefinitionController extends BaseController {
      */
     @ApiOperation("查询流程环节")
     @GetMapping("/setting/{processDefinitionId}")
-    public R<List<ActProcessNodeVo>> setting(@PathVariable String processDefinitionId){
+    public R<List<ActProcessNodeVo>> setting(@ApiParam(value = "流程定义id",required = true)
+                                                 @NotBlank(message = "流程定义id不能为空")  @PathVariable String processDefinitionId){
         return iDefinitionService.setting(processDefinitionId);
     }
 

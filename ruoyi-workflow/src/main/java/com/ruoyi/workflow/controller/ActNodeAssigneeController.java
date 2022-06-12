@@ -9,7 +9,8 @@ import com.ruoyi.workflow.domain.ActNodeAssignee;
 import com.ruoyi.workflow.service.IActNodeAssigneeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.annotations.ApiParam;
+import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,12 +24,12 @@ import javax.validation.constraints.NotBlank;
  */
 @Validated
 @Api(value = "流程定义设置控制层", tags = {"流程定义设置控制层"})
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/workflow/actNodeAssignee")
 public class ActNodeAssigneeController extends BaseController {
 
-    @Autowired
-    private IActNodeAssigneeService iActNodeAssigneeService;
+    private final IActNodeAssigneeService iActNodeAssigneeService;
 
     /**
      * @Description: 保存流程定义设置
@@ -53,7 +54,8 @@ public class ActNodeAssigneeController extends BaseController {
      */
     @GetMapping("/{processDefinitionId}/{nodeId}")
     @ApiOperation("按照流程定义id和流程节点id查询流程定义设置")
-    public R<ActNodeAssignee> getInfoSetting(@PathVariable String processDefinitionId,@PathVariable String nodeId){
+    public R<ActNodeAssignee> getInfoSetting(@ApiParam(value = "流程定义id",required = true) @NotBlank(message = "流程定义id不能为空") @PathVariable String processDefinitionId,
+                                             @ApiParam(value = "流程节点id",required = true) @NotBlank(message = "流程节点id不能为空") @PathVariable String nodeId){
         ActNodeAssignee nodeAssignee = iActNodeAssigneeService.getInfoSetting(processDefinitionId,nodeId);
         return R.ok(nodeAssignee);
     }
@@ -68,7 +70,7 @@ public class ActNodeAssigneeController extends BaseController {
     @DeleteMapping("{id}")
     @ApiOperation("删除")
     @Log(title = "流程定义设置", businessType = BusinessType.DELETE)
-    public R<Void> del(@PathVariable String id){
+    public R<Void> del(@ApiParam(value = "主键",required = true) @NotBlank(message = "主键不能为空") @PathVariable String id){
         return toAjax(iActNodeAssigneeService.del(id) ? 1 : 0);
     }
 
@@ -83,8 +85,8 @@ public class ActNodeAssigneeController extends BaseController {
     @PostMapping("copy/{id}/{key}")
     @ApiOperation("复制为最新流程定义")
     @Log(title = "流程定义设置", businessType = BusinessType.INSERT)
-    public R<Void> copy(@PathVariable("id") @NotBlank(message = "ID不能为空") String id,
-                        @PathVariable("key") @NotBlank(message = "Key不能为空") String key){
+    public R<Void> copy(@ApiParam(value = "主键",required = true) @NotBlank(message = "ID不能为空") @PathVariable("id")  String id,
+                        @ApiParam(value = "流程Key",required = true) @NotBlank(message = "流程Key不能为空") @PathVariable("key") String key){
         Boolean copy = iActNodeAssigneeService.copy(id, key);
         if(copy){
             return R.ok();

@@ -13,11 +13,13 @@ import com.ruoyi.workflow.domain.vo.ProcessInstRunningVo;
 import com.ruoyi.workflow.service.IProcessInstanceService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.annotations.ApiParam;
+import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Map;
 
@@ -29,12 +31,12 @@ import java.util.Map;
  */
 @Validated
 @Api(value = "流程实例控制器", tags = {"流程实例控制器"})
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/workflow/processInstance")
 public class ProcessInstanceController {
 
-    @Autowired
-    private IProcessInstanceService processInstanceService;
+    private final IProcessInstanceService processInstanceService;
 
     /**
      * @Description: 提交申请，启动流程实例
@@ -62,7 +64,7 @@ public class ProcessInstanceController {
      */
     @ApiOperation("通过流程实例id查询流程审批记录")
     @GetMapping("/getHistoryInfoList/{processInstanceId}")
-    public R<List<ActHistoryInfoVo>> getHistoryInfoList(@PathVariable String processInstanceId){
+    public R<List<ActHistoryInfoVo>> getHistoryInfoList(@ApiParam(value = "流程实例id",required = true) @NotBlank(message = "流程实例id不能为空") @PathVariable String processInstanceId){
         List<ActHistoryInfoVo> historyInfoList = processInstanceService.getHistoryInfoList(processInstanceId);
         return R.ok(historyInfoList);
     }
@@ -77,7 +79,7 @@ public class ProcessInstanceController {
      */
     @ApiOperation("通过流程实例id获取历史流程图")
     @GetMapping("/getHistoryProcessImage")
-    public void getHistoryProcessImage(@RequestParam String processInstanceId,
+    public void getHistoryProcessImage(@ApiParam(value = "流程实例id",required = true) @NotBlank(message = "流程实例id不能为空") @RequestParam String processInstanceId,
                                               HttpServletResponse response) {
          processInstanceService.getHistoryProcessImage(processInstanceId, response);
     }
@@ -125,7 +127,7 @@ public class ProcessInstanceController {
     @ApiOperation("作废流程实例，不会删除历史记录")
     @DeleteMapping("/deleteRuntimeProcessInst/{processInstId}")
     @Log(title = "流程实例", businessType = BusinessType.DELETE)
-    public R<Boolean> deleteRuntimeProcessInst(@PathVariable String processInstId){
+    public R<Boolean> deleteRuntimeProcessInst(@ApiParam(value = "流程实例id",required = true) @NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId){
         boolean b = processInstanceService.deleteRuntimeProcessInst(processInstId);
         if(b){
             return R.ok();
@@ -144,7 +146,7 @@ public class ProcessInstanceController {
     @ApiOperation("删除运行中的实例，删除历史记录，删除业务与流程关联信息")
     @DeleteMapping("/deleteRuntimeProcessAndHisInst/{processInstId}")
     @Log(title = "流程实例", businessType = BusinessType.DELETE)
-    public R<Void> deleteRuntimeProcessAndHisInst(@PathVariable String processInstId){
+    public R<Void> deleteRuntimeProcessAndHisInst(@ApiParam(value = "流程实例id",required = true) @NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId){
         boolean b = processInstanceService.deleteRuntimeProcessAndHisInst(processInstId);
         if(b){
             return R.ok();
@@ -163,7 +165,7 @@ public class ProcessInstanceController {
     @ApiOperation("删除已完成的实例，删除历史记录，删除业务与流程关联信息")
     @DeleteMapping("/deleteFinishProcessAndHisInst/{processInstId}")
     @Log(title = "流程实例", businessType = BusinessType.DELETE)
-    public R<Void> deleteFinishProcessAndHisInst(@PathVariable String processInstId){
+    public R<Void> deleteFinishProcessAndHisInst(@ApiParam(value = "流程实例id",required = true) @NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId){
         boolean b = processInstanceService.deleteFinishProcessAndHisInst(processInstId);
         if(b){
             return R.ok();
@@ -182,7 +184,7 @@ public class ProcessInstanceController {
     @ApiOperation("撤销申请")
     @GetMapping("/cancelProcessApply/{processInstId}")
     @Log(title = "流程实例", businessType = BusinessType.DELETE)
-    public R<Void> cancelProcessApply(@PathVariable String processInstId){
+    public R<Void> cancelProcessApply(@ApiParam(value = "流程实例id",required = true) @NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId){
         boolean b = processInstanceService.cancelProcessApply(processInstId);
         if(b){
             return R.ok();

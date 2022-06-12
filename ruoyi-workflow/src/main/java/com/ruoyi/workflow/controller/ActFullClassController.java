@@ -71,7 +71,7 @@ public class ActFullClassController extends BaseController {
     @ApiOperation("获取业务规则详细信息")
     @SaCheckPermission("workflow:fullClass:query")
     @GetMapping("/{id}")
-    public R<ActFullClassVo> getInfo(@ApiParam("主键")
+    public R<ActFullClassVo> getInfo(@ApiParam(value = "主键",required = true)
                                                   @NotNull(message = "主键不能为空")
                                                   @PathVariable("id") Long id) {
         return R.ok(iActFullClassService.queryById(id));
@@ -108,7 +108,7 @@ public class ActFullClassController extends BaseController {
     @SaCheckPermission("workflow:fullClass:remove")
     @Log(title = "业务规则" , businessType = BusinessType.DELETE)
     @DeleteMapping("/{ids}")
-    public R<Void> remove(@ApiParam("主键串")
+    public R<Void> remove(@ApiParam(value = "主键串",required = true)
                                        @NotEmpty(message = "主键不能为空")
                                        @PathVariable Long[] ids) {
         return toAjax(iActFullClassService.deleteWithValidByIds(Arrays.asList(ids), true) ? 1 : 0);

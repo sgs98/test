@@ -15,11 +15,13 @@ import com.ruoyi.workflow.domain.vo.TaskWaitingVo;
 import com.ruoyi.workflow.service.ITaskService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import lombok.RequiredArgsConstructor;
 import org.flowable.engine.TaskService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Map;
 
@@ -31,15 +33,14 @@ import java.util.Map;
  */
 @Validated
 @Api(value = "任务管理控制器", tags = {"任务管理控制器"})
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/workflow/task")
 public class TaskController extends BaseController {
 
-    @Autowired
-    private ITaskService iTaskService;
+    private final ITaskService iTaskService;
 
-    @Autowired
-    private TaskService taskService;
+    private final TaskService taskService;
 
     /**
      * @Description: 查询当前用户的待办任务
@@ -149,7 +150,7 @@ public class TaskController extends BaseController {
      */
     @ApiOperation("获取历史任务节点，用于驳回功能")
     @GetMapping("/getBackNodes/{processInstId}")
-    public R<List<ActTaskNode>> getBackNodes(@PathVariable String processInstId) {
+    public R<List<ActTaskNode>> getBackNodes(@ApiParam(value = "流程实例id",required = true) @NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId) {
         return R.ok(iTaskService.getBackNodes(processInstId));
     }
 
@@ -163,7 +164,7 @@ public class TaskController extends BaseController {
     @ApiOperation("签收（拾取）任务")
     @PostMapping("/claim/{taskId}")
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
-    public R<Void> claimTask(@PathVariable String taskId) {
+    public R<Void> claimTask(@ApiParam(value = "任务id",required = true) @NotBlank(message = "任务id不能为空") @PathVariable String taskId) {
         try {
             taskService.claim(taskId, LoginHelper.getUserId().toString());
             return R.ok();
@@ -183,7 +184,7 @@ public class TaskController extends BaseController {
     @ApiOperation("归还（拾取的）任务")
     @PostMapping("/returnTask/{taskId}")
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
-    public R<Void> returnTask(@PathVariable String taskId) {
+    public R<Void> returnTask(@ApiParam(value = "任务id",required = true) @NotBlank(message = "任务id不能为空") @PathVariable String taskId) {
         try {
             taskService.setAssignee(taskId, null);
             return R.ok();
