@@ -13,9 +13,7 @@ import com.ruoyi.workflow.domain.vo.BackProcessVo;
 import com.ruoyi.workflow.domain.vo.TaskFinishVo;
 import com.ruoyi.workflow.domain.vo.TaskWaitingVo;
 import com.ruoyi.workflow.service.ITaskService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.flowable.engine.TaskService;
 import org.springframework.validation.annotation.Validated;
@@ -32,7 +30,7 @@ import java.util.Map;
  * @created: 2021/10/17 14:46
  */
 @Validated
-@Api(value = "任务管理控制器", tags = {"任务管理控制器"})
+@Api(value = "任务管理控制器", tags = {"任务管理"})
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/workflow/task")
@@ -105,8 +103,8 @@ public class TaskController extends BaseController {
      * @Date: 2021/10/21 13:34
      */
     @ApiOperation("完成任务")
-    @PostMapping("/completeTask")
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
+    @PostMapping("/completeTask")
     public R<Void> completeTask(@RequestBody TaskCompleteREQ req) {
         Boolean task = iTaskService.completeTask(req);
         if (!task) {
@@ -135,8 +133,9 @@ public class TaskController extends BaseController {
      * @Author: gssong
      * @Date: 2021/11/6
      */
-    @PostMapping("/backProcess")
+    @ApiOperation("驳回审批）")
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
+    @PostMapping("/backProcess")
     public R<String> backProcess(@RequestBody BackProcessVo backProcessVo) {
         return R.ok(iTaskService.backProcess(backProcessVo));
     }
@@ -149,8 +148,11 @@ public class TaskController extends BaseController {
      * @Date: 2021/11/6
      */
     @ApiOperation("获取历史任务节点，用于驳回功能")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "processInstId",value = "流程实例id",required = true)
+    })
     @GetMapping("/getBackNodes/{processInstId}")
-    public R<List<ActTaskNode>> getBackNodes(@ApiParam(value = "流程实例id",required = true) @NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId) {
+    public R<List<ActTaskNode>> getBackNodes(@NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId) {
         return R.ok(iTaskService.getBackNodes(processInstId));
     }
 
@@ -162,9 +164,12 @@ public class TaskController extends BaseController {
      * @Date: 2021/11/16
      */
     @ApiOperation("签收（拾取）任务")
-    @PostMapping("/claim/{taskId}")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "taskId",value = "任务id",required = true)
+    })
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
-    public R<Void> claimTask(@ApiParam(value = "任务id",required = true) @NotBlank(message = "任务id不能为空") @PathVariable String taskId) {
+    @PostMapping("/claim/{taskId}")
+    public R<Void> claimTask(@NotBlank(message = "任务id不能为空") @PathVariable String taskId) {
         try {
             taskService.claim(taskId, LoginHelper.getUserId().toString());
             return R.ok();
@@ -182,9 +187,12 @@ public class TaskController extends BaseController {
      * @Date: 2022/01/01
      */
     @ApiOperation("归还（拾取的）任务")
-    @PostMapping("/returnTask/{taskId}")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "taskId",value = "任务id",required = true)
+    })
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
-    public R<Void> returnTask(@ApiParam(value = "任务id",required = true) @NotBlank(message = "任务id不能为空") @PathVariable String taskId) {
+    @PostMapping("/returnTask/{taskId}")
+    public R<Void> returnTask(@NotBlank(message = "任务id不能为空") @PathVariable String taskId) {
         try {
             taskService.setAssignee(taskId, null);
             return R.ok();
@@ -202,8 +210,8 @@ public class TaskController extends BaseController {
      * @Date: 2022/3/4 13:18
      */
     @ApiOperation("委派任务")
-    @PostMapping("/delegateTask")
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
+    @PostMapping("/delegateTask")
     public R<Void> delegateTask(@Validated({AddGroup.class}) @RequestBody  TaskREQ taskREQ) {
         return toAjax(iTaskService.delegateTask(taskREQ));
     }
@@ -216,8 +224,8 @@ public class TaskController extends BaseController {
      * @Date: 2022/3/13 13:18
      */
     @ApiOperation("转办任务")
-    @PostMapping("/transmitTask")
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
+    @PostMapping("/transmitTask")
     public R<Boolean> transmit(@Validated({AddGroup.class}) @RequestBody TransmitREQ transmitREQ) {
         return iTaskService.transmitTask(transmitREQ);
     }
@@ -230,8 +238,8 @@ public class TaskController extends BaseController {
      * @Date: 2022/4/15 13:06
      */
     @ApiOperation("会签任务加签")
-    @PostMapping("/addMultiInstanceExecution")
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
+    @PostMapping("/addMultiInstanceExecution")
     public R<Boolean> addMultiInstanceExecution(@Validated({AddGroup.class}) @RequestBody AddMultiREQ addMultiREQ) {
         return iTaskService.addMultiInstanceExecution(addMultiREQ);
     }
@@ -244,8 +252,8 @@ public class TaskController extends BaseController {
      * @Date: 2022/4/16 10:59
      */
     @ApiOperation("会签任务减签")
-    @PostMapping("/deleteMultiInstanceExecution")
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
+    @PostMapping("/deleteMultiInstanceExecution")
     public R<Boolean> deleteMultiInstanceExecution(@Validated({AddGroup.class}) @RequestBody DeleteMultiREQ deleteMultiREQ) {
         return iTaskService.deleteMultiInstanceExecution(deleteMultiREQ);
     }

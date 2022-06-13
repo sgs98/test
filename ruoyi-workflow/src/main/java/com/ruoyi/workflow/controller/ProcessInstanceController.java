@@ -1,6 +1,7 @@
 package com.ruoyi.workflow.controller;
 
 import com.ruoyi.common.annotation.Log;
+import com.ruoyi.common.annotation.RepeatSubmit;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
@@ -11,9 +12,7 @@ import com.ruoyi.workflow.domain.vo.ActHistoryInfoVo;
 import com.ruoyi.workflow.domain.vo.ProcessInstFinishVo;
 import com.ruoyi.workflow.domain.vo.ProcessInstRunningVo;
 import com.ruoyi.workflow.service.IProcessInstanceService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +29,7 @@ import java.util.Map;
  * @created: 2021/10/10 18:36
  */
 @Validated
-@Api(value = "流程实例控制器", tags = {"流程实例控制器"})
+@Api(value = "流程实例控制器", tags = {"流程实例管理"})
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/workflow/processInstance")
@@ -46,8 +45,9 @@ public class ProcessInstanceController {
      * @Date: 2021/10/10
      */
     @ApiOperation("提交申请，启动流程实例")
+    @Log(title = "流程实例管理", businessType = BusinessType.INSERT)
+    @RepeatSubmit()
     @PostMapping("/startWorkFlow")
-    @Log(title = "流程实例", businessType = BusinessType.INSERT)
     public R<Map<String,Object>> startWorkFlow(@RequestBody StartREQ startReq){
         Map<String,Object> map = processInstanceService.startWorkFlow(startReq);
         return R.ok("提交成功",map);
@@ -63,8 +63,11 @@ public class ProcessInstanceController {
      * @Date: 2021/10/16
      */
     @ApiOperation("通过流程实例id查询流程审批记录")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "processInstanceId",value = "流程实例id",required = true)
+    })
     @GetMapping("/getHistoryInfoList/{processInstanceId}")
-    public R<List<ActHistoryInfoVo>> getHistoryInfoList(@ApiParam(value = "流程实例id",required = true) @NotBlank(message = "流程实例id不能为空") @PathVariable String processInstanceId){
+    public R<List<ActHistoryInfoVo>> getHistoryInfoList(@NotBlank(message = "流程实例id不能为空") @PathVariable String processInstanceId){
         List<ActHistoryInfoVo> historyInfoList = processInstanceService.getHistoryInfoList(processInstanceId);
         return R.ok(historyInfoList);
     }
@@ -78,8 +81,11 @@ public class ProcessInstanceController {
      * @Date: 2021/10/16
      */
     @ApiOperation("通过流程实例id获取历史流程图")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "processInstanceId",value = "流程实例id",required = true)
+    })
     @GetMapping("/getHistoryProcessImage")
-    public void getHistoryProcessImage(@ApiParam(value = "流程实例id",required = true) @NotBlank(message = "流程实例id不能为空") @RequestParam String processInstanceId,
+    public void getHistoryProcessImage(@NotBlank(message = "流程实例id不能为空") @RequestParam String processInstanceId,
                                               HttpServletResponse response) {
          processInstanceService.getHistoryProcessImage(processInstanceId, response);
     }
@@ -105,8 +111,8 @@ public class ProcessInstanceController {
      * @Date: 2021/10/16
      */
     @ApiOperation("挂起或激活流程实例")
+    @Log(title = "流程实例管理", businessType = BusinessType.UPDATE)
     @PutMapping("/state")
-    @Log(title = "流程实例", businessType = BusinessType.UPDATE)
     public R<Void> updateProcInstState(@RequestBody Map<String,Object> data){
         try {
             processInstanceService.updateProcInstState(data);
@@ -125,9 +131,12 @@ public class ProcessInstanceController {
      * @Date: 2021/10/16
      */
     @ApiOperation("作废流程实例，不会删除历史记录")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "processInstId",value = "流程实例id",required = true)
+    })
+    @Log(title = "流程实例管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/deleteRuntimeProcessInst/{processInstId}")
-    @Log(title = "流程实例", businessType = BusinessType.DELETE)
-    public R<Boolean> deleteRuntimeProcessInst(@ApiParam(value = "流程实例id",required = true) @NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId){
+    public R<Boolean> deleteRuntimeProcessInst(@NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId){
         boolean b = processInstanceService.deleteRuntimeProcessInst(processInstId);
         if(b){
             return R.ok();
@@ -144,9 +153,12 @@ public class ProcessInstanceController {
      * @Date: 2021/10/16
      */
     @ApiOperation("删除运行中的实例，删除历史记录，删除业务与流程关联信息")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "processInstId",value = "流程实例id",required = true)
+    })
+    @Log(title = "流程实例管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/deleteRuntimeProcessAndHisInst/{processInstId}")
-    @Log(title = "流程实例", businessType = BusinessType.DELETE)
-    public R<Void> deleteRuntimeProcessAndHisInst(@ApiParam(value = "流程实例id",required = true) @NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId){
+    public R<Void> deleteRuntimeProcessAndHisInst(@NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId){
         boolean b = processInstanceService.deleteRuntimeProcessAndHisInst(processInstId);
         if(b){
             return R.ok();
@@ -163,9 +175,12 @@ public class ProcessInstanceController {
      * @Date: 2021/10/16
      */
     @ApiOperation("删除已完成的实例，删除历史记录，删除业务与流程关联信息")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "processInstId",value = "流程实例id",required = true)
+    })
+    @Log(title = "流程实例管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/deleteFinishProcessAndHisInst/{processInstId}")
-    @Log(title = "流程实例", businessType = BusinessType.DELETE)
-    public R<Void> deleteFinishProcessAndHisInst(@ApiParam(value = "流程实例id",required = true) @NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId){
+    public R<Void> deleteFinishProcessAndHisInst(@NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId){
         boolean b = processInstanceService.deleteFinishProcessAndHisInst(processInstId);
         if(b){
             return R.ok();
@@ -182,8 +197,11 @@ public class ProcessInstanceController {
      * @Date: 2022/1/21
      */
     @ApiOperation("撤销申请")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "processInstId",value = "流程实例id",required = true)
+    })
+    @Log(title = "流程实例管理", businessType = BusinessType.DELETE)
     @GetMapping("/cancelProcessApply/{processInstId}")
-    @Log(title = "流程实例", businessType = BusinessType.DELETE)
     public R<Void> cancelProcessApply(@ApiParam(value = "流程实例id",required = true) @NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId){
         boolean b = processInstanceService.cancelProcessApply(processInstId);
         if(b){

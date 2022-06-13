@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 @Validated
-@Api(value = "工作流用户信息控制器", tags = {"用户信息管理"})
+@Api(value = "工作流用户信息控制器", tags = {"工作流用户信息管理"})
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/workflow/user")
