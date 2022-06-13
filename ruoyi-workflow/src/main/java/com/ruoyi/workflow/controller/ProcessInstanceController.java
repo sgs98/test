@@ -16,7 +16,6 @@ import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotBlank;
 import java.util.List;
@@ -202,7 +201,7 @@ public class ProcessInstanceController {
     })
     @Log(title = "流程实例管理", businessType = BusinessType.DELETE)
     @GetMapping("/cancelProcessApply/{processInstId}")
-    public R<Void> cancelProcessApply(@ApiParam(value = "流程实例id",required = true) @NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId){
+    public R<Void> cancelProcessApply(@NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId){
         boolean b = processInstanceService.cancelProcessApply(processInstId);
         if(b){
             return R.ok();
