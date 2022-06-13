@@ -15,7 +15,6 @@ import org.flowable.engine.repository.Model;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
@@ -139,8 +138,11 @@ public class ModelController extends BaseController {
      * @Date: 2021/10/7
      */
     @ApiOperation("导出流程定义模型zip压缩包")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "modelId",value = "模型id",required = true)
+    })
     @GetMapping("/export/zip/{modelId}")
-    public void exportZip(@ApiParam(value = "模型id",required = true) @NotEmpty(message = "模型id不能为空") @PathVariable String modelId,
+    public void exportZip(@NotEmpty(message = "模型id不能为空") @PathVariable String modelId,
                           HttpServletResponse response) {
         iModelService.exportZip(modelId, response);
     }
@@ -153,9 +155,12 @@ public class ModelController extends BaseController {
      * @Date: 2021/11/6
      */
     @ApiOperation("将流程定义转换为模型")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "processDefinitionId",value = "流程定义id",required = true)
+    })
     @Log(title = "模型管理", businessType = BusinessType.UPDATE)
     @GetMapping("/convertToModel/{processDefinitionId}")
-    public R<Void> convertToModel(@ApiParam(value = "流程定义id",required = true) @NotEmpty(message = "流程定义id不能为空") @PathVariable String processDefinitionId){
+    public R<Void> convertToModel(@NotEmpty(message = "流程定义id不能为空") @PathVariable String processDefinitionId){
         Boolean convertToModel = iModelService.convertToModel(processDefinitionId);
         return convertToModel==true?R.ok():R.fail();
     }
