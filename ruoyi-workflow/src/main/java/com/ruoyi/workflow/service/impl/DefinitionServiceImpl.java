@@ -17,17 +17,13 @@ import com.ruoyi.workflow.service.IDefinitionService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.flowable.bpmn.model.*;
 import org.flowable.bpmn.model.Process;
-import org.flowable.engine.ProcessEngine;
-import org.flowable.engine.ProcessEngines;
-import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.repository.DeploymentBuilder;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.repository.ProcessDefinitionQuery;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +52,9 @@ public class DefinitionServiceImpl extends WorkflowService implements IDefinitio
 
     @Autowired
     private IActNodeAssigneeService iActNodeAssigneeService;
+
+    @Autowired
+    private SqlSessionTemplate sqlSessionTemplate;
 
     /**
      * @Description: 查询流程定义列表
@@ -250,15 +249,7 @@ public class DefinitionServiceImpl extends WorkflowService implements IDefinitio
         try {
             String definitionId = data.get("definitionId").toString();
             String description = data.get("description").toString();
-            ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
-            ProcessEngineConfigurationImpl processEngineConfiguration = (ProcessEngineConfigurationImpl) processEngine.getProcessEngineConfiguration();
-
-            SqlSessionFactory sqlSessionFactory = processEngineConfiguration.getSqlSessionFactory();
-            if (!sqlSessionFactory.getConfiguration().hasMapper(DefinitionMapper.class)) {
-                sqlSessionFactory.getConfiguration().addMapper(DefinitionMapper.class);
-            }
-            SqlSession sqlSession = sqlSessionFactory.openSession();
-            DefinitionMapper definitionMapper = sqlSession.getMapper(DefinitionMapper.class);
+            DefinitionMapper definitionMapper = sqlSessionTemplate.getMapper(DefinitionMapper.class);
             //更新原因
             definitionMapper.updateDescriptionById(definitionId,description);
             ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
