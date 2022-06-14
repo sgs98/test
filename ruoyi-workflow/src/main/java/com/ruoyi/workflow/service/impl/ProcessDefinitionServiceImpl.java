@@ -11,9 +11,9 @@ import com.ruoyi.workflow.domain.bo.DefREQ;
 import com.ruoyi.workflow.domain.vo.ActProcessNodeVo;
 import com.ruoyi.workflow.domain.vo.ProcessDefinitionVo;
 import com.ruoyi.workflow.flowable.factory.WorkflowService;
-import com.ruoyi.workflow.mapper.DefinitionMapper;
+import com.ruoyi.workflow.mapper.ProcessDefinitionMapper;
 import com.ruoyi.workflow.service.IActNodeAssigneeService;
-import com.ruoyi.workflow.service.IDefinitionService;
+import com.ruoyi.workflow.service.IProcessDefinitionService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -48,7 +48,7 @@ import java.util.zip.ZipInputStream;
  */
 @Service
 @Slf4j
-public class DefinitionServiceImpl extends WorkflowService implements IDefinitionService {
+public class ProcessDefinitionServiceImpl extends WorkflowService implements IProcessDefinitionService {
 
     @Autowired
     private IActNodeAssigneeService iActNodeAssigneeService;
@@ -151,7 +151,7 @@ public class DefinitionServiceImpl extends WorkflowService implements IDefinitio
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R deployByFile(MultipartFile file) {
+    public R<Void> deployByFile(MultipartFile file) {
         try {
             // 文件名+后缀名
             String filename = file.getOriginalFilename();
@@ -249,9 +249,9 @@ public class DefinitionServiceImpl extends WorkflowService implements IDefinitio
         try {
             String definitionId = data.get("definitionId").toString();
             String description = data.get("description").toString();
-            DefinitionMapper definitionMapper = sqlSessionTemplate.getMapper(DefinitionMapper.class);
+            ProcessDefinitionMapper processDefinitionMapper = sqlSessionTemplate.getMapper(ProcessDefinitionMapper.class);
             //更新原因
-            definitionMapper.updateDescriptionById(definitionId,description);
+            processDefinitionMapper.updateDescriptionById(definitionId,description);
             ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
                 .processDefinitionId(definitionId).singleResult();
             if (processDefinition.isSuspended()) {
