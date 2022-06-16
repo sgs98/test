@@ -71,7 +71,7 @@
             <groupId>com.ruoyi</groupId>
             <artifactId>ruoyi-generator</artifactId>
         </dependency>
-	
+
 	 <!--  工作流模块  -->
         <dependency>
             <groupId>com.ruoyi</groupId>
@@ -82,6 +82,12 @@
         <dependency>
             <groupId>com.ruoyi</groupId>
             <artifactId>ruoyi-demo</artifactId>
+        </dependency>
+
+        <!-- 即时通信模块 -->
+        <dependency>
+            <groupId>com.ruoyi</groupId>
+            <artifactId>ruoyi-websocket</artifactId>
         </dependency>
 
     </dependencies>

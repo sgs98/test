@@ -40,6 +40,18 @@ public class TaskController extends BaseController {
     private final TaskService taskService;
 
     /**
+     * @Description: 查询当前用户的待办任务数量
+     * @param: req
+     * @return: R<Map<String,Object>>
+     * @Author: xycq
+     * @Date:
+     */
+    @ApiOperation("查询当前用户的待办任务数量")
+    @GetMapping("/getTaskWaitCount")
+    public R<Map<String,Object>> getTaskWaitCount() {
+        return R.ok(iTaskService.getTaskWaitCount());
+    }
+    /**
      * @Description: 查询当前用户的待办任务
      * @param: req
      * @return: com.ruoyi.common.core.page.TableDataInfo<com.ruoyi.workflow.domain.vo.TaskWaitingVo>

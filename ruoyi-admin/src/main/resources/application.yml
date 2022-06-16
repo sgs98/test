@@ -143,6 +143,8 @@ security:
     # actuator 监控配置
     - /actuator
     - /actuator/**
+    # WebSocket
+    - /webSocketServer/**
 
 # MyBatisPlus配置
 # https://baomidou.com/config/

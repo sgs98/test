@@ -1160,4 +1160,22 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             return R.fail();
         }
     }
+
+    /**
+     * 查询当前用户待办任务数量
+     *
+     * @return
+     */
+    @Override
+    public Map<String, Object> getTaskWaitCount() {
+        Map<String, Object> map = new HashMap<>();
+        //当前登录人
+        String currentUserId = LoginHelper.getLoginUser().getUserId().toString();
+        TaskQuery query = taskService.createTaskQuery()
+            .taskCandidateOrAssigned(currentUserId) // 候选人或者办理人
+            .orderByTaskCreateTime().asc();
+        long count=query.count();
+        map.put("count",count);
+        return map;
+    }
 }

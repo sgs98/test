@@ -101,4 +101,10 @@ public interface ITaskService {
      * @return
      */
     R<Boolean> deleteMultiInstanceExecution(DeleteMultiREQ deleteMultiREQ);
+
+    /**
+     * 查询当前用户待办任务数量
+     * @return
+     */
+    Map<String,Object> getTaskWaitCount();
 }
