@@ -4,6 +4,8 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.utils.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
@@ -22,6 +24,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @ServerEndpoint("/webSocketServer/{userName}")
 @Component
 public class WebSocketServer {
+
+    protected static Logger logger = LoggerFactory.getLogger(WebSocketServer.class);
+
     //记录当前在线连接数
     private static int onlineCount = 0;
     //concurrent包的线程安全Set，用来存放每个客户端对应的MyWebSocket对象。
@@ -81,10 +86,12 @@ public class WebSocketServer {
                 if(StringUtils.isNotBlank(toUserId)&&webSocketMap.containsKey(toUserId)){
                     webSocketMap.get(toUserId).sendMessage(jsonObject.toString());
                 }else{
-                    //System.out.println("请求的userId:"+toUserId+"不在该服务器上");
                     //否则不在这个服务器上，发送到mysql或者redis
+                    logger.info("请求的userId:"+toUserId+"不在该服务器上");
                 }
             }catch (Exception e){
+                e.printStackTrace();
+                logger.info("请求失败:"+e.getMessage());
             }
         }
     }
@@ -92,7 +99,6 @@ public class WebSocketServer {
     //错误时调用
     @OnError
     public void onError(Session session, Throwable throwable) {
-        System.out.println("发生错误");
         throwable.printStackTrace();
     }
     /**

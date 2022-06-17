@@ -22,10 +22,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.BpmnModel;
-import org.flowable.cmmn.image.exception.FlowableImageException;
 import org.flowable.common.engine.api.FlowableException;
 import org.flowable.editor.constants.ModelDataJsonConstants;
 import org.flowable.engine.repository.*;
+import org.flowable.image.exception.FlowableImageException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

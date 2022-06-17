@@ -2,6 +2,7 @@ package com.ruoyi.workflow.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.exception.ServiceException;
@@ -82,7 +83,9 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
             // 部署时间
             Deployment deployment = deploymentList.stream().filter(e -> e.getId().equals(processDefinition.getDeploymentId())).findFirst().orElse(null);
             ProcessDefinitionVo processDefinitionVo = BeanUtil.toBean(processDefinition, ProcessDefinitionVo.class);
-            processDefinitionVo.setDeploymentTime(deployment.getDeploymentTime());
+            if(ObjectUtil.isNotEmpty(deployment)&&deployment.getDeploymentTime()!=null){
+                processDefinitionVo.setDeploymentTime(deployment.getDeploymentTime());
+            }
             processDefinitionVoList.add(processDefinitionVo);
         }
         // 总记录数
@@ -138,7 +141,7 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
             return R.ok();
         }catch (Exception e){
             e.printStackTrace();
-            return R.fail();
+            return R.fail(e.getMessage());
         }
     }
 
