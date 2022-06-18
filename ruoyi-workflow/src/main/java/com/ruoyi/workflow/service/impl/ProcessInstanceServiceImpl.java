@@ -6,6 +6,7 @@ import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.helper.LoginHelper;
+import com.ruoyi.workflow.domain.bo.CancelProcessBo;
 import com.ruoyi.workflow.flowable.config.CustomDefaultProcessDiagramGenerator;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
@@ -499,14 +500,16 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
 
     /**
      * @Description: 撤销申请
-     * @param processInstId
+     * @param cancelProcessBo
      * @return: boolean
      * @author: gssong
      * @Date: 2022/1/21
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean cancelProcessApply(String processInstId) {
+    public boolean cancelProcessApply(CancelProcessBo cancelProcessBo) {
+        String processInstId = cancelProcessBo.getProcessInstId();
+
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstId).startedBy(LoginHelper.getUserId().toString()).singleResult();
         if(ObjectUtil.isNull(processInstance)){
             throw new ServiceException("流程不是该审批人提交,撤销失败!");
@@ -533,31 +536,38 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
             }
             taskService.addComment(task.getId(), processInstanceId,"申请人撤销申请");
         }
-        runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
-            .moveActivityIdsToSingleActivityId(taskList.stream().map(Task::getTaskDefinitionKey).collect(Collectors.toList()), actTaskNode.getNodeId())
-            .changeState();
-        List<Task> newTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
-        //处理并行会签环节重复节点
-        if(CollectionUtil.isNotEmpty(newTaskList)&&newTaskList.size()>0){
-            List<Task> taskCollect = newTaskList.stream().filter(e -> e.getTaskDefinitionKey().equals(actTaskNode.getNodeId())).collect(Collectors.toList());
-            if(taskCollect.size()>1){
-                taskCollect.remove(0);
-                taskCollect.forEach(e->{
-                    workFlowUtils.deleteRuntimeTask(e);
-                });
+        try {
+            runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
+                .moveActivityIdsToSingleActivityId(taskList.stream().map(Task::getTaskDefinitionKey).collect(Collectors.toList()), actTaskNode.getNodeId())
+                .changeState();
+            List<Task> newTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+            //处理并行会签环节重复节点
+            if(CollectionUtil.isNotEmpty(newTaskList)&&newTaskList.size()>0){
+                List<Task> taskCollect = newTaskList.stream().filter(e -> e.getTaskDefinitionKey().equals(actTaskNode.getNodeId())).collect(Collectors.toList());
+                if(taskCollect.size()>1){
+                    taskCollect.remove(0);
+                    taskCollect.forEach(e->{
+                        workFlowUtils.deleteRuntimeTask(e);
+                    });
+                }
             }
-        }
-        Map<String, Object> variables =new HashMap<>();
-        variables.put("status",BusinessStatusEnum.CANCEL.getStatus());
-        List<Task> variablesTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
-        if(CollectionUtil.isNotEmpty(variablesTaskList)){
-            for (Task task : variablesTaskList) {
-                taskService.setAssignee(task.getId(), LoginHelper.getUserId().toString());
-                taskService.setVariables(task.getId(),variables);
+            Map<String, Object> variables =new HashMap<>();
+            variables.put("status",BusinessStatusEnum.CANCEL.getStatus());
+            List<Task> variablesTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+            if(CollectionUtil.isNotEmpty(variablesTaskList)){
+                for (Task task : variablesTaskList) {
+                    taskService.setAssignee(task.getId(), LoginHelper.getUserId().toString());
+                    taskService.setVariables(task.getId(),variables);
+                }
+                iActTaskNodeService.deleteByInstanceId(processInstId);
             }
-            iActTaskNodeService.deleteByInstanceId(processInstId);
+            boolean b = iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.CANCEL);
+            //发送站内信
+            workFlowUtils.sendMessage(LoginHelper.getUsername()+cancelProcessBo.getSendMessage()+",请您注意查收",processInstanceId);
+            return b;
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new ServiceException("撤销失败:"+e.getMessage());
         }
-        boolean b = iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.CANCEL);
-        return b;
     }
 }

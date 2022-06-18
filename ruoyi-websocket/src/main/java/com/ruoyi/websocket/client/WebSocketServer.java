@@ -2,16 +2,26 @@ package com.ruoyi.websocket.client;
 
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ruoyi.common.core.domain.PageQuery;
 import com.ruoyi.common.core.domain.R;
+import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.common.utils.JsonUtils;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.spring.SpringUtils;
+import com.ruoyi.workflow.domain.vo.SysMessageVo;
+import com.ruoyi.workflow.service.ISysMessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -21,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @Description TODO
  * @createTime 2022年06月16日
  */
-@ServerEndpoint("/webSocketServer/{userName}")
+@ServerEndpoint(value = "/webSocketServer/{userName}",encoders = {ServerEncoder.class})
 @Component
 public class WebSocketServer {
 
@@ -39,7 +49,7 @@ public class WebSocketServer {
     /**
      * 连接建立成功调用的方法*/
     @OnOpen
-    public void onOpen(Session session,@PathParam("userName") String userName) throws IOException {
+    public void onOpen(Session session,@PathParam("userName") String userName) throws IOException, EncodeException {
         this.session = session;
         this.userName=userName;
         if(webSocketMap.containsKey(userName)){
@@ -52,7 +62,7 @@ public class WebSocketServer {
             addOnlineCount();
             //在线数加1
         }
-        sendMessageTo("连接成功用户:"+ userName,userName);
+        sendMessageTo(userName);
     }
 
     /**
@@ -73,21 +83,12 @@ public class WebSocketServer {
      * @param message 客户端发送过来的消息*/
     @OnMessage
     public void onMessage(String message, Session session) {
-        //可以群发消息
-        //消息保存到数据库、redis
         if(StringUtils.isNotBlank(message)){
             try {
-                //解析发送的报文
-                JSONObject jsonObject = JSONUtil.parseObj(message);
-                //追加发送人(防止串改)
-                jsonObject.set("fromUserName",this.userName);
-                String toUserId=jsonObject.getStr("toUserName");
-                //传送给对应toUserId用户的websocket
-                if(StringUtils.isNotBlank(toUserId)&&webSocketMap.containsKey(toUserId)){
-                    webSocketMap.get(toUserId).sendMessage(jsonObject.toString());
+                if(StringUtils.isNotBlank(userName)&&webSocketMap.containsKey(userName)){
+                    webSocketMap.get(userName).sendMessage();
                 }else{
-                    //否则不在这个服务器上，发送到mysql或者redis
-                    logger.info("请求的userId:"+toUserId+"不在该服务器上");
+                    webSocketMap.put(userName,this);
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -104,8 +105,15 @@ public class WebSocketServer {
     /**
      * 实现服务器主动推送
      */
-    public void sendMessage(String message) throws IOException{
-        this.session.getBasicRemote().sendText(message);
+    public void sendMessage() throws IOException, EncodeException {
+        HashMap<String, Object> map = new HashMap<>();
+        PageQuery pageQuery = new PageQuery();
+        pageQuery.setPageNum(1);
+        pageQuery.setPageSize(10);
+        ISysMessageService bean = SpringUtils.getBean(ISysMessageService.class);
+        TableDataInfo<SysMessageVo> page = bean.queryPage(pageQuery,userName);
+        map.put("page",page);
+        this.session.getBasicRemote().sendObject(map);
     }
 
     /**
@@ -143,17 +151,17 @@ public class WebSocketServer {
         }
     }
     /**
-     * 定向发送
-     * @param message
-     * @param to 指定对象id
-     * @throws IOException
+     * @Description:  message
+     * @param: userName
+     * @return: void
+     * @author: gssong
+     * @Date: 2022/6/18 16:10
      */
-    public static void sendMessageTo(String message, String to) throws IOException{
-        if(StringUtils.isNotBlank(to)&&webSocketMap.containsKey(to)){
-            WebSocketServer client = webSocketMap.get(to);
-            client.session.getBasicRemote().sendText(message);
-        }else{
-        }
+    public static void sendMessageTo(String userName) throws IOException, EncodeException {
+        WebSocketServer client = webSocketMap.get(userName);
+        Map<String, Object> map = new HashMap<>();
+        map.put("userName",userName);
+        client.session.getBasicRemote().sendObject(map);
     }
     public static synchronized int getOnlineCount() {
         return onlineCount;

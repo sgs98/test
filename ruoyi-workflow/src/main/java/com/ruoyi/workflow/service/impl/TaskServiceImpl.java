@@ -10,10 +10,7 @@ import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.helper.LoginHelper;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
-import com.ruoyi.workflow.domain.ActBusinessStatus;
-import com.ruoyi.workflow.domain.ActHiTaskInst;
-import com.ruoyi.workflow.domain.ActNodeAssignee;
-import com.ruoyi.workflow.domain.ActTaskNode;
+import com.ruoyi.workflow.domain.*;
 import com.ruoyi.workflow.domain.bo.*;
 import com.ruoyi.workflow.domain.vo.*;
 import com.ruoyi.workflow.flowable.cmd.AddSequenceMultiInstanceCmd;
@@ -39,6 +36,8 @@ import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.api.history.HistoricTaskInstanceQuery;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,6 +58,8 @@ import static com.ruoyi.common.helper.LoginHelper.getUserId;
 @RequiredArgsConstructor
 public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
+    protected static Logger logger = LoggerFactory.getLogger(TaskServiceImpl.class);
+
     private final IUserService iUserService;
 
     private final IActBusinessStatusService iActBusinessStatusService;
@@ -74,6 +75,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     private final IActHiTaskInstService iActHiTaskInstService;
 
     private final ManagementService managementService;
+
 
 
 
@@ -138,7 +140,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 List<SysUser> userList = iUserService.selectListUserByIds(assigneeList);
                 if(CollectionUtil.isNotEmpty(userList)){
                     list.forEach(e->{
-                        SysUser sysUser = userList.stream().filter(t -> t.getUserId().compareTo(e.getAssigneeId())==0).findFirst().orElse(null);
+                        SysUser sysUser = userList.stream().filter(t -> StringUtils.isNotBlank(e.getAssignee())&&t.getUserId().compareTo(e.getAssigneeId())==0).findFirst().orElse(null);
                         if(ObjectUtil.isNotEmpty(sysUser)){
                             e.setAssignee(sysUser.getNickName());
                             e.setAssigneeId(sysUser.getUserId());
@@ -172,177 +174,185 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean completeTask(TaskCompleteREQ req) {
-        // 1.查询任务
-        Task task = taskService.createTaskQuery().taskId(req.getTaskId()).taskAssignee(getUserId().toString()).singleResult();
+        try {
+            // 1.查询任务
+            Task task = taskService.createTaskQuery().taskId(req.getTaskId()).taskAssignee(getUserId().toString()).singleResult();
 
-        if (ObjectUtil.isNull(task)) {
-            throw new ServiceException("任务不存在或您不是当前审批人");
-        }
+            if (ObjectUtil.isNull(task)) {
+                throw new ServiceException("任务不存在或您不是当前审批人");
+            }
 
-        if (task.isSuspended()) {
-            throw new ServiceException("当前任务已被挂起");
-        }
-        //办理委托任务
-        if(ObjectUtil.isNotEmpty(task.getDelegationState())&&ActConstant.PENDING.equals(task.getDelegationState().name())){
-            taskService.resolveTask(req.getTaskId());
-            ActHiTaskInst hiTaskInst = iActHiTaskInstService.getById(task.getId());
-            TaskEntity subTask = createNewTask(task, hiTaskInst.getStartTime());
-            taskService.addComment(subTask.getId(), task.getProcessInstanceId(), req.getMessage());
-            taskService.complete(subTask.getId());
-            ActHiTaskInst actHiTaskInst = new ActHiTaskInst();
-            actHiTaskInst.setId(task.getId());
-            actHiTaskInst.setStartTime(new Date());
-            iActHiTaskInstService.updateById(actHiTaskInst);
-            return true;
-        }
+            if (task.isSuspended()) {
+                throw new ServiceException("当前任务已被挂起");
+            }
+            //办理委托任务
+            if(ObjectUtil.isNotEmpty(task.getDelegationState())&&ActConstant.PENDING.equals(task.getDelegationState().name())){
+                taskService.resolveTask(req.getTaskId());
+                ActHiTaskInst hiTaskInst = iActHiTaskInstService.getById(task.getId());
+                TaskEntity subTask = createNewTask(task, hiTaskInst.getStartTime());
+                taskService.addComment(subTask.getId(), task.getProcessInstanceId(), req.getMessage());
+                taskService.complete(subTask.getId());
+                ActHiTaskInst actHiTaskInst = new ActHiTaskInst();
+                actHiTaskInst.setId(task.getId());
+                actHiTaskInst.setStartTime(new Date());
+                iActHiTaskInstService.updateById(actHiTaskInst);
+                return true;
+            }
 
-        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
-        //判断下一节点是否是会签 如果是会签 将选择的人员放到会签变量
-        List<ActNodeAssignee> actNodeAssignees = iActNodeAssigneeService.getInfoByProcessDefinitionId(task.getProcessDefinitionId());
-        for (ActNodeAssignee actNodeAssignee : actNodeAssignees) {
-            String column = actNodeAssignee.getMultipleColumn();
-            String assigneeId = actNodeAssignee.getAssigneeId();
-            if(actNodeAssignee.getMultiple()&&actNodeAssignee.getIsShow()){
-                List<Long> userIdList = req.getAssignees(actNodeAssignee.getMultipleColumn());
-                if(CollectionUtil.isNotEmpty(userIdList)){
-                    taskService.setVariable(task.getId(),column,userIdList);
+            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
+            //判断下一节点是否是会签 如果是会签 将选择的人员放到会签变量
+            List<ActNodeAssignee> actNodeAssignees = iActNodeAssigneeService.getInfoByProcessDefinitionId(task.getProcessDefinitionId());
+            for (ActNodeAssignee actNodeAssignee : actNodeAssignees) {
+                String column = actNodeAssignee.getMultipleColumn();
+                String assigneeId = actNodeAssignee.getAssigneeId();
+                if(actNodeAssignee.getMultiple()&&actNodeAssignee.getIsShow()){
+                    List<Long> userIdList = req.getAssignees(actNodeAssignee.getMultipleColumn());
+                    if(CollectionUtil.isNotEmpty(userIdList)){
+                        taskService.setVariable(task.getId(),column,userIdList);
+                    }
+                }
+                //判断是否有会签并且不需要弹窗选人的节点
+                if(actNodeAssignee.getMultiple()&&!actNodeAssignee.getIsShow()&&(StringUtils.isBlank(column) || StringUtils.isBlank(assigneeId))){
+                    throw new ServiceException("请检查【"+processInstance.getProcessDefinitionKey()+"】配置 ");
+                }
+                if(actNodeAssignee.getMultiple()&&!actNodeAssignee.getIsShow()){
+                    List<Long> userIds = new ArrayList<>();
+                    String[] split = assigneeId.split(",");
+                    for (String userId : split) {
+                        userIds.add(Long.valueOf(userId));
+                    }
+                    taskService.setVariable(task.getId(),actNodeAssignee.getMultipleColumn(),userIds);
                 }
             }
-            //判断是否有会签并且不需要弹窗选人的节点
-            if(actNodeAssignee.getMultiple()&&!actNodeAssignee.getIsShow()&&(StringUtils.isBlank(column) || StringUtils.isBlank(assigneeId))){
-                throw new ServiceException("请检查【"+processInstance.getProcessDefinitionKey()+"】配置 ");
-            }
-            if(actNodeAssignee.getMultiple()&&!actNodeAssignee.getIsShow()){
-                List<Long> userIds = new ArrayList<>();
-                String[] split = assigneeId.split(",");
-                for (String userId : split) {
-                    userIds.add(Long.valueOf(userId));
-                }
-                taskService.setVariable(task.getId(),actNodeAssignee.getMultipleColumn(),userIds);
-            }
-        }
-        // 3. 指定任务审批意见
-        taskService.addComment(req.getTaskId(), task.getProcessInstanceId(), req.getMessage());
-        // 4. 完成任务
-        taskService.setVariables(req.getTaskId(), req.getVariables());
-        taskService.complete(req.getTaskId());
-        // 5. 记录执行过的流程任务
-        List<ActTaskNode> actTaskNodeList = iActTaskNodeService.getListByInstanceId(task.getProcessInstanceId());
-        ActTaskNode actTaskNode = new ActTaskNode();
-        actTaskNode.setNodeId(task.getTaskDefinitionKey());
-        actTaskNode.setNodeName(task.getName());
-        actTaskNode.setInstanceId(task.getProcessInstanceId());
-        if (CollectionUtil.isEmpty(actTaskNodeList)) {
-            actTaskNode.setOrderNo(0);
-            actTaskNode.setIsBack(true);
-            iActTaskNodeService.save(actTaskNode);
-        } else {
-            ActNodeAssignee actNodeAssignee = actNodeAssignees.stream().filter(e -> e.getNodeId().equals(task.getTaskDefinitionKey())).findFirst().orElse(null);
-            //如果为设置流程定义配置默认 当前环节可以回退
-            if(ObjectUtil.isEmpty(actNodeAssignee)){
+            // 3. 指定任务审批意见
+            taskService.addComment(req.getTaskId(), task.getProcessInstanceId(), req.getMessage());
+            // 4. 完成任务
+            taskService.setVariables(req.getTaskId(), req.getVariables());
+            taskService.complete(req.getTaskId());
+            // 5. 记录执行过的流程任务
+            List<ActTaskNode> actTaskNodeList = iActTaskNodeService.getListByInstanceId(task.getProcessInstanceId());
+            ActTaskNode actTaskNode = new ActTaskNode();
+            actTaskNode.setNodeId(task.getTaskDefinitionKey());
+            actTaskNode.setNodeName(task.getName());
+            actTaskNode.setInstanceId(task.getProcessInstanceId());
+            if (CollectionUtil.isEmpty(actTaskNodeList)) {
+                actTaskNode.setOrderNo(0);
                 actTaskNode.setIsBack(true);
-            }else{
-                actTaskNode.setIsBack(actNodeAssignee.getIsBack());
+                iActTaskNodeService.save(actTaskNode);
+            } else {
+                ActNodeAssignee actNodeAssignee = actNodeAssignees.stream().filter(e -> e.getNodeId().equals(task.getTaskDefinitionKey())).findFirst().orElse(null);
+                //如果为设置流程定义配置默认 当前环节可以回退
+                if(ObjectUtil.isEmpty(actNodeAssignee)){
+                    actTaskNode.setIsBack(true);
+                }else{
+                    actTaskNode.setIsBack(actNodeAssignee.getIsBack());
+                }
+                iActTaskNodeService.saveTaskNode(actTaskNode);
             }
-            iActTaskNodeService.saveTaskNode(actTaskNode);
-        }
-        // 更新业务状态为：办理中, 和流程实例id
-        iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.WAITING, task.getProcessInstanceId());
-        // 6. 查询下一个任务
-        List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
-        // 7. 如果为空 办结任务
-        if (CollectionUtil.isEmpty(taskList)) {
-            HistoricProcessInstance hpi = historyService.createHistoricProcessInstanceQuery()
-                .processInstanceId(task.getProcessInstanceId()).singleResult();
-            // 更新业务状态已完成 办结流程
-            boolean b = iActBusinessStatusService.updateState(hpi.getBusinessKey(), BusinessStatusEnum.FINISH);
-            return b;
-        }
+            // 更新业务状态为：办理中, 和流程实例id
+            iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.WAITING, task.getProcessInstanceId());
+            // 6. 查询下一个任务
+            List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
+            // 7. 如果为空 办结任务
+            if (CollectionUtil.isEmpty(taskList)) {
+                HistoricProcessInstance hpi = historyService.createHistoricProcessInstanceQuery()
+                    .processInstanceId(task.getProcessInstanceId()).singleResult();
+                // 更新业务状态已完成 办结流程
+                boolean b = iActBusinessStatusService.updateState(hpi.getBusinessKey(), BusinessStatusEnum.FINISH);
+                return b;
+            }
 
-        //抄送
-        if(req.getIsCopy()){
-            if(StringUtils.isBlank(req.getAssigneeIds())){
-                throw new ServiceException("抄送人不能为空 ");
+            //抄送
+            if(req.getIsCopy()){
+                if(StringUtils.isBlank(req.getAssigneeIds())){
+                    throw new ServiceException("抄送人不能为空 ");
+                }
+                TaskEntity newTask = createNewTask(task, new Date());
+                taskService.addComment(newTask.getId(),task.getProcessInstanceId(),
+                    LoginHelper.getUsername()+"【抄送】给"+req.getAssigneeNames());
+                taskService.complete(newTask.getId());
+                workFlowUtils.createSubTask(taskList,req.getAssigneeIds());
             }
-            TaskEntity newTask = createNewTask(task, new Date());
-            taskService.addComment(newTask.getId(),task.getProcessInstanceId(),
-                LoginHelper.getUsername()+"【抄送】给"+req.getAssigneeNames());
-            taskService.complete(newTask.getId());
-            workFlowUtils.createSubTask(taskList,req.getAssigneeIds());
-        }
-        // 8. 如果不为空 指定办理人
-        if (CollectionUtil.isNotEmpty(taskList)) {
-            // 9. 指定办理人
-            for (Task t : taskList) {
-                ActNodeAssignee nodeAssignee = actNodeAssignees.stream().filter(e -> t.getTaskDefinitionKey().equals(e.getNodeId())).findFirst().orElse(null);
-                if(ObjectUtil.isNotNull(nodeAssignee)){
-                    // 不需要弹窗选人
-                    if(!nodeAssignee.getIsShow()){
-                        //业务规则选人
-                        if(ActConstant.WORKFLOW_RULE.equals(nodeAssignee.getChooseWay())){
-                            ActFullClassVo actFullClassVo = iActFullClassService.queryById(nodeAssignee.getFullClassId());
-                            //按业务规则选人
-                            Object assignee = workFlowUtils.assignList(actFullClassVo, t.getId());
-                            List<Long> userIds = new ArrayList<>();
-                            String[] splitUserIds = assignee.toString().split(",");
-                            for (String userId : splitUserIds) {
-                                userIds.add(Long.valueOf(userId));
-                            }
-                            List<SysUser> userList = iUserService.selectListUserByIds(userIds);
-                            if (CollectionUtil.isEmpty(userList)) {
-                                throw new ServiceException("【" + t.getName() + "】任务环节未配置审批人");
-                            }
-                            settingAssignee(t,userList.stream().map(SysUser::getUserId).collect(Collectors.toList()));
-                        }else{
-                            // 设置审批人员
-                            List<Long> assignees = workFlowUtils.assignees(nodeAssignee.getAssigneeId(), nodeAssignee.getChooseWay(), t.getName());
-                            settingAssignee(t,assignees);
-                        }
-                    }else{
-                        //弹窗选人 根据当前任务节点id获取办理人
-                        if(t.getTaskDefinitionKey().equals(nodeAssignee.getNodeId()) && nodeAssignee.getIsShow()){
-                            List<Long> assignees = req.getAssignees(t.getTaskDefinitionKey());
-                            //设置选人
-                            if (CollectionUtil.isNotEmpty(assignees)) {
-                                settingAssignee(t,assignees);
-                            } else if (StringUtils.isBlank(t.getAssignee())) {
-                                if(taskList.size()==1){
+            // 8. 如果不为空 指定办理人
+            if (CollectionUtil.isNotEmpty(taskList)) {
+                // 9. 指定办理人
+                for (Task t : taskList) {
+                    ActNodeAssignee nodeAssignee = actNodeAssignees.stream().filter(e -> t.getTaskDefinitionKey().equals(e.getNodeId())).findFirst().orElse(null);
+                    if(ObjectUtil.isNotNull(nodeAssignee)){
+                        // 不需要弹窗选人
+                        if(!nodeAssignee.getIsShow()){
+                            //业务规则选人
+                            if(ActConstant.WORKFLOW_RULE.equals(nodeAssignee.getChooseWay())){
+                                ActFullClassVo actFullClassVo = iActFullClassService.queryById(nodeAssignee.getFullClassId());
+                                //按业务规则选人
+                                Object assignee = workFlowUtils.assignList(actFullClassVo, t.getId());
+                                List<Long> userIds = new ArrayList<>();
+                                String[] splitUserIds = assignee.toString().split(",");
+                                for (String userId : splitUserIds) {
+                                    userIds.add(Long.valueOf(userId));
+                                }
+                                List<SysUser> userList = iUserService.selectListUserByIds(userIds);
+                                if (CollectionUtil.isEmpty(userList)) {
                                     throw new ServiceException("【" + t.getName() + "】任务环节未配置审批人");
                                 }
+                                settingAssignee(t,userList.stream().map(SysUser::getUserId).collect(Collectors.toList()));
+                            }else{
+                                // 设置审批人员
+                                List<Long> assignees = workFlowUtils.assignees(nodeAssignee.getAssigneeId(), nodeAssignee.getChooseWay(), t.getName());
+                                settingAssignee(t,assignees);
                             }
                         }else{
-                            //校验会签环节
-                            ActNodeAssignee info = iActNodeAssigneeService.getInfo(t.getProcessDefinitionId(), t.getTaskDefinitionKey());
-                            if(ObjectUtil.isNotNull(info)&&!info.getMultiple()){
-                                throw new ServiceException("【" + t.getName() + "】任务环节未配置审批人");
-                            }else{
-                                List<ActNodeAssignee> list = iActNodeAssigneeService.getInfoByProcessDefinitionId(task.getProcessDefinitionId());
-                                for (ActNodeAssignee actNodeAssignee : list) {
-                                    if(actNodeAssignee.getMultiple()&&StringUtils.isNotBlank(actNodeAssignee.getMultipleColumn())){
-                                        Object variable = runtimeService.getVariable(t.getExecutionId(), actNodeAssignee.getMultipleColumn());
-                                        if(ObjectUtil.isEmpty(variable)){
-                                            throw new ServiceException("【" + t.getName() + "】任务环节未配置审批人");
-                                        }
-                                    }
-                                    if(actNodeAssignee.getMultiple()&&StringUtils.isBlank(actNodeAssignee.getMultipleColumn())){
+                            //弹窗选人 根据当前任务节点id获取办理人
+                            if(t.getTaskDefinitionKey().equals(nodeAssignee.getNodeId()) && nodeAssignee.getIsShow()){
+                                List<Long> assignees = req.getAssignees(t.getTaskDefinitionKey());
+                                //设置选人
+                                if (CollectionUtil.isNotEmpty(assignees)) {
+                                    settingAssignee(t,assignees);
+                                } else if (StringUtils.isBlank(t.getAssignee())) {
+                                    if(taskList.size()==1){
                                         throw new ServiceException("【" + t.getName() + "】任务环节未配置审批人");
                                     }
                                 }
+                            }else{
+                                //校验会签环节
+                                ActNodeAssignee info = iActNodeAssigneeService.getInfo(t.getProcessDefinitionId(), t.getTaskDefinitionKey());
+                                if(ObjectUtil.isNotNull(info)&&!info.getMultiple()){
+                                    throw new ServiceException("【" + t.getName() + "】任务环节未配置审批人");
+                                }else{
+                                    List<ActNodeAssignee> list = iActNodeAssigneeService.getInfoByProcessDefinitionId(task.getProcessDefinitionId());
+                                    for (ActNodeAssignee actNodeAssignee : list) {
+                                        if(actNodeAssignee.getMultiple()&&StringUtils.isNotBlank(actNodeAssignee.getMultipleColumn())){
+                                            Object variable = runtimeService.getVariable(t.getExecutionId(), actNodeAssignee.getMultipleColumn());
+                                            if(ObjectUtil.isEmpty(variable)){
+                                                throw new ServiceException("【" + t.getName() + "】任务环节未配置审批人");
+                                            }
+                                        }
+                                        if(actNodeAssignee.getMultiple()&&StringUtils.isBlank(actNodeAssignee.getMultipleColumn())){
+                                            throw new ServiceException("【" + t.getName() + "】任务环节未配置审批人");
+                                        }
+                                    }
+                                }
                             }
                         }
+                    } else if (StringUtils.isBlank(t.getAssignee())) {
+                        throw new ServiceException("【" + t.getName() + "】任务环节未配置审批人");
                     }
-                } else if (StringUtils.isBlank(t.getAssignee())) {
-                    throw new ServiceException("【" + t.getName() + "】任务环节未配置审批人");
                 }
             }
-        }
-        return true;
-    }
+            //发送站内信
+            workFlowUtils.sendMessage(LoginHelper.getUsername()+req.getSendMessage()+",请您注意查收",processInstance.getProcessInstanceId());
 
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            logger.error("办理失败:"+e.getMessage());
+            throw new ServiceException("办理失败:"+e.getMessage());
+        }
+    }
 
     /**
      * @Description: 设置下一环节人员
-     * @param: task 任务
+     * @param: task 任务
      * @param: assignees 办理人
      * @return: void
      * @author: gssong
@@ -783,7 +793,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 List<SysUser> userList = iUserService.selectListUserByIds(assigneeList);
                 if(CollectionUtil.isNotEmpty(userList)){
                     list.forEach(e->{
-                        SysUser sysUser = userList.stream().filter(t -> t.getUserId().compareTo(e.getAssigneeId())==0).findFirst().orElse(null);
+                        SysUser sysUser = userList.stream().filter(t -> StringUtils.isNotBlank(e.getAssignee())&&t.getUserId().compareTo(e.getAssigneeId())==0).findFirst().orElse(null);
                         if(ObjectUtil.isNotEmpty(sysUser)){
                             e.setAssignee(sysUser.getNickName());
                             e.setAssigneeId(sysUser.getUserId());
@@ -814,95 +824,103 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         if (ObjectUtil.isNull(task)) {
             throw new ServiceException("当前任务不存在或你不是任务办理人");
         }
-        //判断是否有多个任务
-        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
-        List<String> preUserTaskList = getPrevUserNodeList(task.getProcessDefinitionId(), backProcessVo.getTargetActivityId(),task);
-        //当前单个任务驳回到并行网关
-        taskService.addComment(task.getId(), processInstanceId, StringUtils.isNotBlank(backProcessVo.getComment()) ? backProcessVo.getComment() : "驳回");
-        if(CollectionUtil.isNotEmpty(preUserTaskList)&&taskList.size()==1){
-            runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
-            .moveSingleActivityIdToActivityIds(taskList.get(0).getTaskDefinitionKey(), preUserTaskList)
-            .changeState();
-            //当前多个任务驳回到单个节点
-        }else if(taskList.size()>1&&CollectionUtil.isEmpty(preUserTaskList)){
-            runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
-            .moveActivityIdsToSingleActivityId(taskList.stream().map(Task::getTaskDefinitionKey).distinct().collect(Collectors.toList()), backProcessVo.getTargetActivityId())
-            .changeState();
-            //当前单个节点驳回单个节点
-        }else if(taskList.size()==1&&CollectionUtil.isEmpty(preUserTaskList)){
-            runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
-                .moveActivityIdTo(taskList.get(0).getTaskDefinitionKey(), backProcessVo.getTargetActivityId())
-                .changeState();
-           //当前多个节点驳回多个节点
-        }else if(taskList.size()>1&&CollectionUtil.isNotEmpty(preUserTaskList)){
-            taskList.forEach(e->{
-                if(e.getId().equals(backProcessVo.getTaskId())){
-                    runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
-                        .moveSingleActivityIdToActivityIds(e.getTaskDefinitionKey(), preUserTaskList)
-                        .changeState();
-                }else{
-                    workFlowUtils.deleteRuntimeTask(e);
-                }
-            });
-        }else{
-            throw new ServiceException("驳回失败");
-        }
-        List<Task> otherTasks = null;
-        if(taskList.size()>1){
-            otherTasks = taskList.stream().filter(e->!e.getId().equals(backProcessVo.getTaskId())).collect(Collectors.toList());
-        }
-        if(CollectionUtil.isNotEmpty(otherTasks)&&otherTasks.size()>0){
-            otherTasks.forEach(e->{
-                historyService.deleteHistoricTaskInstance(e.getId());
-            });
-        }
-        //判断是否会签
-        LambdaQueryWrapper<ActNodeAssignee> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(ActNodeAssignee::getNodeId,backProcessVo.getTargetActivityId());
-        wrapper.eq(ActNodeAssignee::getProcessDefinitionId,task.getProcessDefinitionId());
-        ActNodeAssignee actNodeAssignee = iActNodeAssigneeService.getOne(wrapper);
-        List<Task> newTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
-        //处理并行会签环节重复节点
-        if(CollectionUtil.isNotEmpty(newTaskList)&&newTaskList.size()>0){
-            List<Task> taskCollect = newTaskList.stream().filter(e -> e.getTaskDefinitionKey().equals(backProcessVo.getTargetActivityId())).collect(Collectors.toList());
-            if(taskCollect.size()>1){
-                taskCollect.remove(0);
-                taskCollect.forEach(e->{
-                    workFlowUtils.deleteRuntimeTask(e);
+        try {
+            //判断是否有多个任务
+            List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+            List<String> preUserTaskList = getPrevUserNodeList(task.getProcessDefinitionId(), backProcessVo.getTargetActivityId(),task);
+            //当前单个任务驳回到并行网关
+            taskService.addComment(task.getId(), processInstanceId, StringUtils.isNotBlank(backProcessVo.getComment()) ? backProcessVo.getComment() : "驳回");
+            if(CollectionUtil.isNotEmpty(preUserTaskList)&&taskList.size()==1){
+                runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
+                    .moveSingleActivityIdToActivityIds(taskList.get(0).getTaskDefinitionKey(), preUserTaskList)
+                    .changeState();
+                //当前多个任务驳回到单个节点
+            }else if(taskList.size()>1&&CollectionUtil.isEmpty(preUserTaskList)){
+                runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
+                    .moveActivityIdsToSingleActivityId(taskList.stream().map(Task::getTaskDefinitionKey).distinct().collect(Collectors.toList()), backProcessVo.getTargetActivityId())
+                    .changeState();
+                //当前单个节点驳回单个节点
+            }else if(taskList.size()==1&&CollectionUtil.isEmpty(preUserTaskList)){
+                runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
+                    .moveActivityIdTo(taskList.get(0).getTaskDefinitionKey(), backProcessVo.getTargetActivityId())
+                    .changeState();
+                //当前多个节点驳回多个节点
+            }else if(taskList.size()>1&&CollectionUtil.isNotEmpty(preUserTaskList)){
+                taskList.forEach(e->{
+                    if(e.getId().equals(backProcessVo.getTaskId())){
+                        runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
+                            .moveSingleActivityIdToActivityIds(e.getTaskDefinitionKey(), preUserTaskList)
+                            .changeState();
+                    }else{
+                        workFlowUtils.deleteRuntimeTask(e);
+                    }
+                });
+            }else{
+                throw new ServiceException("驳回失败");
+            }
+            List<Task> otherTasks = null;
+            if(taskList.size()>1){
+                otherTasks = taskList.stream().filter(e->!e.getId().equals(backProcessVo.getTaskId())).collect(Collectors.toList());
+            }
+            if(CollectionUtil.isNotEmpty(otherTasks)&&otherTasks.size()>0){
+                otherTasks.forEach(e->{
+                    historyService.deleteHistoricTaskInstance(e.getId());
                 });
             }
-        }
-        if(ObjectUtil.isNotEmpty(actNodeAssignee)&&!actNodeAssignee.getMultiple()){
-            List<Task> runTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
-            for (Task runTask : runTaskList) {
-                //取之前的历史办理人
-                List<HistoricTaskInstance> oldTargerTaskList = historyService.createHistoricTaskInstanceQuery()
-                    .taskDefinitionKey(runTask.getTaskDefinitionKey()) // 节点id
-                    .processInstanceId(processInstanceId)
-                    .finished() //已经完成才是历史
-                    .orderByTaskCreateTime().desc() //最新办理的在最前面
-                    .list();
-                if(CollectionUtil.isNotEmpty(oldTargerTaskList)){
-                    HistoricTaskInstance oldTargerTask = oldTargerTaskList.get(0);
-                    taskService.setAssignee(runTask.getId(), oldTargerTask.getAssignee());
+            //判断是否会签
+            LambdaQueryWrapper<ActNodeAssignee> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(ActNodeAssignee::getNodeId,backProcessVo.getTargetActivityId());
+            wrapper.eq(ActNodeAssignee::getProcessDefinitionId,task.getProcessDefinitionId());
+            ActNodeAssignee actNodeAssignee = iActNodeAssigneeService.getOne(wrapper);
+            List<Task> newTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+            //处理并行会签环节重复节点
+            if(CollectionUtil.isNotEmpty(newTaskList)&&newTaskList.size()>0){
+                List<Task> taskCollect = newTaskList.stream().filter(e -> e.getTaskDefinitionKey().equals(backProcessVo.getTargetActivityId())).collect(Collectors.toList());
+                if(taskCollect.size()>1){
+                    taskCollect.remove(0);
+                    taskCollect.forEach(e->{
+                        workFlowUtils.deleteRuntimeTask(e);
+                    });
                 }
-
             }
-        }
+            if(ObjectUtil.isNotEmpty(actNodeAssignee)&&!actNodeAssignee.getMultiple()){
+                List<Task> runTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+                for (Task runTask : runTaskList) {
+                    //取之前的历史办理人
+                    List<HistoricTaskInstance> oldTargerTaskList = historyService.createHistoricTaskInstanceQuery()
+                        .taskDefinitionKey(runTask.getTaskDefinitionKey()) // 节点id
+                        .processInstanceId(processInstanceId)
+                        .finished() //已经完成才是历史
+                        .orderByTaskCreateTime().desc() //最新办理的在最前面
+                        .list();
+                    if(CollectionUtil.isNotEmpty(oldTargerTaskList)){
+                        HistoricTaskInstance oldTargerTask = oldTargerTaskList.get(0);
+                        taskService.setAssignee(runTask.getId(), oldTargerTask.getAssignee());
+                    }
 
-        //删除驳回后的流程节点
-        ActTaskNode actTaskNode = iActTaskNodeService.getListByInstanceIdAndNodeId(task.getProcessInstanceId(), backProcessVo.getTargetActivityId());
-        if (ObjectUtil.isNotNull(actTaskNode) && actTaskNode.getOrderNo() == 0) {
-            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-            List<Task> newList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
-            for (Task ta : newList) {
-                Map<String, Object> variables = new HashMap<>();
-                variables.put("status", BusinessStatusEnum.BACK.getStatus());
-                taskService.setVariables(ta.getId(), variables);
+                }
             }
-            iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.BACK);
+
+            //删除驳回后的流程节点
+            ActTaskNode actTaskNode = iActTaskNodeService.getListByInstanceIdAndNodeId(task.getProcessInstanceId(), backProcessVo.getTargetActivityId());
+            if (ObjectUtil.isNotNull(actTaskNode) && actTaskNode.getOrderNo() == 0) {
+                ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+                List<Task> newList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+                for (Task ta : newList) {
+                    Map<String, Object> variables = new HashMap<>();
+                    variables.put("status", BusinessStatusEnum.BACK.getStatus());
+                    taskService.setVariables(ta.getId(), variables);
+                }
+                iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.BACK);
+            }
+            iActTaskNodeService.deleteBackTaskNode(processInstanceId, backProcessVo.getTargetActivityId());
+            //发送站内信
+            workFlowUtils.sendMessage(LoginHelper.getUsername()+backProcessVo.getSendMessage()+",请您注意查收",processInstanceId);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new ServiceException("驳回失败:"+e.getMessage());
         }
-        iActTaskNodeService.deleteBackTaskNode(processInstanceId, backProcessVo.getTargetActivityId());
         return processInstanceId;
     }
 
@@ -979,26 +997,27 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean delegateTask(TaskREQ taskREQ) {
-        if(StringUtils.isBlank(taskREQ.getDelegateUserId())){
+    public Boolean delegateTask(DelegateREQ delegateREQ) {
+        if(StringUtils.isBlank(delegateREQ.getDelegateUserId())){
             throw new ServiceException("请选择委托人");
         }
-        TaskEntity task = (TaskEntity) taskService.createTaskQuery().taskId(taskREQ.getTaskId())
+        TaskEntity task = (TaskEntity) taskService.createTaskQuery().taskId(delegateREQ.getTaskId())
             .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
         if(ObjectUtil.isEmpty(task)){
             throw new ServiceException("当前任务不存在或你不是任务办理人");
         }
         try{
             TaskEntity subTask = this.createNewTask(task,new Date());
-            taskService.addComment(subTask.getId(), task.getProcessInstanceId(),"【"+LoginHelper.getUsername()+"】委派给【"+taskREQ.getDelegateUserName()+"】");
+            taskService.addComment(subTask.getId(), task.getProcessInstanceId(),"【"+LoginHelper.getUsername()+"】委派给【"+delegateREQ.getDelegateUserName()+"】");
             //委托任务
-            taskService.delegateTask(taskREQ.getTaskId(), taskREQ.getDelegateUserId());
+            taskService.delegateTask(delegateREQ.getTaskId(), delegateREQ.getDelegateUserId());
             //办理生成的任务记录
             taskService.complete(subTask.getId());
             ActHiTaskInst actHiTaskInst = new ActHiTaskInst();
             actHiTaskInst.setId(task.getId());
             actHiTaskInst.setStartTime(new Date());
             iActHiTaskInstService.updateById(actHiTaskInst);
+            workFlowUtils.sendMessage(LoginHelper.getUsername()+delegateREQ.getSendMessage(),task.getProcessInstanceId());
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -1027,6 +1046,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 StringUtils.isNotBlank(transmitREQ.getComment())?transmitREQ.getComment():LoginHelper.getUsername()+"转办了任务");
             taskService.complete(subTask.getId());
             taskService.setAssignee(task.getId(),transmitREQ.getTransmitUserId());
+            workFlowUtils.sendMessage(LoginHelper.getUsername()+transmitREQ.getSendMessage(),task.getProcessInstanceId());
             return R.ok();
         }catch (Exception e){
             e.printStackTrace();
@@ -1161,21 +1181,4 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         }
     }
 
-    /**
-     * 查询当前用户待办任务数量
-     *
-     * @return
-     */
-    @Override
-    public Map<String, Object> getTaskWaitCount() {
-        Map<String, Object> map = new HashMap<>();
-        //当前登录人
-        String currentUserId = LoginHelper.getLoginUser().getUserId().toString();
-        TaskQuery query = taskService.createTaskQuery()
-            .taskCandidateOrAssigned(currentUserId) // 候选人或者办理人
-            .orderByTaskCreateTime().asc();
-        long count=query.count();
-        map.put("count",count);
-        return map;
-    }
 }

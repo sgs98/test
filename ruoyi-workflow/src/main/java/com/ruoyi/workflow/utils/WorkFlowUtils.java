@@ -8,11 +8,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ruoyi.common.core.domain.entity.SysRole;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.helper.LoginHelper;
 import com.ruoyi.common.utils.JsonUtils;
 import com.ruoyi.system.domain.SysUserRole;
 import com.ruoyi.system.mapper.SysRoleMapper;
 import com.ruoyi.system.mapper.SysUserMapper;
 import com.ruoyi.system.mapper.SysUserRoleMapper;
+import com.ruoyi.workflow.domain.SysMessage;
 import com.ruoyi.workflow.domain.vo.MultiVo;
 import com.ruoyi.workflow.flowable.cmd.DeleteExecutionCmd;
 import com.ruoyi.workflow.flowable.cmd.DeleteTaskCmd;
@@ -23,7 +25,9 @@ import com.ruoyi.workflow.domain.ActBusinessStatus;
 import com.ruoyi.workflow.domain.ActFullClassParam;
 import com.ruoyi.workflow.domain.vo.ActFullClassVo;
 import com.ruoyi.workflow.domain.vo.ProcessNode;
+import com.ruoyi.workflow.flowable.cmd.IdentityLinkListCmd;
 import com.ruoyi.workflow.service.IActBusinessStatusService;
+import com.ruoyi.workflow.service.ISysMessageService;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
@@ -34,6 +38,7 @@ import org.flowable.engine.*;
 import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
+import org.flowable.identitylink.service.impl.persistence.entity.IdentityLinkEntity;
 import org.flowable.task.api.Task;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.flowable.variable.api.persistence.entity.VariableInstance;
@@ -80,6 +85,9 @@ public class WorkFlowUtils {
 
     @Autowired
     private RepositoryService repositoryService;
+
+    @Autowired
+    private ISysMessageService iSysMessageService;
 
 
     /**
@@ -502,5 +510,47 @@ public class WorkFlowUtils {
             }
         }
         return list;
+    }
+
+    /**
+     * @Description: 发送站内信
+     * @param: sendMessage
+     * @param: processInstanceId
+     * @param: messageList
+     * @return: void
+     * @author: gssong
+     * @Date: 2022/6/18 13:26
+     */
+    public void sendMessage(String sendMessage, String processInstanceId) {
+        List<SysMessage> messageList = new ArrayList<>();
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        for (Task taskInfo : taskList) {
+            if(StringUtils.isNotBlank(taskInfo.getAssignee())){
+                SysMessage sysMessage = new SysMessage();
+                sysMessage.setSendId(LoginHelper.getUserId());
+                sysMessage.setRecordId(Long.valueOf(taskInfo.getAssignee()));
+                sysMessage.setType(1);
+                sysMessage.setMessageContent(sendMessage);
+                sysMessage.setStatus(0);
+                messageList.add(sysMessage);
+            }else{
+                IdentityLinkListCmd identityLinkListCmd = new IdentityLinkListCmd(taskInfo.getId());
+                List<IdentityLinkEntity> identityLinkEntities = managementService.executeCommand(identityLinkListCmd);
+                if(CollectionUtil.isNotEmpty(identityLinkEntities)){
+                    for (IdentityLinkEntity identityLinkEntity : identityLinkEntities) {
+                        SysMessage sysMessage = new SysMessage();
+                        sysMessage.setSendId(LoginHelper.getUserId());
+                        sysMessage.setRecordId(Long.valueOf(identityLinkEntity.getUserId()));
+                        sysMessage.setType(1);
+                        sysMessage.setMessageContent(sendMessage);
+                        sysMessage.setStatus(0);
+                        messageList.add(sysMessage);
+                    }
+                }
+            }
+        }
+        if(CollectionUtil.isNotEmpty(messageList)){
+            iSysMessageService.sendBatchMessage(messageList);
+        }
     }
 }

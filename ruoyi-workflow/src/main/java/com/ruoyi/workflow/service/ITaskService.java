@@ -76,10 +76,10 @@ public interface ITaskService {
 
     /**
      * 委托
-     * @param taskREQ
+     * @param delegateREQ
      * @return
      */
-    Boolean delegateTask(TaskREQ taskREQ);
+    Boolean delegateTask(DelegateREQ delegateREQ);
 
     /**
      * 转办任务
@@ -101,10 +101,4 @@ public interface ITaskService {
      * @return
      */
     R<Boolean> deleteMultiInstanceExecution(DeleteMultiREQ deleteMultiREQ);
-
-    /**
-     * 查询当前用户待办任务数量
-     * @return
-     */
-    Map<String,Object> getTaskWaitCount();
 }

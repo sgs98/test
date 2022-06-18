@@ -120,7 +120,8 @@
   </el-dialog>
   <!-- 减签结束 -->
   <!-- 驳回开始 -->
-  <back ref="backRef" :taskId = "taskId" @callBack="callBack()" :backNodeList = "backNodeList"/>
+  <back ref="backRef" :taskId = "taskId" @callBack="callBack()"
+  :backNodeList = "backNodeList" :sendMessage="sendMessage" :sendMessageType="sendMessageType"/>
   <!-- 驳回结束 -->
 </div>
 </template>
@@ -134,6 +135,7 @@ export default {
   props: {
     taskId: String,
     taskVariables: Object,
+    sendMessage: String
   },
   components: {
     ChooseWorkflowUser,
@@ -159,7 +161,11 @@ export default {
         //抄送人id
         assigneeIds: undefined,
         //抄送人名称
-        assigneeNames: undefined
+        assigneeNames: undefined,
+        //消息提醒类型
+        sendMessageType: [],
+        //消息提醒
+        sendMessage: ''
       },
       //转办
       transmitForm: {
@@ -213,7 +219,9 @@ export default {
       //按钮设置
       setting: {},
       //流程状态
-      businessStatus: {}
+      businessStatus: {},
+      //消息提醒类型1.站内信,2.邮箱,3.短信
+      sendMessageType:[1],
     };
   },
 
@@ -247,16 +255,11 @@ export default {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           this.loading = true;
-          let obj = this.formData.assigneeMap
-          let objData = JSON.stringify(obj)
-         /*  if(objData === '{}'){
-            this.$message.error("请输入下一步审批人");
-            this.loading = false;
-            return
-          } */
           try {
             this.formData.variables = this.taskVariables
             this.formData.taskId = this.taskId
+            this.formData.sendMessage = "提交了"+this.sendMessage
+            this.formData.sendMessageType = this.sendMessageType
             let response = await api.completeTask(this.formData);
             if (response.code === 200) {
               // 刷新数据
@@ -325,6 +328,8 @@ export default {
     //提交委托申请
     async delegateSubmit(){
       this.delegateForm.taskId = this.taskId
+      this.delegateForm.sendMessage = "委托了"+this.sendMessage
+      this.delegateForm.sendMessageType = this.sendMessageType
       let response = await api.delegateTask(this.delegateForm);
       if(response.code === 200){
         // 刷新数据
@@ -384,7 +389,9 @@ export default {
         let params = {
           transmitUserId: this.transmitForm.userId,
           taskId: this.taskId,
-          comment: this.transmitForm.message
+          comment: this.transmitForm.message,
+          sendMessage: "转发了"+this.sendMessage,
+          sendMessageType: this.sendMessageType
         }
         api.transmitTask(params).then(response=>{
           if(response.code === 200){
@@ -439,7 +446,6 @@ export default {
         assigneeNames: assigneeNames,
         nickNames: assigneeNames.join(",")
       }
-      console.log(this.addMultiForm)
       this.$forceUpdate()
       this.$refs.addMultiUserRef.visible = false
     },

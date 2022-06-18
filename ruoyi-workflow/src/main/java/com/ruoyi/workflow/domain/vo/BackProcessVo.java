@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @program: ruoyi-vue-plus
@@ -17,12 +18,18 @@ import java.io.Serializable;
 public class BackProcessVo implements Serializable {
     private static final long serialVersionUID=1L;
 
-    @ApiModelProperty("任务id")
+    @ApiModelProperty(value = "任务id",required = true)
     private String taskId;
 
-    @ApiModelProperty("驳回的目标节点id")
+    @ApiModelProperty(value = "驳回的目标节点id",required = true)
     private String targetActivityId;
 
-    @ApiModelProperty("审批意见")
+    @ApiModelProperty(value = "审批意见")
     private String comment;
+
+    @ApiModelProperty(value = "消息通知类型", required = true)
+    private List<Integer> sendMessageType;
+
+    @ApiModelProperty(value = "消息通知内容",required = true)
+    private String sendMessage;
 }

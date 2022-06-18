@@ -25,6 +25,8 @@ export default {
     props: {
         taskId: String,
         backNodeList: Array,
+        sendMessage: String,
+        sendMessageType: Array
     },
 
     data() {
@@ -65,7 +67,9 @@ export default {
                       const params = {
                         taskId: this.taskId,
                         targetActivityId: this.formData.targetActivityId,
-                        comment: this.formData.comment
+                        comment: this.formData.comment,
+                        sendMessage: "驳回了"+this.sendMessage,
+                        sendMessageType: this.sendMessageType
                       }
                       let response = await api.backProcess(params)
                       if(response.code === 200) {

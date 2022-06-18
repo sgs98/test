@@ -40,18 +40,6 @@ public class TaskController extends BaseController {
     private final TaskService taskService;
 
     /**
-     * @Description: 查询当前用户的待办任务数量
-     * @param: req
-     * @return: R<Map<String,Object>>
-     * @Author: xycq
-     * @Date:
-     */
-    @ApiOperation("查询当前用户的待办任务数量")
-    @GetMapping("/getTaskWaitCount")
-    public R<Map<String,Object>> getTaskWaitCount() {
-        return R.ok(iTaskService.getTaskWaitCount());
-    }
-    /**
      * @Description: 查询当前用户的待办任务
      * @param: req
      * @return: com.ruoyi.common.core.page.TableDataInfo<com.ruoyi.workflow.domain.vo.TaskWaitingVo>
@@ -215,7 +203,7 @@ public class TaskController extends BaseController {
 
     /**
      * @Description: 委派任务
-     * @param: taskREQ
+     * @param: delegateREQ
      * @return: com.ruoyi.common.core.domain.R<java.lang.Void>
      * @author: gssong
      * @Date: 2022/3/4 13:18
@@ -223,8 +211,8 @@ public class TaskController extends BaseController {
     @ApiOperation("委派任务")
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
     @PostMapping("/delegateTask")
-    public R<Void> delegateTask(@Validated({AddGroup.class}) @RequestBody  TaskREQ taskREQ) {
-        return toAjax(iTaskService.delegateTask(taskREQ));
+    public R<Void> delegateTask(@Validated({AddGroup.class}) @RequestBody  DelegateREQ delegateREQ) {
+        return toAjax(iTaskService.delegateTask(delegateREQ));
     }
 
     /**

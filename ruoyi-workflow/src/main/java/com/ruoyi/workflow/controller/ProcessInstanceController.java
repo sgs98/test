@@ -4,7 +4,9 @@ import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.annotation.RepeatSubmit;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.common.core.validate.AddGroup;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.workflow.domain.bo.CancelProcessBo;
 import com.ruoyi.workflow.domain.bo.ProcessInstFinishREQ;
 import com.ruoyi.workflow.domain.bo.ProcessInstRunningREQ;
 import com.ruoyi.workflow.domain.bo.StartREQ;
@@ -190,19 +192,16 @@ public class ProcessInstanceController {
 
     /**
      * @Description: 撤销申请
-     * @param processInstId
+     * @param: cancelProcessBo
      * @return: com.ruoyi.common.core.domain.R<java.lang.Void>
      * @author: gssong
      * @Date: 2022/1/21
      */
     @ApiOperation("撤销申请")
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "processInstId",value = "流程实例id",required = true)
-    })
-    @Log(title = "流程实例管理", businessType = BusinessType.DELETE)
-    @GetMapping("/cancelProcessApply/{processInstId}")
-    public R<Void> cancelProcessApply(@NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId){
-        boolean b = processInstanceService.cancelProcessApply(processInstId);
+    @Log(title = "流程实例管理", businessType = BusinessType.INSERT)
+    @PostMapping("/cancelProcessApply")
+    public R<Void> cancelProcessApply(@Validated(AddGroup.class) @RequestBody CancelProcessBo cancelProcessBo){
+        boolean b = processInstanceService.cancelProcessApply(cancelProcessBo);
         if(b){
             return R.ok();
         }else{

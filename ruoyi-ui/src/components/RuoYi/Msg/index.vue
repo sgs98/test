@@ -1,98 +1,94 @@
 <template>
 <div >
-  <el-badge :value="waitCount">
-    <svg-icon icon-class="message" @click="clickMsg" />
+  <el-badge :value="badgeValue">
+    <svg-icon icon-class="message" />
   </el-badge>
 </div>
 </template>
 
 <script>
-import task from '@/api/workflow/task'
 export default {
     name: 'RuoYiMsg',
     data() {
     return {
-        msg:'',
-        websock:null,
-        waitCount:this.$store.waitCount,
+      badgeValue: 0, // 消息总条数
+      // websocket消息推送
+      ws: null, // websocket实例
+      wsUrl: process.env.VUE_APP_WEBSOCKET_URL+'/'+this.$store.state.user.name, // websocket连结url
+      timeoutObj: null,
+      serverTimeoutObj: null,
+      timer: null, // 定时器
+      lockReconnect: false,
     }
     },
     created() {
         // 连接webSocket
         this.initWebSocket();
     },
-    destroyed() {
-        // 离开路由之后断开websocket连接
-        this.websocketclose()
-    },
     methods: {
-        clickMsg(){
-            // if(this.$store.waitCount){
-            //     this.$message({
-            //         showClose: true,
-            //         message: '您有'+this.$store.waitCount+'个待办任务！'
-            //     });
-            // }
-            this.$confirm('您有'+this.$store.waitCount+'个待办任务！', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'info'
-            }).then(() => {
-                this.$router.push("/workflowPersonal/personalWaiting");
-            })
-        },
-        // ---- WebSocket连接start ----
-        initWebSocket() {
-            //初始化weosocket
-            const wsuri = process.env.VUE_APP_WEBSOCKET_URL+'/'+this.$store.state.user.name
-            this.websock = new WebSocket(wsuri)
-            this.websock.onmessage = this.websocketonmessage
-            this.websock.onopen = this.websocketonopen
-            this.websock.onerror = this.websocketonerror
-            this.websock.onclose = this.websocketclose
-        },
-        // 连接建立之后执行send方法发送数据
-        websocketonopen() {
-        },
-        //连接建立失败重连
-        websocketonerror() {
-            console.log('WebSocket连接失败，重新连接')
-            this.initWebSocket()
-        },
-        //数据接收
-        websocketonmessage(e) {
-            console.log(e)
-            if (e.isTrusted) {
-                this.msg = e.data
-                //this.msgShow = true // 提示信息的弹框展示，弹框样式本文不再赘述
-                this.$notify({
-                    title: '提示',
-                    message: '连接websocket成功：'+this.msg,
-                    type: 'success',
-                    position: 'bottom-right',
-                    //duration: 0
-                });
-
-                setTimeout(() => {
-                    task.getTaskWaitCount().then(response => {
-                        this.waitCount=response.data.count;
-                        //设置到全局变量
-                        this.$store.waitCount=response.data.count;
-                    })
-                    console.log('收到数据执行xxxx方法正在。。。')
-                    console.log(this.msg)
-                }, 3000)
-            }
-        },
-        //数据发送
-        websocketsend(Data) {
-            this.websock.send(Data)
-        },
-        //关闭 websocket
-        websocketclose(e) {
-            console.log('WebSocket断开连接,重新连接', e)
+      // 页面获取用户信息
+      initWebSocket() {
+        window.clearTimeout(this.timer);
+        window.clearTimeout(this.timeoutObj)
+        this.createWebSocket();
+      },
+      // 创建websocket
+      createWebSocket() {
+        try {
+          this.ws = new WebSocket(this.wsUrl);
+          this.initWebScoketFun();
+        } catch (e) {
+          this.reconnect(this.wsUrl);
         }
-        // ---- WebSocket连接end ----
+      },
+      // websocket消息提醒
+      initWebScoketFun() {
+        const timeout = 15000;
+        this.timer = setTimeout(() => {
+             this.ws.send("发送心跳");
+             this.serverTimeoutObj = setTimeout(() => {
+                this.ws.close();
+             }, timeout);
+        }, timeout)
+
+        this.ws.onclose = () => {
+          this.reconnect(this.wsUrl);
+        };
+
+        this.ws.onerror = () => {
+          this.reconnect(this.wsUrl);
+        };
+
+        this.ws.onopen = () => {
+          // 心跳检测重置
+          this.timer = setTimeout(() => {
+             this.ws.send("发送心跳");
+          }, timeout)
+        };
+
+        this.ws.onmessage = (event) => {
+          if(event.data){
+            let data = JSON.parse(event.data)
+            if(data.page){
+              this.badgeValue = data.page.total
+            }
+          }
+        };
+      },
+      // 重新链接websocket
+      reconnect(url) {
+        if (this.lockReconnect) {
+          return;
+        }
+        this.lockReconnect = true;
+        // 没连接上会一直重连，设置延迟避免请求过多
+        window.clearTimeout(this.timer);
+        window.clearTimeout(this.serverTimeoutObj);
+        this.timeoutObj = setTimeout(() => {
+          this.createWebSocket(url);
+          this.lockReconnect = false;
+        }, 15000);
+      }
     }
 }
 </script>

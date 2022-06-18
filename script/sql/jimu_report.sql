@@ -76,7 +76,7 @@ CREATE TABLE `jimu_report_data_source`  (
 -- ----------------------------
 -- Records of jimu_report_data_source
 -- ----------------------------
-INSERT INTO `jimu_report_data_source` VALUES ('698070692328615936', '本地数据库', '698070126881910784', '', NULL, 'MYSQL5.7', 'com.mysql.cj.jdbc.Driver', 'jdbc:mysql://127.0.0.1:3307/ruoyi-flowable6?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8', 'root', '@JimuReportSMy3f94QGFM=', 'admin', '2022-06-18 17:30:48', 'admin', '2022-06-18 17:30:48');
+INSERT INTO `jimu_report_data_source` VALUES ('698070692328615936', '本地数据库', '698070126881910784', '', NULL, 'MYSQL5.7', 'com.mysql.cj.jdbc.Driver', 'jdbc:mysql://127.0.0.1:3306/ruoyi-flowable6?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8', 'root', '@JimuReportSMy3f94QGFM=', 'admin', '2022-06-18 17:30:48', 'admin', '2022-06-18 17:30:48');
 
 -- ----------------------------
 -- Table structure for jimu_report_db

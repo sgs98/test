@@ -8,30 +8,24 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.io.Serializable;
 import java.util.List;
 
-
-/**
- * @program: ruoyi-vue-plus
- * @description: 转办请求
- * @author: gssong
- * @created: 2022/04/10 14:50
- */
 @Data
 @Validated
-@ApiModel("转办请求")
-public class TransmitREQ implements Serializable {
+@ApiModel("委托请求")
+public class DelegateREQ {
 
-    private static final long serialVersionUID=1L;
-
-    @ApiModelProperty("任务id")
-    @NotBlank(message = "任务id为空",groups = AddGroup.class)
+    @ApiModelProperty(value = "任务id",required = true)
+    @NotBlank(message = "任务id不能为空",groups = AddGroup.class)
     private String taskId;
 
-    @ApiModelProperty(value = "转办人id")
-    @NotBlank(message = "转办人不能为空",groups = AddGroup.class)
-    private String transmitUserId;
+    @ApiModelProperty(value = "委派人id",required = true)
+    @NotBlank(message = "委派人id不能为空",groups = AddGroup.class)
+    private String delegateUserId;
+
+    @ApiModelProperty(value = "委派人",required = true)
+    @NotBlank(message = "委派人不能为空",groups = AddGroup.class)
+    private String delegateUserName;
 
     @ApiModelProperty("审批意见")
     private String comment;
