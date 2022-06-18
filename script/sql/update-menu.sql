@@ -1,0 +1,3 @@
+INSERT INTO `sys_menu` VALUES (1538090311987884033, '报表管理', 0, 9, 'report', NULL, NULL, 1, 0, 'M', '0', '0', NULL, 'chart', 'admin', '2022-06-18 17:24:41', 'admin', '2022-06-18 17:24:41', '');
+INSERT INTO `sys_menu` VALUES (1538090530318184449, '设计报表', 1538090311987884033, 3, 'http://localhost:8081/jmreport/list', NULL, NULL, 1, 0, 'M', '0', '0', NULL, '#', 'admin', '2022-06-18 17:25:33', 'admin', '2022-06-18 17:25:33', '');
+INSERT INTO `sys_menu` VALUES (1538094466311778306, '系统日志', 1538090311987884033, 2, 'http://localhost:8081/jmreport/view/698070126881910784', NULL, NULL, 1, 0, 'M', '0', '0', NULL, '#', 'admin', '2022-06-18 17:41:12', 'admin', '2022-06-18 17:41:12', '');

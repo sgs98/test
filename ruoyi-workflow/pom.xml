@@ -34,6 +34,13 @@
             <groupId>com.ruoyi</groupId>
             <artifactId>ruoyi-system</artifactId>
         </dependency>
+
+        <!--JimuReport-->
+        <dependency>
+            <groupId>org.jeecgframework.jimureport</groupId>
+            <artifactId>spring-boot-starter-jimureport</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>
