@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author xycq
  * @version 1.0.0
  * @ClassName WebSocketServer.java
- * @Description TODO
+ * @Description 即时通讯
  * @createTime 2022年06月16日
  */
 @ServerEndpoint(value = "/webSocketServer/{userName}",encoders = {ServerEncoder.class})
@@ -55,12 +55,10 @@ public class WebSocketServer {
         if(webSocketMap.containsKey(userName)){
             webSocketMap.remove(userName);
             webSocketMap.put(userName,this);
-            //加入set中
         }else{
             webSocketMap.put(userName,this);
-            //加入set中
+            //加入set中  在线数加1
             addOnlineCount();
-            //在线数加1
         }
         sendMessageTo(userName);
     }
@@ -109,46 +107,11 @@ public class WebSocketServer {
         HashMap<String, Object> map = new HashMap<>();
         PageQuery pageQuery = new PageQuery();
         pageQuery.setPageNum(1);
-        pageQuery.setPageSize(10);
+        pageQuery.setPageSize(5);
         ISysMessageService bean = SpringUtils.getBean(ISysMessageService.class);
         TableDataInfo<SysMessageVo> page = bean.queryPage(pageQuery,userName);
         map.put("page",page);
         this.session.getBasicRemote().sendObject(map);
-    }
-
-    /**
-     * 批量发送
-     * @param message
-     * @throws IOException
-     */
-    public static void sendMessageAll(String message) throws IOException {
-        for (WebSocketServer item : webSocketMap.values()) {
-            item.session.getBasicRemote().sendText(message);
-        }
-    }
-
-    /**
-     * 批量发送Object
-     * @param msg
-     * @throws IOException
-     */
-    public static void sendObjMessageAll(R<Object> msg) throws IOException, EncodeException {
-        for (WebSocketServer item : webSocketMap.values()) {
-            item.session.getBasicRemote().sendObject(msg);
-        }
-    }
-    /**
-     * 定向发送
-     * @param msg
-     * @param to 指定对象id
-     * @throws IOException
-     */
-    public static void sendObjMessageTo(R<Object> msg, String to) throws IOException, EncodeException {
-        if(StringUtils.isNotBlank(to)&&webSocketMap.containsKey(to)){
-            WebSocketServer client = webSocketMap.get(to);
-            client.session.getBasicRemote().sendObject(msg);
-        }else{
-        }
     }
     /**
      * @Description:  message

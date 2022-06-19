@@ -88,4 +88,18 @@ public interface ISysMessageService {
      * @return 结果
      */
     Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid);
+
+    /**
+     * 阅读消息
+     * @param id
+     * @return
+     */
+    Boolean readMessage(Long id);
+
+    /**
+     * 批量阅读消息
+     * batchReadMessage
+     * @return
+     */
+    boolean batchReadMessage();
 }

@@ -1017,7 +1017,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             actHiTaskInst.setId(task.getId());
             actHiTaskInst.setStartTime(new Date());
             iActHiTaskInstService.updateById(actHiTaskInst);
-            workFlowUtils.sendMessage(LoginHelper.getUsername()+delegateREQ.getSendMessage(),task.getProcessInstanceId());
+            workFlowUtils.sendMessage(LoginHelper.getUsername()+delegateREQ.getSendMessage()+",请您注意查收",task.getProcessInstanceId());
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -1046,7 +1046,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 StringUtils.isNotBlank(transmitREQ.getComment())?transmitREQ.getComment():LoginHelper.getUsername()+"转办了任务");
             taskService.complete(subTask.getId());
             taskService.setAssignee(task.getId(),transmitREQ.getTransmitUserId());
-            workFlowUtils.sendMessage(LoginHelper.getUsername()+transmitREQ.getSendMessage(),task.getProcessInstanceId());
+            workFlowUtils.sendMessage(LoginHelper.getUsername()+transmitREQ.getSendMessage()+",请您注意查收",task.getProcessInstanceId());
             return R.ok();
         }catch (Exception e){
             e.printStackTrace();

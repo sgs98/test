@@ -112,4 +112,30 @@ public class SysMessageController extends BaseController {
                                        @PathVariable Long[] ids) {
         return toAjax(iSysMessageService.deleteWithValidByIds(Arrays.asList(ids), true) ? 1 : 0);
     }
+    /**
+     * @Description:  阅读消息
+     * @param: id
+     * @return: com.ruoyi.common.core.domain.R<java.lang.Void>
+     * @author: gssong
+     * @Date: 2022/6/19 17:08
+     */
+    @ApiOperation("阅读消息")
+    @Log(title = "消息通知", businessType = BusinessType.INSERT)
+    @GetMapping("/readMessage/{id}")
+    public R<Void> readMessage(@PathVariable Long id) {
+        return toAjax(iSysMessageService.readMessage(id) ? 1 : 0);
+    }
+
+    /**
+     * @Description:  批量阅读消息
+     * @return: com.ruoyi.common.core.domain.R<java.lang.Void>
+     * @author: gssong
+     * @Date: 2022/6/19 17:08
+     */
+    @ApiOperation("批量阅读消息")
+    @Log(title = "消息通知", businessType = BusinessType.INSERT)
+    @GetMapping("/batchReadMessage")
+    public R<Void> batchReadMessage() {
+        return toAjax(iSysMessageService.batchReadMessage() ? 1 : 0);
+    }
 }

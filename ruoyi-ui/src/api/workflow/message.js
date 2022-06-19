@@ -42,3 +42,19 @@ export function delMessage(id) {
     method: 'delete'
   })
 }
+
+// 阅读消息
+export function readMessage(id) {
+  return request({
+    url: '/workflow/message/readMessage/' + id,
+    method: 'get'
+  })
+}
+
+// 批量阅读消息
+export function batchReadMessage(id) {
+  return request({
+    url: '/workflow/message/batchReadMessage',
+    method: 'get'
+  })
+}

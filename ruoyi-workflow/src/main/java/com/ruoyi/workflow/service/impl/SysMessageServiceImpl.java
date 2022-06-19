@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.ruoyi.common.core.domain.entity.SysUser;
+import com.ruoyi.common.helper.LoginHelper;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.core.domain.PageQuery;
@@ -178,5 +179,36 @@ public class SysMessageServiceImpl implements ISysMessageService {
     @Override
     public Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid) {
         return baseMapper.deleteBatchIds(ids) > 0;
+    }
+
+    /**
+     * @Description: 阅读消息
+     * @param: id
+     * @return: java.lang.Boolean
+     * @author: gssong
+     * @Date: 2022/6/19 17:11
+     */
+    @Override
+    public Boolean readMessage(Long id) {
+        SysMessage sysMessage = baseMapper.selectById(id);
+        sysMessage.setStatus(1);
+        return baseMapper.updateById(sysMessage)> 0;
+    }
+
+    /**
+     * @Description:  批量阅读消息
+     * @return: boolean
+     * @author: gssong
+     * @Date: 2022/6/19 17:16
+     */
+    @Override
+    public boolean batchReadMessage() {
+        LambdaQueryWrapper<SysMessage> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SysMessage::getRecordId, LoginHelper.getUserId());
+        List<SysMessage> messageList = baseMapper.selectList(wrapper);
+            messageList.forEach(e->{
+                e.setStatus(1);
+            });
+        return baseMapper.updateBatchById(messageList);
     }
 }
