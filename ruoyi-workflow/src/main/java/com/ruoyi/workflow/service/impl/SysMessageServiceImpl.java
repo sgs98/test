@@ -20,6 +20,7 @@ import com.ruoyi.workflow.domain.SysMessage;
 import com.ruoyi.workflow.mapper.SysMessageMapper;
 import com.ruoyi.workflow.service.ISysMessageService;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Collection;
@@ -192,6 +193,7 @@ public class SysMessageServiceImpl implements ISysMessageService {
     public Boolean readMessage(Long id) {
         SysMessage sysMessage = baseMapper.selectById(id);
         sysMessage.setStatus(1);
+        sysMessage.setReadTime(new Date());
         return baseMapper.updateById(sysMessage)> 0;
     }
 
@@ -208,6 +210,7 @@ public class SysMessageServiceImpl implements ISysMessageService {
         List<SysMessage> messageList = baseMapper.selectList(wrapper);
             messageList.forEach(e->{
                 e.setStatus(1);
+                e.setReadTime(new Date());
             });
         return baseMapper.updateBatchById(messageList);
     }
