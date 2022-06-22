@@ -111,6 +111,9 @@ public class SysMessageServiceImpl implements ISysMessageService {
     private LambdaQueryWrapper<SysMessage> buildQueryWrapper(SysMessageBo bo) {
         Map<String, Object> params = bo.getParams();
         LambdaQueryWrapper<SysMessage> lqw = Wrappers.lambdaQuery();
+        if(!LoginHelper.isAdmin()){
+            lqw.eq(SysMessage::getRecordId,LoginHelper.getUserId());
+        }
         lqw.eq(bo.getSendId() != null, SysMessage::getSendId, bo.getSendId());
         lqw.eq(bo.getRecordId() != null, SysMessage::getRecordId, bo.getRecordId());
         lqw.eq(bo.getType() != null, SysMessage::getType, bo.getType());

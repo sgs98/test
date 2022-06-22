@@ -66,13 +66,10 @@ export default {
         },
         //批量阅读通知
         batchReadMessage(){
-          batchReadMessage().then(response=>{
-            this.badgeValue = 0
-            if(response.code===200){
-              this.messageList = this.messageList.forEach(e=>{
-                e.status = 1
-              })
-            }
+          batchReadMessage()
+          this.badgeValue = 0
+          this.messageList = this.messageList.forEach(e=>{
+            e.status = 1
           })
         },
         //初始化
