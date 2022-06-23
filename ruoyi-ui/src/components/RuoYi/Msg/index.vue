@@ -13,8 +13,16 @@
           </div>
         </el-card>
         <el-card class="box-card" style="cursor: pointer;" v-for="(data,index) in messageList" :key="data.id" >
-          <span style="cursor: pointer;" v-if="data.status === 0" @click="readMessage(data,index)"><i class="el-icon-message icon"></i>{{data.messageContent}}</span>
-          <span v-else-if="data.status === 1" style="color: #ccc;"><i class="el-icon-message icon"></i>{{data.messageContent}}</span>
+          <div class="title">
+            <div>{{data.title}}</div>
+            <div>{{ parseTime(data.createTime) }}</div>
+          </div>
+          <span style="cursor: pointer;" v-if="data.status === 0" @click="readMessage(data,index)">
+            <i class="el-icon-message icon"></i>{{data.messageContent}}
+          </span>
+          <span v-else-if="data.status === 1" style="color: #ccc;">
+            <i class="el-icon-message icon"></i>{{data.messageContent}}
+          </span>
         </el-card>
         <el-card class="box-card" style="cursor: pointer;">
           <center @click="clickMessage()">查看更多消息<i class="el-icon-d-arrow-right"></i></center>
@@ -160,5 +168,12 @@ export default {
  .read{
   display: flex;
   justify-content: space-between;
+ }
+ .title{
+  display: flex;
+  justify-content: space-between;
+  padding: 0px 0 10px 0;
+  font-size: 13px;
+  font-weight: 900;
  }
 </style>

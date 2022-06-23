@@ -1,7 +1,6 @@
 package com.ruoyi.workflow.service;
 
 import com.ruoyi.common.core.page.TableDataInfo;
-import com.ruoyi.workflow.domain.bo.CancelProcessBo;
 import com.ruoyi.workflow.domain.bo.ProcessInstFinishREQ;
 import com.ruoyi.workflow.domain.bo.ProcessInstRunningREQ;
 import com.ruoyi.workflow.domain.bo.StartREQ;
@@ -92,9 +91,9 @@ public interface IProcessInstanceService {
 
     /**
      * 撤销申请
-     * @param cancelProcessBo
+     * @param processInstId
      * @return
      */
-    boolean cancelProcessApply(CancelProcessBo cancelProcessBo);
+    boolean cancelProcessApply(String processInstId);
 
 }

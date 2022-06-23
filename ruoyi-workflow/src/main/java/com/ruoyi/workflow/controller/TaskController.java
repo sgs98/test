@@ -9,7 +9,7 @@ import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.helper.LoginHelper;
 import com.ruoyi.workflow.domain.ActTaskNode;
 import com.ruoyi.workflow.domain.bo.*;
-import com.ruoyi.workflow.domain.vo.BackProcessVo;
+import com.ruoyi.workflow.domain.bo.BackProcessBo;
 import com.ruoyi.workflow.domain.vo.TaskFinishVo;
 import com.ruoyi.workflow.domain.vo.TaskWaitingVo;
 import com.ruoyi.workflow.service.ITaskService;
@@ -127,7 +127,7 @@ public class TaskController extends BaseController {
 
     /**
      * @Description: 驳回审批
-     * @param: backProcessVo
+     * @param: backProcessBo
      * @return: com.ruoyi.common.core.domain.R<java.lang.String>
      * @Author: gssong
      * @Date: 2021/11/6
@@ -135,8 +135,8 @@ public class TaskController extends BaseController {
     @ApiOperation("驳回审批）")
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
     @PostMapping("/backProcess")
-    public R<String> backProcess(@RequestBody BackProcessVo backProcessVo) {
-        return R.ok(iTaskService.backProcess(backProcessVo));
+    public R<String> backProcess(@RequestBody BackProcessBo backProcessBo) {
+        return R.ok(iTaskService.backProcess(backProcessBo));
     }
 
     /**

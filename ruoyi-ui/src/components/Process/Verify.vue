@@ -121,7 +121,7 @@
   <!-- 减签结束 -->
   <!-- 驳回开始 -->
   <back ref="backRef" :taskId = "taskId" @callBack="callBack()"
-  :backNodeList = "backNodeList" :sendMessage="sendMessage" :sendMessageType="sendMessageType"/>
+  :backNodeList = "backNodeList" :sendMessage="sendMessage"/>
   <!-- 驳回结束 -->
 </div>
 </template>
@@ -135,7 +135,7 @@ export default {
   props: {
     taskId: String,
     taskVariables: Object,
-    sendMessage: String
+    sendMessage: Object
   },
   components: {
     ChooseWorkflowUser,
@@ -162,22 +162,23 @@ export default {
         assigneeIds: undefined,
         //抄送人名称
         assigneeNames: undefined,
-        //消息提醒类型
-        sendMessageType: [],
         //消息提醒
-        sendMessage: ''
+        sendMessage: {}
       },
       //转办
       transmitForm: {
         message: null,
         userId: null,
-        userName: null
+        userName: null,
+        taskId: null,
+        sendMessage: {}
       },
       //委托
       delegateForm:{
         delegateUserId: null,
         delegateUserName: null,
-        taskId: null
+        taskId: null,
+        sendMessage: {}
       },
       //是否抄送
       isCopy: '2',
@@ -258,8 +259,12 @@ export default {
           try {
             this.formData.variables = this.taskVariables
             this.formData.taskId = this.taskId
-            this.formData.sendMessage = "提交了"+this.sendMessage
-            this.formData.sendMessageType = this.sendMessageType
+            //消息提醒
+            this.formData.sendMessage = {
+                title: this.sendMessage.title,
+                type: this.sendMessageType,
+                messageContent: this.$store.state.user.name+"提交了"+this.sendMessage.messageContent
+            }
             let response = await api.completeTask(this.formData);
             if (response.code === 200) {
               // 刷新数据
@@ -328,8 +333,12 @@ export default {
     //提交委托申请
     async delegateSubmit(){
       this.delegateForm.taskId = this.taskId
-      this.delegateForm.sendMessage = "委托了"+this.sendMessage
-      this.delegateForm.sendMessageType = this.sendMessageType
+      //消息提醒
+      this.delegateForm.sendMessage = {
+          title: this.sendMessage.title,
+          type: this.sendMessageType,
+          messageContent: this.$store.state.user.name+"委托了"+this.sendMessage.messageContent
+      }
       let response = await api.delegateTask(this.delegateForm);
       if(response.code === 200){
         // 刷新数据
@@ -386,14 +395,18 @@ export default {
     },
     //提交转发
     transmitSubmit(formName){
-        let params = {
-          transmitUserId: this.transmitForm.userId,
-          taskId: this.taskId,
-          comment: this.transmitForm.message,
-          sendMessage: "转发了"+this.sendMessage,
-          sendMessageType: this.sendMessageType
+        this.transmitForm = {
+           transmitUserId: this.transmitForm.userId,
+           taskId: this.taskId,
+           comment: this.transmitForm.message
         }
-        api.transmitTask(params).then(response=>{
+        //消息提醒
+        this.transmitForm.sendMessage = {
+            title: this.sendMessage.title,
+            type: this.sendMessageType,
+            messageContent: this.$store.state.user.name+"转发了"+this.sendMessage.messageContent
+        }
+        api.transmitTask(this.transmitForm).then(response=>{
           if(response.code === 200){
             // 刷新数据
             this.$message.success("办理成功");

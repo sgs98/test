@@ -340,7 +340,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 }
             }
             //发送站内信
-            workFlowUtils.sendMessage(LoginHelper.getUsername()+req.getSendMessage()+",请您注意查收",processInstance.getProcessInstanceId());
+            workFlowUtils.sendMessage(req.getSendMessage(),processInstance.getProcessInstanceId());
 
             return true;
         }catch (Exception e){
@@ -807,16 +807,16 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
     /**
      * @Description: 驳回审批
-     * @param: backProcessVo
+     * @param: backProcessBo
      * @return: java.lang.String
      * @author: gssong
      * @Date: 2021/11/6
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String backProcess(BackProcessVo backProcessVo) {
+    public String backProcess(BackProcessBo backProcessBo) {
 
-        Task task = taskService.createTaskQuery().taskId(backProcessVo.getTaskId()).taskAssignee(getUserId().toString()).singleResult();
+        Task task = taskService.createTaskQuery().taskId(backProcessBo.getTaskId()).taskAssignee(getUserId().toString()).singleResult();
         String processInstanceId = task.getProcessInstanceId();
         if (task.isSuspended()) {
             throw new ServiceException("当前任务已被挂起");
@@ -827,9 +827,9 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         try {
             //判断是否有多个任务
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
-            List<String> preUserTaskList = getPrevUserNodeList(task.getProcessDefinitionId(), backProcessVo.getTargetActivityId(),task);
+            List<String> preUserTaskList = getPrevUserNodeList(task.getProcessDefinitionId(), backProcessBo.getTargetActivityId(),task);
             //当前单个任务驳回到并行网关
-            taskService.addComment(task.getId(), processInstanceId, StringUtils.isNotBlank(backProcessVo.getComment()) ? backProcessVo.getComment() : "驳回");
+            taskService.addComment(task.getId(), processInstanceId, StringUtils.isNotBlank(backProcessBo.getComment()) ? backProcessBo.getComment() : "驳回");
             if(CollectionUtil.isNotEmpty(preUserTaskList)&&taskList.size()==1){
                 runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
                     .moveSingleActivityIdToActivityIds(taskList.get(0).getTaskDefinitionKey(), preUserTaskList)
@@ -837,17 +837,17 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 //当前多个任务驳回到单个节点
             }else if(taskList.size()>1&&CollectionUtil.isEmpty(preUserTaskList)){
                 runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
-                    .moveActivityIdsToSingleActivityId(taskList.stream().map(Task::getTaskDefinitionKey).distinct().collect(Collectors.toList()), backProcessVo.getTargetActivityId())
+                    .moveActivityIdsToSingleActivityId(taskList.stream().map(Task::getTaskDefinitionKey).distinct().collect(Collectors.toList()), backProcessBo.getTargetActivityId())
                     .changeState();
                 //当前单个节点驳回单个节点
             }else if(taskList.size()==1&&CollectionUtil.isEmpty(preUserTaskList)){
                 runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
-                    .moveActivityIdTo(taskList.get(0).getTaskDefinitionKey(), backProcessVo.getTargetActivityId())
+                    .moveActivityIdTo(taskList.get(0).getTaskDefinitionKey(), backProcessBo.getTargetActivityId())
                     .changeState();
                 //当前多个节点驳回多个节点
             }else if(taskList.size()>1&&CollectionUtil.isNotEmpty(preUserTaskList)){
                 taskList.forEach(e->{
-                    if(e.getId().equals(backProcessVo.getTaskId())){
+                    if(e.getId().equals(backProcessBo.getTaskId())){
                         runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
                             .moveSingleActivityIdToActivityIds(e.getTaskDefinitionKey(), preUserTaskList)
                             .changeState();
@@ -860,7 +860,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             }
             List<Task> otherTasks = null;
             if(taskList.size()>1){
-                otherTasks = taskList.stream().filter(e->!e.getId().equals(backProcessVo.getTaskId())).collect(Collectors.toList());
+                otherTasks = taskList.stream().filter(e->!e.getId().equals(backProcessBo.getTaskId())).collect(Collectors.toList());
             }
             if(CollectionUtil.isNotEmpty(otherTasks)&&otherTasks.size()>0){
                 otherTasks.forEach(e->{
@@ -869,13 +869,13 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             }
             //判断是否会签
             LambdaQueryWrapper<ActNodeAssignee> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(ActNodeAssignee::getNodeId,backProcessVo.getTargetActivityId());
+            wrapper.eq(ActNodeAssignee::getNodeId, backProcessBo.getTargetActivityId());
             wrapper.eq(ActNodeAssignee::getProcessDefinitionId,task.getProcessDefinitionId());
             ActNodeAssignee actNodeAssignee = iActNodeAssigneeService.getOne(wrapper);
             List<Task> newTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
             //处理并行会签环节重复节点
             if(CollectionUtil.isNotEmpty(newTaskList)&&newTaskList.size()>0){
-                List<Task> taskCollect = newTaskList.stream().filter(e -> e.getTaskDefinitionKey().equals(backProcessVo.getTargetActivityId())).collect(Collectors.toList());
+                List<Task> taskCollect = newTaskList.stream().filter(e -> e.getTaskDefinitionKey().equals(backProcessBo.getTargetActivityId())).collect(Collectors.toList());
                 if(taskCollect.size()>1){
                     taskCollect.remove(0);
                     taskCollect.forEach(e->{
@@ -902,7 +902,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             }
 
             //删除驳回后的流程节点
-            ActTaskNode actTaskNode = iActTaskNodeService.getListByInstanceIdAndNodeId(task.getProcessInstanceId(), backProcessVo.getTargetActivityId());
+            ActTaskNode actTaskNode = iActTaskNodeService.getListByInstanceIdAndNodeId(task.getProcessInstanceId(), backProcessBo.getTargetActivityId());
             if (ObjectUtil.isNotNull(actTaskNode) && actTaskNode.getOrderNo() == 0) {
                 ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
                 List<Task> newList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
@@ -913,9 +913,9 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 }
                 iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.BACK);
             }
-            iActTaskNodeService.deleteBackTaskNode(processInstanceId, backProcessVo.getTargetActivityId());
+            iActTaskNodeService.deleteBackTaskNode(processInstanceId, backProcessBo.getTargetActivityId());
             //发送站内信
-            workFlowUtils.sendMessage(LoginHelper.getUsername()+backProcessVo.getSendMessage()+",请您注意查收",processInstanceId);
+            workFlowUtils.sendMessage(backProcessBo.getSendMessage(),processInstanceId);
 
         }catch (Exception e){
             e.printStackTrace();
@@ -1017,7 +1017,8 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             actHiTaskInst.setId(task.getId());
             actHiTaskInst.setStartTime(new Date());
             iActHiTaskInstService.updateById(actHiTaskInst);
-            workFlowUtils.sendMessage(LoginHelper.getUsername()+delegateREQ.getSendMessage()+",请您注意查收",task.getProcessInstanceId());
+            //发送站内信
+            workFlowUtils.sendMessage(delegateREQ.getSendMessage(),task.getProcessInstanceId());
             return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -1046,7 +1047,8 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 StringUtils.isNotBlank(transmitREQ.getComment())?transmitREQ.getComment():LoginHelper.getUsername()+"转办了任务");
             taskService.complete(subTask.getId());
             taskService.setAssignee(task.getId(),transmitREQ.getTransmitUserId());
-            workFlowUtils.sendMessage(LoginHelper.getUsername()+transmitREQ.getSendMessage()+",请您注意查收",task.getProcessInstanceId());
+            //发送站内信
+            workFlowUtils.sendMessage(transmitREQ.getSendMessage(),task.getProcessInstanceId());
             return R.ok();
         }catch (Exception e){
             e.printStackTrace();

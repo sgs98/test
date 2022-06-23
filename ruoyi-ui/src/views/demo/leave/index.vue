@@ -317,7 +317,7 @@ export default {
       taskId: undefined, //任务id
       flag: true,
       // 消息提醒
-      sendMessage: ''
+      sendMessage: {}
     };
   },
   created() {
@@ -392,7 +392,10 @@ export default {
         })
         this.open = true;
         this.title = "修改请假业务";
-        this.sendMessage = '单据【'+this.form.id+"】申请"
+        this.sendMessage = {
+          title:'请假申请',
+          messageContent:this.$store.state.user.name+'单据【'+row.id+"】申请"
+        }
       });
     },
     //查看
@@ -491,12 +494,7 @@ export default {
     cancelProcessApply(row){
          this.$modal.confirm('是否撤销申请').then(() => {
             this.loading = true;
-            let data = {
-              processInstId: row.processInstanceId,
-              sendMessageType: [1],
-              sendMessage:"撤销了单据【"+row.id+"】申请"
-            }
-            return processAip.cancelProcessApply(data);
+            return processAip.cancelProcessApply(row.processInstanceId);
          }).then(() => {
             this.getList();
             this.$modal.msgSuccess("撤回成功");

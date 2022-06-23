@@ -15,6 +15,7 @@ import com.ruoyi.system.mapper.SysRoleMapper;
 import com.ruoyi.system.mapper.SysUserMapper;
 import com.ruoyi.system.mapper.SysUserRoleMapper;
 import com.ruoyi.workflow.domain.SysMessage;
+import com.ruoyi.workflow.domain.bo.SendMessage;
 import com.ruoyi.workflow.domain.vo.MultiVo;
 import com.ruoyi.workflow.flowable.cmd.DeleteExecutionCmd;
 import com.ruoyi.workflow.flowable.cmd.DeleteTaskCmd;
@@ -516,12 +517,11 @@ public class WorkFlowUtils {
      * @Description: 发送站内信
      * @param: sendMessage
      * @param: processInstanceId
-     * @param: messageList
      * @return: void
      * @author: gssong
      * @Date: 2022/6/18 13:26
      */
-    public void sendMessage(String sendMessage, String processInstanceId) {
+    public void sendMessage(SendMessage sendMessage, String processInstanceId) {
         List<SysMessage> messageList = new ArrayList<>();
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
         for (Task taskInfo : taskList) {
@@ -530,7 +530,8 @@ public class WorkFlowUtils {
                 sysMessage.setSendId(LoginHelper.getUserId());
                 sysMessage.setRecordId(Long.valueOf(taskInfo.getAssignee()));
                 sysMessage.setType(1);
-                sysMessage.setMessageContent(sendMessage);
+                sysMessage.setTitle(sendMessage.getTitle());
+                sysMessage.setMessageContent(sendMessage.getMessageContent()+",请您注意查收");
                 sysMessage.setStatus(0);
                 messageList.add(sysMessage);
             }else{
@@ -542,7 +543,8 @@ public class WorkFlowUtils {
                         sysMessage.setSendId(LoginHelper.getUserId());
                         sysMessage.setRecordId(Long.valueOf(identityLinkEntity.getUserId()));
                         sysMessage.setType(1);
-                        sysMessage.setMessageContent(sendMessage);
+                        sysMessage.setTitle(sendMessage.getTitle());
+                        sysMessage.setMessageContent(sendMessage.getMessageContent()+",请您注意查收");
                         sysMessage.setStatus(0);
                         messageList.add(sysMessage);
                     }

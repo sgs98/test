@@ -74,9 +74,9 @@ export default {
   },
 
   // 撤销申请
-  cancelProcessApply(data) {
+  cancelProcessApply(processInstanceId) {
     return request({
-      url: '/workflow/processInstance/cancelProcessApply',
+      url: '/workflow/processInstance/cancelProcessApply/'+processInstanceId,
       method: 'post',
       data: data
     })

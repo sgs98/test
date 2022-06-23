@@ -60,6 +60,12 @@ public class SysMessageBo extends BaseEntity {
     private Integer status;
 
     /**
+     * 标题
+     */
+    @ApiModelProperty(value = "标题", required = true)
+    private String title;
+
+    /**
      * 消息内容
      */
     @ApiModelProperty(value = "消息内容")
@@ -68,7 +74,7 @@ public class SysMessageBo extends BaseEntity {
     /**
      * 阅读时间
      */
-    @ApiModelProperty(value = "阅读时间", required = true)
+    @ApiModelProperty(value = "阅读时间")
     private Date readTime;
 
 

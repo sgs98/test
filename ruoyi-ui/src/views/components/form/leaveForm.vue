@@ -118,7 +118,7 @@ export default {
       },
       taskVariables: undefined,
       //消息提醒
-      sendMessage: ''
+      sendMessage: {}
     };
   },
   watch: {
@@ -150,7 +150,10 @@ export default {
                  entity: response.data,
                  userId :1
             };
-            this.sendMessage = '单据【'+this.form.id+"】申请"
+            this.sendMessage = {
+              title:'请假申请',
+              messageContent:'单据【'+this.form.id+"】申请"
+            }
       });
       this.$refs.verifyRef.visible = true
     },

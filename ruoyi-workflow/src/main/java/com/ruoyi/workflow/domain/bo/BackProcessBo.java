@@ -1,11 +1,10 @@
-package com.ruoyi.workflow.domain.vo;
+package com.ruoyi.workflow.domain.bo;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * @program: ruoyi-vue-plus
@@ -15,7 +14,7 @@ import java.util.List;
  */
 @Data
 @ApiModel("驳回请求")
-public class BackProcessVo implements Serializable {
+public class BackProcessBo implements Serializable {
     private static final long serialVersionUID=1L;
 
     @ApiModelProperty(value = "任务id",required = true)
@@ -27,9 +26,6 @@ public class BackProcessVo implements Serializable {
     @ApiModelProperty(value = "审批意见")
     private String comment;
 
-    @ApiModelProperty(value = "消息通知类型", required = true)
-    private List<Integer> sendMessageType;
-
-    @ApiModelProperty(value = "消息通知内容",required = true)
-    private String sendMessage;
+    @ApiModelProperty("消息对象")
+    private SendMessage sendMessage;
 }

@@ -6,7 +6,6 @@ import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.helper.LoginHelper;
-import com.ruoyi.workflow.domain.bo.CancelProcessBo;
 import com.ruoyi.workflow.flowable.config.CustomDefaultProcessDiagramGenerator;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
@@ -500,15 +499,14 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
 
     /**
      * @Description: 撤销申请
-     * @param cancelProcessBo
+     * @param processInstId
      * @return: boolean
      * @author: gssong
      * @Date: 2022/1/21
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean cancelProcessApply(CancelProcessBo cancelProcessBo) {
-        String processInstId = cancelProcessBo.getProcessInstId();
+    public boolean cancelProcessApply(String processInstId) {
 
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstId).startedBy(LoginHelper.getUserId().toString()).singleResult();
         if(ObjectUtil.isNull(processInstance)){
@@ -562,8 +560,6 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
                 iActTaskNodeService.deleteByInstanceId(processInstId);
             }
             boolean b = iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.CANCEL);
-            //发送站内信
-            workFlowUtils.sendMessage(LoginHelper.getUsername()+cancelProcessBo.getSendMessage()+",请您注意查收",processInstanceId);
             return b;
         }catch (Exception e){
             e.printStackTrace();

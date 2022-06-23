@@ -7,9 +7,7 @@ import lombok.Data;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.util.List;
 
 
 /**
@@ -36,11 +34,6 @@ public class TransmitREQ implements Serializable {
     @ApiModelProperty("审批意见")
     private String comment;
 
-    @ApiModelProperty(value = "消息通知类型", required = true)
-    @NotNull(message = "消息通知类型不能为空", groups = { AddGroup.class })
-    private List<Integer> sendMessageType;
-
-    @ApiModelProperty(value = "消息通知内容",required = true)
-    @NotNull(message = "消息通知内容不能为空", groups = { AddGroup.class })
-    private String sendMessage;
+    @ApiModelProperty("消息对象")
+    private SendMessage sendMessage;
 }

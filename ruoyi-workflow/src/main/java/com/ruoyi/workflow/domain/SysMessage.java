@@ -41,6 +41,10 @@ public class SysMessage extends BaseEntity {
      */
     private Integer type;
     /**
+     * 标题
+     */
+    private String title;
+    /**
      * 阅读状态0：未读，1：已读
      */
     private Integer status;

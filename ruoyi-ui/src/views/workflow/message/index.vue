@@ -89,6 +89,7 @@
       <el-table-column label="主键" align="center" prop="id" v-if="true"/>
       <el-table-column label="消息发送者" align="center" prop="sendName" />
       <el-table-column label="消息接收者" align="center" prop="recordName" />
+      <el-table-column label="标题" align="center" prop="title" />
       <el-table-column label="消息类型" align="center" prop="type">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.sys_message" :value="scope.row.type"/>
@@ -99,7 +100,7 @@
           <dict-tag :options="dict.type.read_status" :key="scope.row.status" :value="scope.row.status"/>
         </template>
       </el-table-column>
-      <el-table-column label="消息内容" align="center" prop="messageContent" />
+      <el-table-column label="消息内容" :show-overflow-tooltip="true" align="center" prop="messageContent" />
       <el-table-column label="阅读时间" align="center" prop="readTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.readTime, '{y}-{m}-{d}') }}</span>
@@ -141,6 +142,9 @@
         </el-form-item>
         <el-form-item label="消息接收者id" prop="recordId">
           <el-input v-model="form.recordId" placeholder="请输入消息接收者id" />
+        </el-form-item>
+        <el-form-item label="标题" prop="title">
+          <el-input v-model="form.title" placeholder="请输入标题" />
         </el-form-item>
         <el-form-item label="消息类型" prop="type">
           <el-select v-model="form.type" placeholder="请选择消息类型">
@@ -235,6 +239,9 @@ export default {
         recordId: [
           { required: true, message: "消息接收者id不能为空", trigger: "blur" }
         ],
+        title: [
+          { required: true, message: "标题不能为空", trigger: "blur" }
+        ],
         type: [
           { required: true, message: "消息类型不能为空", trigger: "change" }
         ],
@@ -290,6 +297,7 @@ export default {
         recordId: undefined,
         type: undefined,
         status: false,
+        title: undefined,
         messageContent: undefined,
         createTime: undefined,
         updateTime: undefined,

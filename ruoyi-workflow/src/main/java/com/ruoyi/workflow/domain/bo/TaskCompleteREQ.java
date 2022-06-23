@@ -26,11 +26,8 @@ public class TaskCompleteREQ {
     @ApiModelProperty("审批意见")
     private String message;
 
-    @ApiModelProperty(value = "消息通知类型",required = true)
-    private List<Integer> sendMessageType;
-
-    @ApiModelProperty(value = "消息通知内容",required = true)
-    private String sendMessage;
+    @ApiModelProperty("消息对象")
+    private SendMessage sendMessage;
 
     @ApiModelProperty("下一个节点审批，key: 节点id, vallue：审批人集合,多个人使用英文逗号分隔")
     private Map<String, String> assigneeMap;

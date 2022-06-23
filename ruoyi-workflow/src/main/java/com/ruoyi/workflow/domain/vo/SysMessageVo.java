@@ -5,6 +5,7 @@ import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.ruoyi.common.annotation.ExcelDictFormat;
 import com.ruoyi.common.convert.ExcelDictConvert;
+import com.ruoyi.common.core.domain.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -20,7 +21,7 @@ import lombok.Data;
 @Data
 @ApiModel("消息通知视图对象")
 @ExcelIgnoreUnannotated
-public class SysMessageVo {
+public class SysMessageVo extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -60,10 +61,17 @@ public class SysMessageVo {
     private String recordName;
 
     /**
+     * 标题
+     */
+    @ExcelProperty(value = "标题")
+    @ApiModelProperty("标题")
+    private String title;
+
+    /**
      * 消息类型1：站内信，2：邮件，3：短信
      */
     @ExcelProperty(value = "消息类型1：站内信，2：邮件，3：短信", converter = ExcelDictConvert.class)
-    @ExcelDictFormat(dictType = "sys_common_status")
+    @ExcelDictFormat(dictType = "sys_message_status")
     @ApiModelProperty("消息类型1：站内信，2：邮件，3：短信")
     private Integer type;
 
