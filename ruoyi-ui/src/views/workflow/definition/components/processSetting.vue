@@ -105,7 +105,9 @@
                           </template>
                       </el-table-column>
                     </el-table>
-                    <el-button type="primary" slot="reference" icon="el-icon-circle-plus-outline">节点任务</el-button>
+                    <el-badge :value="form.taskListenerList.length" slot="reference" class="item">
+                      <el-button type="primary" icon="el-icon-circle-plus-outline">节点任务</el-button>
+                    </el-badge>
                   </el-popover>
                 </el-form-item>
               </el-col>
@@ -244,7 +246,6 @@ export default {
           if(this.nodeName){
             this.form.nodeName = this.nodeName
             this.form.index = this.index
-            console.log(this.form)
             add(this.form).then(response => {
               this.form = response.data
               this.$modal.msgSuccess("保存成功")
