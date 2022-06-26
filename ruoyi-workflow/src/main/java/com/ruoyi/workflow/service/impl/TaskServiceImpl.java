@@ -8,7 +8,7 @@ import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.helper.LoginHelper;
-import com.ruoyi.common.utils.spring.SpringUtils;
+import com.ruoyi.common.utils.JsonUtils;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
 import com.ruoyi.workflow.domain.*;
@@ -186,8 +186,6 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             if (task.isSuspended()) {
                 throw new ServiceException("当前任务已被挂起");
             }
-            /*workFlowUtils.springInvokeMethod("MultiInstanceExecutionListener","handleProcess"
-                ,task.getProcessInstanceId(),task.getId());*/
             //办理委托任务
             if(ObjectUtil.isNotEmpty(task.getDelegationState())&&ActConstant.PENDING.equals(task.getDelegationState().name())){
                 taskService.resolveTask(req.getTaskId());
@@ -231,7 +229,31 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             taskService.addComment(req.getTaskId(), task.getProcessInstanceId(), req.getMessage());
             // 4. 完成任务
             taskService.setVariables(req.getTaskId(), req.getVariables());
+            //任务前执行集合
+            List<TaskListenerVo> handleBeforeList = null;
+            //任务后执行集合
+            List<TaskListenerVo> handleAfterList = null;
+            ActNodeAssignee nodeAssignee = actNodeAssignees.stream().filter(e -> e.getNodeId().equals(task.getTaskDefinitionKey())).findFirst().orElse(null);
+            if(ObjectUtil.isNotEmpty(nodeAssignee)&&StringUtils.isNotBlank(nodeAssignee.getTaskListener())){
+                List<TaskListenerVo> taskListenerVos = JsonUtils.parseArray(nodeAssignee.getTaskListener(), TaskListenerVo.class);
+                handleBeforeList = taskListenerVos.stream().filter(e -> ActConstant.HANDLE_BEFORE.equals(e.getEventType())).collect(Collectors.toList());
+                handleAfterList = taskListenerVos.stream().filter(e -> ActConstant.HANDLE_AFTER.equals(e.getEventType())).collect(Collectors.toList());
+            }
+            //任务前执行
+            if(CollectionUtil.isNotEmpty(handleBeforeList)){
+                for (TaskListenerVo taskListenerVo : handleBeforeList) {
+                    workFlowUtils.springInvokeMethod(taskListenerVo.getBeanName(),ActConstant.HANDLE_PROCESS
+                        ,task.getProcessInstanceId(),task.getId());
+                }
+            }
             taskService.complete(req.getTaskId());
+            //任务后执行
+            if(CollectionUtil.isNotEmpty(handleAfterList)){
+                for (TaskListenerVo taskListenerVo : handleAfterList) {
+                    workFlowUtils.springInvokeMethod(taskListenerVo.getBeanName(),ActConstant.HANDLE_PROCESS
+                        ,task.getProcessInstanceId());
+                }
+            }
             // 5. 记录执行过的流程任务
             List<ActTaskNode> actTaskNodeList = iActTaskNodeService.getListByInstanceId(task.getProcessInstanceId());
             ActTaskNode actTaskNode = new ActTaskNode();

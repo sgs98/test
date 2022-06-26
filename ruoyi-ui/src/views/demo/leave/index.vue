@@ -469,7 +469,7 @@ export default {
             entity: entity
         }
         const data = {
-            processKey: 'leave', // key
+            processKey: 'sub', // key
             businessKey: entity.id, // 业务id
             variables: variables,
             classFullName: 'com.ruoyi.demo.domain.BsLeave'
