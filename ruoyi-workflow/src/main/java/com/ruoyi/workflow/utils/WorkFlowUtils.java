@@ -10,6 +10,7 @@ import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.helper.LoginHelper;
 import com.ruoyi.common.utils.JsonUtils;
+import com.ruoyi.common.utils.spring.SpringUtils;
 import com.ruoyi.system.domain.SysUserRole;
 import com.ruoyi.system.mapper.SysRoleMapper;
 import com.ruoyi.system.mapper.SysUserMapper;
@@ -45,6 +46,7 @@ import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.flowable.variable.api.persistence.entity.VariableInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ReflectionUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -554,5 +556,30 @@ public class WorkFlowUtils {
         if(CollectionUtil.isNotEmpty(messageList)){
             iSysMessageService.sendBatchMessage(messageList);
         }
+    }
+
+    /**
+     * @Description: 执行bean中方法
+     * @param: serviceName bean名称
+     * @param: methodName 方法名称
+     * @param: params 参数
+     * @return: java.lang.Object
+     * @author: gssong
+     * @Date: 2022/6/26 15:37
+     */
+    public Object springInvokeMethod(String serviceName, String methodName, Object... params) {
+        Object service = SpringUtils.getBean(serviceName);
+        Class<? extends Object>[] paramClass = null;
+        if (Objects.nonNull(params)) {
+            int paramsLength = params.length;
+            paramClass = new Class[paramsLength];
+            for (int i = 0; i < paramsLength; i++) {
+                paramClass[i] = params[i].getClass();
+            }
+        }
+        // 找到方法
+        Method method = ReflectionUtils.findMethod(service.getClass(), methodName, paramClass);
+        // 执行方法
+        return ReflectionUtils.invokeMethod(method, service, params);
     }
 }
