@@ -59,7 +59,7 @@ import static com.ruoyi.common.helper.LoginHelper.getUserId;
 @RequiredArgsConstructor
 public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
-    protected static Logger logger = LoggerFactory.getLogger(TaskServiceImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(TaskServiceImpl.class);
 
     private final IUserService iUserService;
 
@@ -233,9 +233,9 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             List<TaskListenerVo> handleBeforeList = null;
             //任务后执行集合
             List<TaskListenerVo> handleAfterList = null;
-            ActNodeAssignee nodeAssignee = actNodeAssignees.stream().filter(e -> e.getNodeId().equals(task.getTaskDefinitionKey())).findFirst().orElse(null);
-            if(ObjectUtil.isNotEmpty(nodeAssignee)&&StringUtils.isNotBlank(nodeAssignee.getTaskListener())){
-                List<TaskListenerVo> taskListenerVos = JsonUtils.parseArray(nodeAssignee.getTaskListener(), TaskListenerVo.class);
+            ActNodeAssignee nodeEvent= actNodeAssignees.stream().filter(e -> e.getNodeId().equals(task.getTaskDefinitionKey())).findFirst().orElse(null);
+            if(ObjectUtil.isNotEmpty(nodeEvent)&&StringUtils.isNotBlank(nodeEvent.getTaskListener())){
+                List<TaskListenerVo> taskListenerVos = JsonUtils.parseArray(nodeEvent.getTaskListener(), TaskListenerVo.class);
                 handleBeforeList = taskListenerVos.stream().filter(e -> ActConstant.HANDLE_BEFORE.equals(e.getEventType())).collect(Collectors.toList());
                 handleAfterList = taskListenerVos.stream().filter(e -> ActConstant.HANDLE_AFTER.equals(e.getEventType())).collect(Collectors.toList());
             }
