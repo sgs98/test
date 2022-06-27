@@ -81,6 +81,7 @@
                     width="500"
                     trigger="click">
                     <el-button type="primary" size="mini" @click="addListener">添加</el-button>
+                    <el-link style="padding-left:15px" type="info" :underline="false">说明：当前任务节点完成前或完成后执行</el-link>
                     <el-table :data="form.taskListenerList">
                       <el-table-column label="事件类型" width="150" align="center" prop="paramType" >
                           <template slot-scope="scope">

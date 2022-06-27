@@ -1130,6 +1130,9 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         if(ObjectUtil.isEmpty(task)){
             throw new ServiceException("当前任务不存在或你不是任务办理人");
         }
+        if (task.isSuspended()) {
+            throw new ServiceException("当前任务已被挂起");
+        }
         String taskDefinitionKey = task.getTaskDefinitionKey();
         String processInstanceId = task.getProcessInstanceId();
         String processDefinitionId = task.getProcessDefinitionId();
@@ -1172,6 +1175,9 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
         if(ObjectUtil.isEmpty(task)){
             throw new ServiceException("当前任务不存在或你不是任务办理人");
+        }
+        if (task.isSuspended()) {
+            throw new ServiceException("当前任务已被挂起");
         }
         String taskDefinitionKey = task.getTaskDefinitionKey();
         String processInstanceId = task.getProcessInstanceId();
