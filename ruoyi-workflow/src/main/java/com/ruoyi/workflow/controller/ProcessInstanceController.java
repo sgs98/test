@@ -1,5 +1,6 @@
 package com.ruoyi.workflow.controller;
 
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.annotation.RepeatSubmit;
 import com.ruoyi.common.core.domain.R;
@@ -83,6 +84,7 @@ public class ProcessInstanceController {
     @ApiImplicitParams({
         @ApiImplicitParam(name = "processInstanceId",value = "流程实例id",required = true)
     })
+    @Anonymous
     @GetMapping("/getHistoryProcessImage")
     public void getHistoryProcessImage(@NotBlank(message = "流程实例id不能为空") @RequestParam String processInstanceId,
                                               HttpServletResponse response) {

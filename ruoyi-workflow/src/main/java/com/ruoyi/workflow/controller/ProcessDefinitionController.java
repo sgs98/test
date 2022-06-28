@@ -1,5 +1,6 @@
 package com.ruoyi.workflow.controller;
 
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.R;
@@ -115,6 +116,7 @@ public class ProcessDefinitionController extends BaseController {
         @ApiImplicitParam(name = "type",value = "文件类型",required = true),
         @ApiImplicitParam(name = "definitionId",value = "流程定义id",required = true)
     })
+    @Anonymous
     @GetMapping("/export/{type}/{definitionId}")
     public void exportFile(@NotBlank(message = "文件类型不能为空") @PathVariable String type,
                            @NotBlank(message = "流程定义id不能为空") @PathVariable String definitionId,
