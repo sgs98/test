@@ -134,6 +134,10 @@ security:
     # actuator 监控配置
     - /actuator
     - /actuator/**
+    # WebSocket
+    - /webSocketServer/**
+    # 积木报表配置
+    - /jmreport/**
 
 # MyBatisPlus配置
 # https://baomidou.com/config/
@@ -277,16 +281,3 @@ management:
   endpoint:
     logfile:
       external-file: ./logs/sys-console.log
-
-#JimuReport[minidao配置]
-minidao :
-  base-package: org.jeecg.modules.jmreport.desreport.dao*
-  db-type: mysql
-#JimuReport[上传配置]
-jeecg :
-  # local|minio|alioss
-  uploadType: local
-  # local
-  path :
-    #文件路径
-    upload: /opt/upload

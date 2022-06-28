@@ -138,6 +138,18 @@ flowable:
     enabled: false
   app:
     enabled: false
+#JimuReport[minidao配置]
+minidao :
+  base-package: org.jeecg.modules.jmreport.desreport.dao*
+  db-type: mysql
+#JimuReport[上传配置]
+jeecg :
+  # local|minio|alioss
+  uploadType: local
+  # local
+  path :
+    #文件路径
+    upload: /opt/upload
 --- # redis 单机配置(单机与集群只能开启一个另一个需要注释掉)
 spring:
   redis:
