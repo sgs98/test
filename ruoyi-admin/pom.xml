@@ -72,16 +72,16 @@
             <artifactId>ruoyi-generator</artifactId>
         </dependency>
 
-	 <!--  工作流模块  -->
-        <dependency>
-            <groupId>com.ruoyi</groupId>
-            <artifactId>ruoyi-workflow</artifactId>
-        </dependency>
-
         <!--  demo模块  -->
         <dependency>
             <groupId>com.ruoyi</groupId>
             <artifactId>ruoyi-demo</artifactId>
+        </dependency>
+	
+	<!--  工作流模块  -->
+        <dependency>
+            <groupId>com.ruoyi</groupId>
+            <artifactId>ruoyi-workflow</artifactId>
         </dependency>
 
         <!-- 即时通信模块 -->
