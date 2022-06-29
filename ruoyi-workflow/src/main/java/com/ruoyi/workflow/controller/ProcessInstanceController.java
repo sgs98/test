@@ -64,7 +64,7 @@ public class ProcessInstanceController {
      */
     @ApiOperation("通过流程实例id查询流程审批记录")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "processInstanceId",value = "流程实例id",required = true)
+        @ApiImplicitParam(name = "processInstanceId",value = "流程实例id",required = true,dataTypeClass = String.class)
     })
     @GetMapping("/getHistoryInfoList/{processInstanceId}")
     public R<List<ActHistoryInfoVo>> getHistoryInfoList(@NotBlank(message = "流程实例id不能为空") @PathVariable String processInstanceId){
@@ -82,7 +82,7 @@ public class ProcessInstanceController {
      */
     @ApiOperation("通过流程实例id获取历史流程图")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "processInstanceId",value = "流程实例id",required = true)
+        @ApiImplicitParam(name = "processInstanceId",value = "流程实例id",required = true,dataTypeClass = String.class)
     })
     @Anonymous
     @GetMapping("/getHistoryProcessImage")
@@ -133,7 +133,7 @@ public class ProcessInstanceController {
      */
     @ApiOperation("作废流程实例，不会删除历史记录")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "processInstId",value = "流程实例id",required = true)
+        @ApiImplicitParam(name = "processInstId",value = "流程实例id",required = true,dataTypeClass = String.class)
     })
     @Log(title = "流程实例管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/deleteRuntimeProcessInst/{processInstId}")
@@ -155,7 +155,7 @@ public class ProcessInstanceController {
      */
     @ApiOperation("删除运行中的实例，删除历史记录，删除业务与流程关联信息")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "processInstId",value = "流程实例id",required = true)
+        @ApiImplicitParam(name = "processInstId",value = "流程实例id",required = true,dataTypeClass = String.class)
     })
     @Log(title = "流程实例管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/deleteRuntimeProcessAndHisInst/{processInstId}")
@@ -177,7 +177,7 @@ public class ProcessInstanceController {
      */
     @ApiOperation("删除已完成的实例，删除历史记录，删除业务与流程关联信息")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "processInstId",value = "流程实例id",required = true)
+        @ApiImplicitParam(name = "processInstId",value = "流程实例id",required = true,dataTypeClass = String.class)
     })
     @Log(title = "流程实例管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/deleteFinishProcessAndHisInst/{processInstId}")
@@ -198,6 +198,9 @@ public class ProcessInstanceController {
      * @Date: 2022/1/21
      */
     @ApiOperation("撤销申请")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "processInstId",value = "流程实例id",required = true,dataTypeClass = String.class)
+    })
     @Log(title = "流程实例管理", businessType = BusinessType.INSERT)
     @PostMapping("/cancelProcessApply/{processInstId}")
     public R<Void> cancelProcessApply(@PathVariable String processInstId){

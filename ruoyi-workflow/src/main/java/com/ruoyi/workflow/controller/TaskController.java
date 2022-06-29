@@ -148,7 +148,7 @@ public class TaskController extends BaseController {
      */
     @ApiOperation("获取历史任务节点，用于驳回功能")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "processInstId",value = "流程实例id",required = true)
+        @ApiImplicitParam(name = "processInstId",value = "流程实例id",required = true,dataTypeClass = String.class)
     })
     @GetMapping("/getBackNodes/{processInstId}")
     public R<List<ActTaskNode>> getBackNodes(@NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId) {
@@ -164,7 +164,7 @@ public class TaskController extends BaseController {
      */
     @ApiOperation("签收（拾取）任务")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "taskId",value = "任务id",required = true)
+        @ApiImplicitParam(name = "taskId",value = "任务id",required = true,dataTypeClass = String.class)
     })
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
     @PostMapping("/claim/{taskId}")
@@ -187,7 +187,7 @@ public class TaskController extends BaseController {
      */
     @ApiOperation("归还（拾取的）任务")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "taskId",value = "任务id",required = true)
+        @ApiImplicitParam(name = "taskId",value = "任务id",required = true,dataTypeClass = String.class)
     })
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
     @PostMapping("/returnTask/{taskId}")
