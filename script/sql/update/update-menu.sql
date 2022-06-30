@@ -1,6 +1,6 @@
 INSERT INTO `sys_menu` VALUES (1538090311987884033, '报表管理', 0, 9, 'report', NULL, NULL, 1, 0, 'M', '0', '0', NULL, 'chart', 'admin', '2022-06-18 17:24:41', 'admin', '2022-06-18 17:24:41', '');
-INSERT INTO `sys_menu` VALUES (1538090530318184449, '设计报表', 1538090311987884033, 3, 'http://localhost:8081/jmreport/list', NULL, NULL, 1, 0, 'M', '0', '0', NULL, '#', 'admin', '2022-06-18 17:25:33', 'admin', '2022-06-18 17:25:33', '');
-INSERT INTO `sys_menu` VALUES (1538094466311778306, '系统日志', 1538090311987884033, 2, 'http://localhost:8081/jmreport/view/698070126881910784', NULL, NULL, 1, 0, 'M', '0', '0', NULL, '#', 'admin', '2022-06-18 17:41:12', 'admin', '2022-06-18 17:41:12', '');
+INSERT INTO `sys_menu` VALUES (1538090530318184449, '设计报表', 1538090311987884033, 3, 'http://localhost:8080/jmreport/list', NULL, NULL, 1, 0, 'M', '0', '0', NULL, '#', 'admin', '2022-06-18 17:25:33', 'admin', '2022-06-18 17:25:33', '');
+INSERT INTO `sys_menu` VALUES (1538094466311778306, '系统日志', 1538090311987884033, 2, 'http://localhost:8080/jmreport/view/698070126881910784', NULL, NULL, 1, 0, 'M', '0', '0', NULL, '#', 'admin', '2022-06-18 17:41:12', 'admin', '2022-06-18 17:41:12', '');
 
 -- 菜单 SQL
 insert into sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, update_by, update_time, remark)
@@ -35,8 +35,11 @@ CREATE TABLE `sys_message`  (
   `create_by` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '创建人',
   `update_by` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '更新人',
   `read_time` datetime(0) NULL DEFAULT NULL COMMENT '阅读时间',
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '标题',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '消息通知' ROW_FORMAT = Dynamic;
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO `sys_dict_type` VALUES (1537766261421912066, '消息类型', 'sys_message', '0', 'admin', '2022-06-17 19:57:02', 'admin', '2022-06-17 19:57:02', '消息类型列表');
 INSERT INTO `sys_dict_type` VALUES (1537799829238005761, '站内信阅读状态', 'read_status', '0', 'admin', '2022-06-17 22:10:25', 'admin', '2022-06-17 22:10:36', '站内信阅读状态列表');
@@ -45,3 +48,5 @@ INSERT INTO `sys_dict_data` VALUES (1537766555945938946, 1, '邮件', '2', 'sys_
 INSERT INTO `sys_dict_data` VALUES (1537766634446532610, 2, '短信', '3', 'sys_message', NULL, 'info', 'N', '0', 'admin', '2022-06-17 19:58:31', 'admin', '2022-06-17 22:26:50', NULL);
 INSERT INTO `sys_dict_data` VALUES (1537800002466955266, 0, '已读', '1', 'read_status', NULL, 'primary', 'N', '0', 'admin', '2022-06-17 22:11:06', 'admin', '2022-06-18 17:54:47', NULL);
 INSERT INTO `sys_dict_data` VALUES (1537800099497984001, 1, '未读', '0', 'read_status', NULL, 'danger', 'N', '0', 'admin', '2022-06-17 22:11:29', 'admin', '2022-06-18 17:54:53', NULL);
+
+alter table act_node_assignee add task_listener VARCHAR(4000) not null comment '任务监听';
