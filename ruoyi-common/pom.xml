@@ -182,11 +182,6 @@
             <artifactId>flowable-json-converter</artifactId>
         </dependency>
 
-        <!-- svg转png图片工具-->
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>batik-all</artifactId>
-        </dependency>
     </dependencies>
 
 </project>

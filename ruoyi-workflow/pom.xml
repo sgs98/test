@@ -15,6 +15,11 @@
         工作流模块
     </description>
 
+    <properties>
+      <xerces.version>2.11.0</xerces.version>
+      <batik.version>1.10</batik.version>
+    </properties>
+
     <dependencies>
 
         <!-- 通用工具-->
@@ -39,6 +44,20 @@
         <dependency>
             <groupId>org.jeecgframework.jimureport</groupId>
             <artifactId>spring-boot-starter-jimureport</artifactId>
+        </dependency>
+
+        <!--解决部署xml错误-->
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>${xerces.version}</version>
+        </dependency>
+
+        <!-- svg转png图片工具-->
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-all</artifactId>
+            <version>${batik.version}</version>
         </dependency>
 
     </dependencies>

@@ -286,13 +286,6 @@
                 <version>${flowable.version}</version>
             </dependency>
 
-            <!-- svg转png图片工具-->
-            <dependency>
-                <groupId>org.apache.xmlgraphics</groupId>
-                <artifactId>batik-all</artifactId>
-                <version>1.10</version>
-            </dependency>
-
             <!-- JimuReport-->
             <dependency>
                 <groupId>org.jeecgframework.jimureport</groupId>
