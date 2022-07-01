@@ -192,7 +192,7 @@ public class ProcessInstanceController {
 
     /**
      * @Description: 撤销申请
-     * @param: cancelProcessBo
+     * @param processInstId
      * @return: com.ruoyi.common.core.domain.R<java.lang.Void>
      * @author: gssong
      * @Date: 2022/1/21
@@ -202,8 +202,8 @@ public class ProcessInstanceController {
         @ApiImplicitParam(name = "processInstId",value = "流程实例id",required = true,dataTypeClass = String.class)
     })
     @Log(title = "流程实例管理", businessType = BusinessType.INSERT)
-    @PostMapping("/cancelProcessApply/{processInstId}")
-    public R<Void> cancelProcessApply(@PathVariable String processInstId){
+    @GetMapping("/cancelProcessApply/{processInstId}")
+    public R<Void> cancelProcessApply(@NotBlank(message = "流程实例id不能为空") @PathVariable String processInstId){
         boolean b = processInstanceService.cancelProcessApply(processInstId);
         if(b){
             return R.ok();

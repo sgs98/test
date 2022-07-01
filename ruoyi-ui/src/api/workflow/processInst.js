@@ -77,8 +77,7 @@ export default {
   cancelProcessApply(processInstanceId) {
     return request({
       url: '/workflow/processInstance/cancelProcessApply/'+processInstanceId,
-      method: 'post',
-      data: data
+      method: 'get'
     })
   },
 

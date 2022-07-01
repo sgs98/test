@@ -218,7 +218,7 @@ public class WorkFlowUtils {
                 tempNodes.add(tempNode);
             }
         //包含网关
-        } else if(ActConstant.INCLUSIVE_GATEWAY.equals(gateway)){
+        } else if (ActConstant.INCLUSIVE_GATEWAY.equals(gateway)){
             String conditionExpression = sequenceFlow.getConditionExpression();
             if(StringUtils.isBlank(conditionExpression)){
                 processNode.setNodeId(outFlowElement.getId());
@@ -230,7 +230,7 @@ public class WorkFlowUtils {
                 processNode.setAssignee(((UserTask) outFlowElement).getAssignee());
                 processNode.setAssigneeId(((UserTask) outFlowElement).getAssignee());
                 nextNodes.add(processNode);
-            }else{
+            } else {
                 ExpressCmd expressCmd = new ExpressCmd(sequenceFlow,executionEntity);
                 Boolean condition = managementService.executeCommand(expressCmd);
                 if (condition) {
@@ -245,7 +245,7 @@ public class WorkFlowUtils {
                     nextNodes.add(processNode);
                 }
             }
-        }else {
+        } else {
             processNode.setNodeId(outFlowElement.getId());
             processNode.setNodeName(outFlowElement.getName());
             processNode.setNodeType(ActConstant.USER_TASK);
