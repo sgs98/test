@@ -25,6 +25,7 @@ import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.repository.DeploymentBuilder;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.repository.ProcessDefinitionQuery;
+import org.flowable.task.api.history.HistoricTaskInstance;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -137,9 +138,9 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
     @Transactional(rollbackFor = Exception.class)
     public R<Void> deleteDeployment(String deploymentId,String definitionId) {
         try {
-            List<Task> taskList = taskService.createTaskQuery().processDefinitionId(definitionId).list();
-            if(CollectionUtil.isNotEmpty(taskList)){
-                return R.fail("当前流程定义有正在运行的数据不可删除！");
+            List<HistoricTaskInstance> taskInstanceList = historyService.createHistoricTaskInstanceQuery().processDefinitionId(definitionId).list();
+            if(CollectionUtil.isNotEmpty(taskInstanceList)){
+                return R.fail("当前流程定义已被使用不可删除！");
             }
             repositoryService.deleteDeployment(deploymentId);
             iActNodeAssigneeService.delByDefinitionId(definitionId);
