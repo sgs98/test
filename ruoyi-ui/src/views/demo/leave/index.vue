@@ -461,7 +461,9 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-        this.$download.excel('/demo/leave/export', this.queryParams);
+         this.download('/demo/leave/export', {
+        ...this.queryParams
+      }, `demo_${new Date().getTime()}.xlsx`)
     },
     //提交流程
     submitFormAppply(entity){

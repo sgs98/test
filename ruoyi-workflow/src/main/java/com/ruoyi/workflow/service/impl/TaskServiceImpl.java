@@ -1073,7 +1073,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             return R.ok();
         }catch (Exception e){
             e.printStackTrace();
-            return R.fail();
+            return R.fail(e.getMessage());
         }
     }
 
@@ -1157,7 +1157,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             return R.ok();
         }catch (Exception e){
             e.printStackTrace();
-            return R.fail();
+            return R.fail(e.getMessage());
         }
     }
 
@@ -1206,7 +1206,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             return R.ok();
         }catch (Exception e){
             e.printStackTrace();
-            return R.fail();
+            return R.fail(e.getMessage());
         }
     }
 

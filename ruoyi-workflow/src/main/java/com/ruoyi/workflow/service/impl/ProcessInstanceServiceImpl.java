@@ -375,20 +375,24 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteRuntimeProcessInst(String processInstId) {
-        //1.查询流程实例
-        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
-            .processInstanceId(processInstId).singleResult();
-        //2.删除流程实例
-        List<Task> list = taskService.createTaskQuery().processInstanceId(processInstId).list();
-        List<Task> subTasks = list.stream().filter(e -> StringUtils.isNotBlank(e.getParentTaskId())).collect(Collectors.toList());
-        if(CollectionUtil.isNotEmpty(subTasks)){
-            subTasks.forEach(e->{
-                taskService.deleteTask(e.getId());
-            });
+        try {
+            //1.查询流程实例
+            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
+                .processInstanceId(processInstId).singleResult();
+            //2.删除流程实例
+            List<Task> list = taskService.createTaskQuery().processInstanceId(processInstId).list();
+            List<Task> subTasks = list.stream().filter(e -> StringUtils.isNotBlank(e.getParentTaskId())).collect(Collectors.toList());
+            if(CollectionUtil.isNotEmpty(subTasks)){
+                subTasks.forEach(e->{
+                    taskService.deleteTask(e.getId());
+                });
+            }
+            runtimeService.deleteProcessInstance(processInstId, LoginHelper.getUserId() + "作废了当前流程申请");
+            //3. 更新业务状态
+            return iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.INVALID);
+        }catch (Exception e){
+            throw new ServiceException(e.getMessage());
         }
-        runtimeService.deleteProcessInstance(processInstId, LoginHelper.getUserId() + "作废了当前流程申请");
-        //3. 更新业务状态
-        return iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.INVALID);
     }
 
     /**
@@ -401,27 +405,31 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteRuntimeProcessAndHisInst(String processInstId) {
-        //1.查询流程实例
-        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
-            .processInstanceId(processInstId).singleResult();
-        //2.删除流程实例
-        List<Task> list = taskService.createTaskQuery().processInstanceId(processInstId).list();
-        List<Task> subTasks = list.stream().filter(e -> StringUtils.isNotBlank(e.getParentTaskId())).collect(Collectors.toList());
-        if(CollectionUtil.isNotEmpty(subTasks)){
-            subTasks.forEach(e->{
-                taskService.deleteTask(e.getId());
-            });
+        try {
+            //1.查询流程实例
+            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
+                .processInstanceId(processInstId).singleResult();
+            //2.删除流程实例
+            List<Task> list = taskService.createTaskQuery().processInstanceId(processInstId).list();
+            List<Task> subTasks = list.stream().filter(e -> StringUtils.isNotBlank(e.getParentTaskId())).collect(Collectors.toList());
+            if(CollectionUtil.isNotEmpty(subTasks)){
+                subTasks.forEach(e->{
+                    taskService.deleteTask(e.getId());
+                });
+            }
+            runtimeService.deleteProcessInstance(processInstId, LoginHelper.getUserId() + "删除了当前流程申请");
+            //3.删除历史记录
+            HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstId).singleResult();
+            if(ObjectUtil.isNotEmpty(historicProcessInstance)){
+                historyService.deleteHistoricProcessInstance(processInstId);
+            }
+            //4.删除业务状态
+            iActBusinessStatusService.deleteState(processInstance.getBusinessKey());
+            //5.删除保存的任务节点
+            return iActTaskNodeService.deleteByInstanceId(processInstId);
+        }catch (Exception e){
+            throw new ServiceException(e.getMessage());
         }
-        runtimeService.deleteProcessInstance(processInstId, LoginHelper.getUserId() + "删除了当前流程申请");
-        //3.删除历史记录
-        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstId).singleResult();
-        if(ObjectUtil.isNotEmpty(historicProcessInstance)){
-            historyService.deleteHistoricProcessInstance(processInstId);
-        }
-        //4.删除业务状态
-        iActBusinessStatusService.deleteState(processInstance.getBusinessKey());
-        //5.删除保存的任务节点
-        return iActTaskNodeService.deleteByInstanceId(processInstId);
     }
 
     /**
@@ -433,15 +441,19 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
      */
     @Override
     public boolean deleteFinishProcessAndHisInst(String processInstId) {
-        //1.查询流程实例
-        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery()
-            .processInstanceId(processInstId).singleResult();
-        //2.删除历史记录
-        historyService.deleteHistoricProcessInstance(processInstId);
-        //3.删除业务状态
-        iActBusinessStatusService.deleteState(historicProcessInstance.getBusinessKey());
-        //4.删除保存的任务节点
-        return iActTaskNodeService.deleteByInstanceId(processInstId);
+        try {
+            //1.查询流程实例
+            HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery()
+                .processInstanceId(processInstId).singleResult();
+            //2.删除历史记录
+            historyService.deleteHistoricProcessInstance(processInstId);
+            //3.删除业务状态
+            iActBusinessStatusService.deleteState(historicProcessInstance.getBusinessKey());
+            //4.删除保存的任务节点
+            return iActTaskNodeService.deleteByInstanceId(processInstId);
+        }catch (Exception e){
+            throw new ServiceException(e.getMessage());
+        }
     }
 
     /**

@@ -20,6 +20,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.*;
 import org.flowable.bpmn.model.Process;
+import org.flowable.task.api.Task;
 import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.repository.DeploymentBuilder;
 import org.flowable.engine.repository.ProcessDefinition;
@@ -136,6 +137,10 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
     @Transactional(rollbackFor = Exception.class)
     public R<Void> deleteDeployment(String deploymentId,String definitionId) {
         try {
+            List<Task> taskList = taskService.createTaskQuery().processDefinitionId(definitionId).list();
+            if(CollectionUtil.isNotEmpty(taskList)){
+                return R.fail("当前流程定义有正在运行的数据不可删除！");
+            }
             repositoryService.deleteDeployment(deploymentId);
             iActNodeAssigneeService.delByDefinitionId(definitionId);
             return R.ok();
