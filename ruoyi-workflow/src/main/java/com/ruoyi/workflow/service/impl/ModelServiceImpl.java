@@ -11,6 +11,7 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.utils.JsonUtils;
 import com.ruoyi.workflow.common.constant.ActConstant;
+import com.ruoyi.workflow.domain.bo.ModeBo;
 import com.ruoyi.workflow.flowable.factory.WorkflowService;
 import com.ruoyi.workflow.domain.bo.ModelREQ;
 import com.ruoyi.workflow.service.IModelService;
@@ -59,22 +60,20 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R<Void> saveModelXml(Map<String, String> data) {
+    public R<Void> saveModelXml(ModeBo data) {
         try {
-            String xml = data.get("xml");
-            String svg = data.get("svg");
-            String modelId = data.get("modelId");
+            String xml = data.getXml();
+            String svg = data.getSvg();
+            String modelId = data.getModelId();
+            String key = data.getProcess().getId();
+            String name = data.getProcess().getName();
+            String category = data.getProcess().getCategory();
             JSONObject jsonObject = JSONUtil.xmlToJson(xml);
-            JSONObject bpmn2 = (JSONObject) jsonObject.get("bpmn2:definitions");
-            JSONObject process =  (JSONObject)bpmn2.get("bpmn2:process");
-            if(!process.containsKey("id")||!process.containsKey("name")||StringUtils.isBlank(process.get("id").toString())||StringUtils.isBlank(process.get("name").toString())){
-                return R.fail("模型Key或者模型名称不能为空");
-            }
-            String key = process.get("id").toString();
-            String name = process.get("name").toString();
+            JSONObject definitions = (JSONObject) jsonObject.get("definitions");
+            JSONObject process = (JSONObject) definitions.get("process");
             String description = "";
-            if(process.containsKey("flowable:versionTag")){
-                description = process.get("flowable:versionTag").toString();
+            if(process.containsKey("documentation")){
+                description = process.get("documentation").toString();
             }
             Model model = repositoryService.getModel(modelId);
             List<Model> list = repositoryService.createModelQuery().list();
@@ -88,6 +87,7 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
             model.setKey(key);
             model.setName(name);
             model.setVersion(model.getVersion()+1);
+            model.setCategory(category);
             //封装模型json对象
             ObjectMapper objectMapper = JsonUtils.getObjectMapper();
             ObjectNode objectNode = objectMapper.createObjectNode();
@@ -184,21 +184,19 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R<Model> add(Map<String, String> data){
+    public R<Model> add(ModeBo data){
         try {
-            String xml = data.get("xml");
-            String svg = data.get("svg");
+            String xml = data.getXml();
+            String svg = data.getSvg();
+            String key = data.getProcess().getId();
+            String name = data.getProcess().getName();
+            String category = data.getProcess().getCategory();
             JSONObject jsonObject = JSONUtil.xmlToJson(xml);
-            JSONObject bpmn2 = (JSONObject) jsonObject.get("bpmn2:definitions");
-            JSONObject process =  (JSONObject)bpmn2.get("bpmn2:process");
-            if(!process.containsKey("id")||!process.containsKey("name")||StringUtils.isBlank(process.get("id").toString())||StringUtils.isBlank(process.get("name").toString())){
-                return R.fail("模型Key或者模型名称不能为空");
-            }
-            String key = process.get("id").toString();
-            String name = process.get("name").toString();
+            JSONObject definitions = (JSONObject) jsonObject.get("definitions");
+            JSONObject process = (JSONObject) definitions.get("process");
             String description = "";
-            if(process.containsKey("flowable:versionTag")){
-                description = process.get("flowable:versionTag").toString();
+            if(process.containsKey("documentation")){
+                description = process.get("documentation").toString();
             }
             int version = 0;
             Model checkModel = repositoryService.createModelQuery().modelKey(key).singleResult();
@@ -210,6 +208,7 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
             model.setKey(key);
             model.setName(name);
             model.setVersion(version);
+            model.setCategory(category);
             //封装模型json对象
             ObjectMapper objectMapper = JsonUtils.getObjectMapper();
             ObjectNode objectNode = objectMapper.createObjectNode();
