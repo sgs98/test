@@ -427,7 +427,7 @@ public class WorkFlowUtils {
             list = sysUserMapper.selectList(queryWrapper);
         }
         if (CollectionUtil.isEmpty(list)) {
-            throw new ServiceException(nodeName + "环节未设置审批人");
+            throw new ServiceException(nodeName + "任务环节未配置审批人");
         }
         return list.stream().map(e -> e.getUserId()).collect(Collectors.toList());
     }
