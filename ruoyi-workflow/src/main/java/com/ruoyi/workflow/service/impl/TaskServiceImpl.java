@@ -220,7 +220,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             }
             // 3. 指定任务审批意见
             taskService.addComment(req.getTaskId(), task.getProcessInstanceId(), req.getMessage());
-            // 4. 完成任务
+            // 设置变量
             taskService.setVariables(req.getTaskId(), req.getVariables());
             //任务前执行集合
             List<TaskListenerVo> handleBeforeList = null;
@@ -239,6 +239,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                         ,task.getProcessInstanceId(),task.getId());
                 }
             }
+            // 4. 完成任务
             taskService.complete(req.getTaskId());
             //任务后执行
             if(CollectionUtil.isNotEmpty(handleAfterList)){
@@ -267,7 +268,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 }
                 iActTaskNodeService.saveTaskNode(actTaskNode);
             }
-            // 更新业务状态为：办理中, 和流程实例id
+            // 更新业务状态为：办理中
             iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.WAITING, task.getProcessInstanceId());
             // 6. 查询下一个任务
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
@@ -333,7 +334,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
     /**
      * @Description: 设置任务执行人员
-     * @param: task  任务信息
+     * @param: task 任务信息
      * @param: actNodeAssignee 人员设置
      * @param: multiple 是否设置会签人员
      * @return: void
@@ -653,7 +654,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
     /**
      * @Description: 设置节点审批人员
-     * @param: nodeList 节点列表
+     * @param: nodeList节点列表
      * @param: definitionId 流程定义id
      * @return: java.util.List<com.ruoyi.workflow.domain.vo.ProcessNode>
      * @author: gssong
@@ -934,23 +935,16 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             ActTaskNode actTaskNode = iActTaskNodeService.getListByInstanceIdAndNodeId(task.getProcessInstanceId(), backProcessBo.getTargetActivityId());
             if (ObjectUtil.isNotNull(actTaskNode) && actTaskNode.getOrderNo() == 0) {
                 ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-                List<Task> newList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
-                for (Task ta : newList) {
-                    Map<String, Object> variables = new HashMap<>();
-                    variables.put("status", BusinessStatusEnum.BACK.getStatus());
-                    taskService.setVariables(ta.getId(), variables);
-                }
                 iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.BACK);
             }
             iActTaskNodeService.deleteBackTaskNode(processInstanceId, backProcessBo.getTargetActivityId());
             //发送站内信
             workFlowUtils.sendMessage(backProcessBo.getSendMessage(),processInstanceId);
-
+            return processInstanceId;
         }catch (Exception e){
             e.printStackTrace();
             throw new ServiceException("驳回失败:"+e.getMessage());
         }
-        return processInstanceId;
     }
 
     /**

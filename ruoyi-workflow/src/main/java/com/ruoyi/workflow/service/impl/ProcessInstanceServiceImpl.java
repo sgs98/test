@@ -561,13 +561,10 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
                     });
                 }
             }
-            Map<String, Object> variables =new HashMap<>();
-            variables.put("status",BusinessStatusEnum.CANCEL.getStatus());
-            List<Task> variablesTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
-            if(CollectionUtil.isNotEmpty(variablesTaskList)){
-                for (Task task : variablesTaskList) {
+            List<Task> cancelTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+            if(CollectionUtil.isNotEmpty(cancelTaskList)){
+                for (Task task : cancelTaskList) {
                     taskService.setAssignee(task.getId(), LoginHelper.getUserId().toString());
-                    taskService.setVariables(task.getId(),variables);
                 }
                 iActTaskNodeService.deleteByInstanceId(processInstId);
             }
