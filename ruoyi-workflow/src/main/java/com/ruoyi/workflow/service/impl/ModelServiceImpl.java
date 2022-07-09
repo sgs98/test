@@ -193,6 +193,9 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
             String key = data.getProcess().getId();
             String name = data.getProcess().getName();
             String category = data.getProcess().getCategory();
+            if(StringUtils.isBlank(category)){
+                return R.fail("请选择流程分类");
+            }
             JSONObject jsonObject = JSONUtil.xmlToJson(xml);
             JSONObject definitions = (JSONObject) jsonObject.get("definitions");
             String description = "";
