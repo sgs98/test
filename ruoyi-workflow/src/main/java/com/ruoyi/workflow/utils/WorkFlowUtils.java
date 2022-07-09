@@ -27,7 +27,6 @@ import com.ruoyi.workflow.domain.ActBusinessStatus;
 import com.ruoyi.workflow.domain.ActFullClassParam;
 import com.ruoyi.workflow.domain.vo.ActFullClassVo;
 import com.ruoyi.workflow.domain.vo.ProcessNode;
-import com.ruoyi.workflow.flowable.cmd.IdentityLinkListCmd;
 import com.ruoyi.workflow.service.IActBusinessStatusService;
 import com.ruoyi.workflow.service.ISysMessageService;
 import lombok.SneakyThrows;
@@ -40,7 +39,7 @@ import org.flowable.engine.*;
 import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
-import org.flowable.identitylink.service.impl.persistence.entity.IdentityLinkEntity;
+import org.flowable.identitylink.api.IdentityLink;
 import org.flowable.task.api.Task;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.flowable.variable.api.persistence.entity.VariableInstance;
@@ -429,7 +428,13 @@ public class WorkFlowUtils {
         if (CollectionUtil.isEmpty(list)) {
             throw new ServiceException(nodeName + "任务环节未配置审批人");
         }
-        return list.stream().map(e -> e.getUserId()).collect(Collectors.toList());
+        List<Long> userIds = list.stream().map(e -> e.getUserId()).collect(Collectors.toList());
+        //校验人员
+        List<Long> missIds = paramList.stream().filter(id -> !userIds.contains(id)).collect(Collectors.toList());
+        if(CollectionUtil.isNotEmpty(missIds)){
+            throw new ServiceException(missIds+"人员ID不存在");
+        }
+        return userIds;
     }
 
     /**
@@ -537,13 +542,12 @@ public class WorkFlowUtils {
                 sysMessage.setStatus(0);
                 messageList.add(sysMessage);
             }else{
-                IdentityLinkListCmd identityLinkListCmd = new IdentityLinkListCmd(taskInfo.getId());
-                List<IdentityLinkEntity> identityLinkEntities = managementService.executeCommand(identityLinkListCmd);
-                if(CollectionUtil.isNotEmpty(identityLinkEntities)){
-                    for (IdentityLinkEntity identityLinkEntity : identityLinkEntities) {
+                List<IdentityLink> identityLinkList = getCandidateUser(taskInfo.getId());
+                if(CollectionUtil.isNotEmpty(identityLinkList)){
+                    for (IdentityLink identityLink : identityLinkList) {
                         SysMessage sysMessage = new SysMessage();
                         sysMessage.setSendId(LoginHelper.getUserId());
-                        sysMessage.setRecordId(Long.valueOf(identityLinkEntity.getUserId()));
+                        sysMessage.setRecordId(Long.valueOf(identityLink.getUserId()));
                         sysMessage.setType(1);
                         sysMessage.setTitle(sendMessage.getTitle());
                         sysMessage.setMessageContent(sendMessage.getMessageContent()+",请您注意查收");
@@ -581,5 +585,18 @@ public class WorkFlowUtils {
         Method method = ReflectionUtils.findMethod(service.getClass(), methodName, paramClass);
         // 执行方法
         return ReflectionUtils.invokeMethod(method, service, params);
+    }
+
+
+
+    /**
+     * @Description: 获取候选人
+     * @param: taskId
+     * @return: java.util.List<org.flowable.identitylink.api.IdentityLink>
+     * @author: gssong
+     * @Date: 2022/7/9 17:55
+     */
+    public List<IdentityLink> getCandidateUser(String taskId){
+        return taskService.getIdentityLinksForTask(taskId);
     }
 }

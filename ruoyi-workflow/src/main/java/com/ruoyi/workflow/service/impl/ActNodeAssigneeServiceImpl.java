@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.helper.LoginHelper;
 import com.ruoyi.common.utils.JsonUtils;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.domain.ActNodeAssignee;
@@ -16,10 +17,8 @@ import com.ruoyi.workflow.service.IActNodeAssigneeService;
 import com.ruoyi.workflow.utils.WorkFlowUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.flowable.bpmn.model.BpmnModel;
-import org.flowable.bpmn.model.FlowElement;
+import org.flowable.bpmn.model.*;
 import org.flowable.bpmn.model.Process;
-import org.flowable.bpmn.model.UserTask;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.springframework.beans.BeanUtils;
@@ -27,6 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 
@@ -243,17 +244,29 @@ public class ActNodeAssigneeServiceImpl extends ServiceImpl<ActNodeAssigneeMappe
         if(ObjectUtil.isEmpty(processDefinition)){
             throw new ServiceException("流程定义不存在");
         }
+        List<ActProcessNodeVo> processNodeVoList = new ArrayList<>();
         BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinition.getId());
         List<Process> processes = bpmnModel.getProcesses();
-        List<ActProcessNodeVo> processNodeVoList = new ArrayList<>();
-        List<UserTask> userTaskList = processes.get(0).findFlowElementsOfType(UserTask.class);
-
-        for (FlowElement element : userTaskList) {
-            ActProcessNodeVo actProcessNodeVo = new ActProcessNodeVo();
+        Collection<FlowElement> elements = processes.get(0).getFlowElements();
+        for (FlowElement element : elements) {
+            if (element instanceof UserTask) {
+                ActProcessNodeVo actProcessNodeVo = new ActProcessNodeVo();
                 actProcessNodeVo.setNodeId(element.getId());
                 actProcessNodeVo.setNodeName(element.getName());
                 actProcessNodeVo.setProcessDefinitionId(processDefinition.getId());
                 processNodeVoList.add(actProcessNodeVo);
+            }else if(element instanceof SubProcess){
+                Collection<FlowElement> flowElements = ((SubProcess) element).getFlowElements();
+                for (FlowElement flowElement : flowElements) {
+                    if (flowElement instanceof UserTask) {
+                        ActProcessNodeVo actProcessNodeVo = new ActProcessNodeVo();
+                        actProcessNodeVo.setNodeId(flowElement.getId());
+                        actProcessNodeVo.setNodeName(flowElement.getName());
+                        actProcessNodeVo.setProcessDefinitionId(processDefinition.getId());
+                        processNodeVoList.add(actProcessNodeVo);
+                    }
+                }
+            }
         }
         delByDefinitionId(processDefinition.getId());
         List<ActNodeAssignee> actNodeAssigneeList = new ArrayList<>();
@@ -268,6 +281,10 @@ public class ActNodeAssigneeServiceImpl extends ServiceImpl<ActNodeAssigneeMappe
                 if(actNodeAssignee.getMultiple()){
                     actNodeAssignee.setMultipleColumn("");
                 }
+                actNodeAssignee.setCreateTime(new Date());
+                actNodeAssignee.setUpdateTime(new Date());
+                actNodeAssignee.setCreateBy(LoginHelper.getUsername());
+                actNodeAssignee.setUpdateBy(LoginHelper.getUsername());
                 actNodeAssigneeList.add(actNodeAssignee);
             }
         }

@@ -70,10 +70,12 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
             String category = data.getProcess().getCategory();
             JSONObject jsonObject = JSONUtil.xmlToJson(xml);
             JSONObject definitions = (JSONObject) jsonObject.get("definitions");
-            JSONObject process = (JSONObject) definitions.get("process");
             String description = "";
-            if(process.containsKey("documentation")){
-                description = process.get("documentation").toString();
+            if(ObjectUtil.isNotEmpty(definitions)){
+                JSONObject process = (JSONObject) definitions.get("process");
+                if(process.containsKey("documentation")){
+                    description = process.get("documentation").toString();
+                }
             }
             Model model = repositoryService.getModel(modelId);
             List<Model> list = repositoryService.createModelQuery().list();
@@ -193,10 +195,12 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
             String category = data.getProcess().getCategory();
             JSONObject jsonObject = JSONUtil.xmlToJson(xml);
             JSONObject definitions = (JSONObject) jsonObject.get("definitions");
-            JSONObject process = (JSONObject) definitions.get("process");
             String description = "";
-            if(process.containsKey("documentation")){
-                description = process.get("documentation").toString();
+            if(ObjectUtil.isNotEmpty(definitions)){
+                JSONObject process = (JSONObject) definitions.get("process");
+                if(process.containsKey("documentation")){
+                    description = process.get("documentation").toString();
+                }
             }
             int version = 0;
             Model checkModel = repositoryService.createModelQuery().modelKey(key).singleResult();

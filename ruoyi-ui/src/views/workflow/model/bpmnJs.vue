@@ -30,9 +30,9 @@ export default {
       categorys: [],
       isView: false,
       users: [
-        { name: '张三', id: 'zhangsan' },
-        { name: '李四', id: 'lisi' },
-        { name: '王五', id: 'wangwu' }
+        { name: '${assignee}', id: '${assignee}' }//,
+        // { name: '李四', id: 'lisi' },
+        // { name: '王五', id: 'wangwu' }
       ],
       groups: [
         { name: 'web组', id: 'web' },

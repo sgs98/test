@@ -64,9 +64,9 @@ export default {
   data() {
     return {
       userTypeOption: [
-        { label: '指定人员', value: 'assignee' },
-        { label: '候选人员', value: 'candidateUsers' },
-        { label: '候选组', value: 'candidateGroups' }
+        { label: '指定人员', value: 'assignee' }//,
+        // { label: '候选人员', value: 'candidateUsers' },
+        // { label: '候选组', value: 'candidateGroups' }
       ],
       dialogName: '',
       executionListenerLength: 0,
@@ -121,6 +121,7 @@ export default {
             label: '指定人员',
             allowCreate: true,
             filterable: true,
+            clearable: true,
             dic: { data: _this.users, label: 'name', value: 'id' },
             show: !!_this.showConfig.assignee && _this.formData.userType === 'assignee'
           },
