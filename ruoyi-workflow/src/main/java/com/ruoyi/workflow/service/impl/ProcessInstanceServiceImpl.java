@@ -95,7 +95,6 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
         Authentication.setAuthenticatedUserId(LoginHelper.getUserId().toString());
         // 启动流程实例（提交申请）
         Map<String, Object> variables = startReq.getVariables();
-        variables.put("status",BusinessStatusEnum.DRAFT.getStatus());
         ProcessInstance pi = runtimeService.startProcessInstanceByKey(startReq.getProcessKey(), startReq.getBusinessKey(),variables);
         // 将流程定义名称 作为 流程实例名称
         runtimeService.setProcessInstanceName(pi.getProcessInstanceId(), pi.getProcessDefinitionName());
@@ -104,11 +103,10 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
         if(taskList.size()>1){
             throw new ServiceException("请检查流程第一个环节是否为申请人！");
         }
-        for (Task task : taskList) {
-            taskService.setAssignee(task.getId(),LoginHelper.getUserId().toString());
-            // 更新业务状态
-            iActBusinessStatusService.updateState(startReq.getBusinessKey(), BusinessStatusEnum.DRAFT, task.getProcessInstanceId(), startReq.getClassFullName());
-        }
+        taskService.setAssignee(taskList.get(0).getId(),LoginHelper.getUserId().toString());
+        // 更新业务状态
+        iActBusinessStatusService.updateState(startReq.getBusinessKey(), BusinessStatusEnum.DRAFT, taskList.get(0).getProcessInstanceId(), startReq.getClassFullName());
+
         map.put("processInstanceId",pi.getProcessInstanceId());
         map.put("taskId",taskList.get(0).getId());
         return map;
