@@ -17,6 +17,15 @@
         </el-form>
 
          <el-row :gutter="10" class="mb8">
+            <el-col :span="1.5">
+              <el-button
+                type="success"
+                plain
+                icon="el-icon-edit"
+                size="mini"
+                :disabled="single"
+              >修改办理人</el-button>
+            </el-col>
             <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
         </el-row>
 
@@ -69,7 +78,6 @@
   import verify from "@/components/Process/Verify";
   import history from "@/components/Process/History";
   import Back from "@/components/Process/Back";
-  import { getLeave} from "@/api/demo/leave";
   import  approvalForm from "@/views/components/approvalForm";
 
   export default {
