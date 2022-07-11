@@ -150,7 +150,7 @@ public class WorkFlowUtils {
                 if(subProcess==null){
                     continue;
                 }
-                getNextNodes(flowElements,subProcess,executionEntity, nextNodes, tempNodes, taskId, ActConstant.INCLUSIVE_GATEWAY);
+                getNextNodes(flowElements,subProcess,executionEntity, nextNodes, tempNodes, taskId, ActConstant.END_EVENT);
             }else if(outFlowElement instanceof SubProcess) {
                 Collection<FlowElement> subFlowElements = ((SubProcess) outFlowElement).getFlowElements();
                 for (FlowElement element : subFlowElements) {
