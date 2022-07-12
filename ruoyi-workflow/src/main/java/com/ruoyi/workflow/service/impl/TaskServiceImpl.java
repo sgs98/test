@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.*;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.engine.ManagementService;
-import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
@@ -188,9 +187,9 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             if(ObjectUtil.isNotEmpty(task.getDelegationState())&&ActConstant.PENDING.equals(task.getDelegationState().name())){
                 taskService.resolveTask(req.getTaskId());
                 ActHiTaskInst hiTaskInst = iActHiTaskInstService.getById(task.getId());
-                TaskEntity subTask = createNewTask(task, hiTaskInst.getStartTime());
-                taskService.addComment(subTask.getId(), task.getProcessInstanceId(), req.getMessage());
-                taskService.complete(subTask.getId());
+                TaskEntity newTask = workFlowUtils.createNewTask(task, hiTaskInst.getStartTime());
+                taskService.addComment(newTask.getId(), task.getProcessInstanceId(), req.getMessage());
+                taskService.complete(newTask.getId());
                 ActHiTaskInst actHiTaskInst = new ActHiTaskInst();
                 actHiTaskInst.setId(task.getId());
                 actHiTaskInst.setStartTime(new Date());
@@ -274,11 +273,8 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
             // 7. 如果为空 办结任务
             if (CollectionUtil.isEmpty(taskList)) {
-                HistoricProcessInstance hpi = historyService.createHistoricProcessInstanceQuery()
-                    .processInstanceId(task.getProcessInstanceId()).singleResult();
                 // 更新业务状态已完成 办结流程
-                boolean b = iActBusinessStatusService.updateState(hpi.getBusinessKey(), BusinessStatusEnum.FINISH);
-                return b;
+                return iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.FINISH);
             }
 
             //抄送
@@ -286,7 +282,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 if(StringUtils.isBlank(req.getAssigneeIds())){
                     throw new ServiceException("抄送人不能为空 ");
                 }
-                TaskEntity newTask = createNewTask(task, new Date());
+                TaskEntity newTask = workFlowUtils.createNewTask(task, new Date());
                 taskService.addComment(newTask.getId(),task.getProcessInstanceId(),
                     LoginHelper.getUsername()+"【抄送】给"+req.getAssigneeNames());
                 taskService.complete(newTask.getId());
@@ -1032,12 +1028,12 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             throw new ServiceException("当前任务不存在或你不是任务办理人");
         }
         try{
-            TaskEntity subTask = this.createNewTask(task,new Date());
-            taskService.addComment(subTask.getId(), task.getProcessInstanceId(),"【"+LoginHelper.getUsername()+"】委派给【"+delegateREQ.getDelegateUserName()+"】");
+            TaskEntity newTask = workFlowUtils.createNewTask(task,new Date());
+            taskService.addComment(newTask.getId(), task.getProcessInstanceId(),"【"+LoginHelper.getUsername()+"】委派给【"+delegateREQ.getDelegateUserName()+"】");
             //委托任务
             taskService.delegateTask(delegateREQ.getTaskId(), delegateREQ.getDelegateUserId());
             //办理生成的任务记录
-            taskService.complete(subTask.getId());
+            taskService.complete(newTask.getId());
             ActHiTaskInst actHiTaskInst = new ActHiTaskInst();
             actHiTaskInst.setId(task.getId());
             actHiTaskInst.setStartTime(new Date());
@@ -1067,10 +1063,10 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             return R.fail("当前任务不存在或你不是任务办理人");
         }
         try {
-            TaskEntity subTask = createNewTask(task, new Date());
-            taskService.addComment(subTask.getId(), task.getProcessInstanceId(),
+            TaskEntity newTask = workFlowUtils.createNewTask(task, new Date());
+            taskService.addComment(newTask.getId(), task.getProcessInstanceId(),
                 StringUtils.isNotBlank(transmitREQ.getComment())?transmitREQ.getComment():LoginHelper.getUsername()+"转办了任务");
-            taskService.complete(subTask.getId());
+            taskService.complete(newTask.getId());
             taskService.setAssignee(task.getId(),transmitREQ.getTransmitUserId());
             //发送站内信
             workFlowUtils.sendMessage(transmitREQ.getSendMessage(),task.getProcessInstanceId());
@@ -1079,43 +1075,6 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             e.printStackTrace();
             return R.fail(e.getMessage());
         }
-    }
-
-    /**
-     * @Description: 创建流程任务
-     * @param: parentTask
-     * @param: createTime
-     * @return: org.flowable.task.service.impl.persistence.entity.TaskEntity
-     * @author: gssong
-     * @Date: 2022/3/13
-     */
-    private TaskEntity createNewTask(Task currentTask, Date createTime){
-        TaskEntity task = null;
-        if(ObjectUtil.isNotEmpty(currentTask)){
-            task = (TaskEntity) taskService.newTask();
-            task.setCategory(currentTask.getCategory());
-            task.setDescription(currentTask.getDescription());
-            task.setTenantId(currentTask.getTenantId());
-            task.setAssignee(currentTask.getAssignee());
-            task.setName(currentTask.getName());
-            task.setProcessDefinitionId(currentTask.getProcessDefinitionId());
-            task.setProcessInstanceId(currentTask.getProcessInstanceId());
-            task.setTaskDefinitionKey(currentTask.getTaskDefinitionKey());
-            task.setPriority(currentTask.getPriority());
-            task.setCreateTime(createTime);
-            taskService.saveTask(task);
-        }
-        if(ObjectUtil.isNotNull(task)){
-            ActHiTaskInst hiTaskInst = iActHiTaskInstService.getById(task.getId());
-            if(ObjectUtil.isNotEmpty(hiTaskInst)){
-                hiTaskInst.setProcDefId(task.getProcessDefinitionId());
-                hiTaskInst.setProcInstId(task.getProcessInstanceId());
-                hiTaskInst.setTaskDefKey(task.getTaskDefinitionKey());
-                hiTaskInst.setStartTime(createTime);
-                iActHiTaskInstService.updateById(hiTaskInst);
-            }
-        }
-        return  task;
     }
 
     /**
@@ -1155,9 +1114,9 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             }
             List<String> assigneeNames = addMultiREQ.getAssigneeNames();
             String username = LoginHelper.getUsername();
-            TaskEntity subTask = createNewTask(task, new Date());
-            taskService.addComment(subTask.getId(),processInstanceId,username+"加签【"+String.join(",",assigneeNames)+"】");
-            taskService.complete(subTask.getId());
+            TaskEntity newTask = workFlowUtils.createNewTask(task, new Date());
+            taskService.addComment(newTask.getId(),processInstanceId,username+"加签【"+String.join(",",assigneeNames)+"】");
+            taskService.complete(newTask.getId());
             return R.ok();
         }catch (Exception e){
             e.printStackTrace();
@@ -1204,9 +1163,9 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             }
             List<String> assigneeNames = deleteMultiREQ.getAssigneeNames();
             String username = LoginHelper.getUsername();
-            TaskEntity subTask = createNewTask(task, new Date());
-            taskService.addComment(subTask.getId(),processInstanceId,username+"减签【"+String.join(",",assigneeNames)+"】");
-            taskService.complete(subTask.getId());
+            TaskEntity newTask = workFlowUtils.createNewTask(task, new Date());
+            taskService.addComment(newTask.getId(),processInstanceId,username+"减签【"+String.join(",",assigneeNames)+"】");
+            taskService.complete(newTask.getId());
             return R.ok();
         }catch (Exception e){
             e.printStackTrace();

@@ -15,6 +15,7 @@ import com.ruoyi.system.domain.SysUserRole;
 import com.ruoyi.system.mapper.SysRoleMapper;
 import com.ruoyi.system.mapper.SysUserMapper;
 import com.ruoyi.system.mapper.SysUserRoleMapper;
+import com.ruoyi.workflow.domain.ActHiTaskInst;
 import com.ruoyi.workflow.domain.SysMessage;
 import com.ruoyi.workflow.domain.bo.SendMessage;
 import com.ruoyi.workflow.domain.vo.MultiVo;
@@ -28,6 +29,7 @@ import com.ruoyi.workflow.domain.ActFullClassParam;
 import com.ruoyi.workflow.domain.vo.ActFullClassVo;
 import com.ruoyi.workflow.domain.vo.ProcessNode;
 import com.ruoyi.workflow.service.IActBusinessStatusService;
+import com.ruoyi.workflow.service.IActHiTaskInstService;
 import com.ruoyi.workflow.service.ISysMessageService;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
@@ -90,6 +92,9 @@ public class WorkFlowUtils {
 
     @Autowired
     private ISysMessageService iSysMessageService;
+
+    @Autowired
+    private IActHiTaskInstService iActHiTaskInstService;
 
 
     /**
@@ -523,7 +528,7 @@ public class WorkFlowUtils {
     /**
      * @Description: 创建子任务
      * @param: parentTask
-     * @return: org.flowable.task.api.Task
+     * @return: java.util.List<org.flowable.task.api.Task>
      * @author: gssong
      * @Date: 2022/5/6 19:18
      */
@@ -544,6 +549,45 @@ public class WorkFlowUtils {
             }
         }
         return list;
+    }
+
+
+
+    /**
+     * @Description: 创建流程任务
+     * @param: parentTask
+     * @param: createTime
+     * @return: org.flowable.task.service.impl.persistence.entity.TaskEntity
+     * @author: gssong
+     * @Date: 2022/3/13
+     */
+    public TaskEntity createNewTask(Task currentTask, Date createTime){
+        TaskEntity task = null;
+        if(ObjectUtil.isNotEmpty(currentTask)){
+            task = (TaskEntity) taskService.newTask();
+            task.setCategory(currentTask.getCategory());
+            task.setDescription(currentTask.getDescription());
+            task.setTenantId(currentTask.getTenantId());
+            task.setAssignee(currentTask.getAssignee());
+            task.setName(currentTask.getName());
+            task.setProcessDefinitionId(currentTask.getProcessDefinitionId());
+            task.setProcessInstanceId(currentTask.getProcessInstanceId());
+            task.setTaskDefinitionKey(currentTask.getTaskDefinitionKey());
+            task.setPriority(currentTask.getPriority());
+            task.setCreateTime(createTime);
+            taskService.saveTask(task);
+        }
+        if(ObjectUtil.isNotNull(task)){
+            ActHiTaskInst hiTaskInst = iActHiTaskInstService.getById(task.getId());
+            if(ObjectUtil.isNotEmpty(hiTaskInst)){
+                hiTaskInst.setProcDefId(task.getProcessDefinitionId());
+                hiTaskInst.setProcInstId(task.getProcessInstanceId());
+                hiTaskInst.setTaskDefKey(task.getTaskDefinitionKey());
+                hiTaskInst.setStartTime(createTime);
+                iActHiTaskInstService.updateById(hiTaskInst);
+            }
+        }
+        return  task;
     }
 
     /**

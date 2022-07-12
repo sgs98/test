@@ -63,7 +63,7 @@ public class ActBusinessStatusServiceImpl extends ServiceImpl<ActBusinessStatusM
             }
         }catch (Exception e){
             e.printStackTrace();
-            throw new ServiceException("更新失败!");
+            throw new ServiceException("更新失败:"+e.getMessage());
         }
     }
 
