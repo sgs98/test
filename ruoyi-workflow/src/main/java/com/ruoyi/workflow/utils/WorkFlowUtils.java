@@ -15,8 +15,7 @@ import com.ruoyi.system.domain.SysUserRole;
 import com.ruoyi.system.mapper.SysRoleMapper;
 import com.ruoyi.system.mapper.SysUserMapper;
 import com.ruoyi.system.mapper.SysUserRoleMapper;
-import com.ruoyi.workflow.domain.ActHiTaskInst;
-import com.ruoyi.workflow.domain.SysMessage;
+import com.ruoyi.workflow.domain.*;
 import com.ruoyi.workflow.domain.bo.SendMessage;
 import com.ruoyi.workflow.domain.vo.MultiVo;
 import com.ruoyi.workflow.flowable.cmd.DeleteExecutionCmd;
@@ -24,8 +23,6 @@ import com.ruoyi.workflow.flowable.cmd.DeleteTaskCmd;
 import com.ruoyi.workflow.flowable.cmd.ExpressCmd;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
-import com.ruoyi.workflow.domain.ActBusinessStatus;
-import com.ruoyi.workflow.domain.ActFullClassParam;
 import com.ruoyi.workflow.domain.vo.ActFullClassVo;
 import com.ruoyi.workflow.domain.vo.ProcessNode;
 import com.ruoyi.workflow.service.IActBusinessStatusService;
@@ -567,8 +564,6 @@ public class WorkFlowUtils {
         return list;
     }
 
-
-
     /**
      * @Description: 创建流程任务
      * @param: parentTask
@@ -673,8 +668,6 @@ public class WorkFlowUtils {
         return ReflectionUtils.invokeMethod(method, service, params);
     }
 
-
-
     /**
      * @Description: 获取候选人
      * @param: taskId
@@ -684,5 +677,25 @@ public class WorkFlowUtils {
      */
     public List<IdentityLink> getCandidateUser(String taskId){
         return taskService.getIdentityLinksForTask(taskId);
+    }
+
+    /**
+     * @Description: 办理任务
+     * @param: processInstanceId 流程实例id
+     * @param: actNodeAssignees 流程定义设置
+     * @return: void
+     * @author: gssong
+     * @Date: 2022/7/12 21:27
+     */
+    public void complateTask(String processInstanceId,List<ActNodeAssignee> actNodeAssignees){
+        List<Task> list = taskService.createTaskQuery().processInstanceId(processInstanceId)
+            .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).list();
+        if(CollectionUtil.isNotEmpty(list)){
+            for (Task task : list) {
+                taskService.setAssignee(task.getId(),LoginHelper.getUserId().toString());
+                taskService.complete(task.getId());
+            }
+            complateTask(processInstanceId,actNodeAssignees);
+        }
     }
 }
