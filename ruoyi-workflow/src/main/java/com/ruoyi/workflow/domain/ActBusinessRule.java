@@ -8,16 +8,16 @@ import lombok.EqualsAndHashCode;
 import com.ruoyi.common.core.domain.BaseEntity;
 
 /**
- * 业务规则对象 act_full_class
+ * 业务规则对象 act_business_rule
  *
- * @author ruoyi
+ * @author gssong
  * @date 2021-12-16
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("act_full_class")
+@TableName("act_business_rule")
 @ApiModel("业务规则对象")
-public class ActFullClass extends BaseEntity {
+public class ActBusinessRule extends BaseEntity {
 
     private static final long serialVersionUID=1L;
 

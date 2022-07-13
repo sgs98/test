@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.ruoyi.workflow.mapper.ActFullClassMapper">
+<mapper namespace="com.ruoyi.workflow.mapper.ActBusinessRuleMapper">
 
-    <resultMap type="com.ruoyi.workflow.domain.ActFullClass" id="ActFullClassResult">
+    <resultMap type="com.ruoyi.workflow.domain.ActBusinessRule" id="ActFullClassResult">
         <result property="id" column="id"/>
         <result property="fullClass" column="full_class"/>
         <result property="method" column="method"/>

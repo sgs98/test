@@ -2,7 +2,7 @@ package com.ruoyi.workflow.domain.bo;
 
 import com.ruoyi.common.core.validate.AddGroup;
 import com.ruoyi.common.core.validate.EditGroup;
-import com.ruoyi.workflow.domain.ActFullClassParam;
+import com.ruoyi.workflow.domain.ActBusinessRuleParam;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -14,7 +14,7 @@ import java.util.List;
 import com.ruoyi.common.core.domain.BaseEntity;
 
 /**
- * 业务规则业务对象 act_full_class
+ * 业务规则业务对象 act_business_rule
  *
  * @author gssong
  * @date 2021-12-16
@@ -23,7 +23,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ApiModel("业务规则业务对象")
-public class ActFullClassBo extends BaseEntity {
+public class ActBusinessRuleBo extends BaseEntity {
 
     /**
      * id
@@ -56,6 +56,6 @@ public class ActFullClassBo extends BaseEntity {
      * 参数
      */
     @ApiModelProperty(value = "参数")
-    private List<ActFullClassParam> fullClassParam;
+    private List<ActBusinessRuleParam> businessRuleParams;
 
 }

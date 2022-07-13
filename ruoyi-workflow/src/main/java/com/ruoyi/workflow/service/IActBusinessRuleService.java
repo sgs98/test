@@ -1,8 +1,8 @@
 package com.ruoyi.workflow.service;
 
 import com.ruoyi.common.core.domain.PageQuery;
-import com.ruoyi.workflow.domain.vo.ActFullClassVo;
-import com.ruoyi.workflow.domain.bo.ActFullClassBo;
+import com.ruoyi.workflow.domain.vo.ActBusinessRuleVo;
+import com.ruoyi.workflow.domain.bo.ActBusinessRuleBo;
 import com.ruoyi.common.core.page.TableDataInfo;
 
 import java.util.Collection;
@@ -14,36 +14,36 @@ import java.util.List;
  * @author gssong
  * @date 2021-12-16
  */
-public interface IActFullClassService {
+public interface IActBusinessRuleService {
 	/**
 	 * 查询单个
 	 * @return
 	 */
-	ActFullClassVo queryById(Long id);
+	ActBusinessRuleVo queryById(Long id);
 
 	/**
 	 * 查询列表
 	 */
-    TableDataInfo<ActFullClassVo> queryPageList(ActFullClassBo bo,PageQuery pageQuery);
+    TableDataInfo<ActBusinessRuleVo> queryPageList(ActBusinessRuleBo bo, PageQuery pageQuery);
 
 	/**
 	 * 查询列表
 	 */
-	List<ActFullClassVo> queryList(ActFullClassBo bo);
+	List<ActBusinessRuleVo> queryList(ActBusinessRuleBo bo);
 
 	/**
 	 * 根据新增业务对象插入业务规则
 	 * @param bo 业务规则新增业务对象
 	 * @return
 	 */
-	Boolean insertByBo(ActFullClassBo bo);
+	Boolean insertByBo(ActBusinessRuleBo bo);
 
 	/**
 	 * 根据编辑业务对象修改业务规则
 	 * @param bo 业务规则编辑业务对象
 	 * @return
 	 */
-	Boolean updateByBo(ActFullClassBo bo);
+	Boolean updateByBo(ActBusinessRuleBo bo);
 
 	/**
 	 * 校验并删除数据

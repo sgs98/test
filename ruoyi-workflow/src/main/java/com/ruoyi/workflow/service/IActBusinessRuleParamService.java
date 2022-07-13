@@ -1,7 +1,7 @@
 package com.ruoyi.workflow.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.ruoyi.workflow.domain.ActFullClassParam;
+import com.ruoyi.workflow.domain.ActBusinessRuleParam;
 
 import java.util.List;
 
@@ -11,12 +11,13 @@ import java.util.List;
  * @author gssong
  * @date 2021-12-17
  */
-public interface IActFullClassParamService extends IService<ActFullClassParam> {
+public interface IActBusinessRuleParamService extends IService<ActBusinessRuleParam> {
 
     /**
      * 按照业务规则id查询
+     * @param businessRuleId
      * @return
      */
-    List<ActFullClassParam> queryListByFullClassId(Long fullClassId);
+    List<ActBusinessRuleParam> queryListByBusinessRuleId(Long businessRuleId);
 
 }

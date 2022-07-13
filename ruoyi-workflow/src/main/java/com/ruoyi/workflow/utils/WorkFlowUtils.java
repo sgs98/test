@@ -23,7 +23,7 @@ import com.ruoyi.workflow.flowable.cmd.DeleteTaskCmd;
 import com.ruoyi.workflow.flowable.cmd.ExpressCmd;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
-import com.ruoyi.workflow.domain.vo.ActFullClassVo;
+import com.ruoyi.workflow.domain.vo.ActBusinessRuleVo;
 import com.ruoyi.workflow.domain.vo.ProcessNode;
 import com.ruoyi.workflow.service.IActBusinessStatusService;
 import com.ruoyi.workflow.service.IActHiTaskInstService;
@@ -295,15 +295,15 @@ public class WorkFlowUtils {
      * @Date: 2022/4/11 13:35
      */
     @SneakyThrows
-    public Object assignList(ActFullClassVo actFullClass, String taskId) {
+    public Object assignList(ActBusinessRuleVo actFullClass, String taskId) {
         //方法名称
         String methodName = actFullClass.getMethod();
         //全类名
         String fullClass = actFullClass.getFullClass();
         List<Object> params = new ArrayList<>();
 
-        List<ActFullClassParam> fullClassParam = actFullClass.getFullClassParam();
-        for (ActFullClassParam param : fullClassParam) {
+        List<ActBusinessRuleParam> businessRuleParams = actFullClass.getBusinessRuleParams();
+        for (ActBusinessRuleParam param : businessRuleParams) {
             Map<String, VariableInstance> variables = taskService.getVariableInstances(taskId);
             if (variables.containsKey(param.getParam())) {
                 VariableInstance v = variables.get(param.getParam());

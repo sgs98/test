@@ -69,7 +69,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
     private final IActNodeAssigneeService iActNodeAssigneeService;
 
-    private final IActFullClassService iActFullClassService;
+    private final IActBusinessRuleService iActBusinessRuleService;
 
     private final IActHiTaskInstService iActHiTaskInstService;
 
@@ -340,8 +340,8 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     private void settingAssignee(Task task, ActNodeAssignee actNodeAssignee,Boolean multiple) {
         //按业务规则选人
         if(ActConstant.WORKFLOW_RULE.equals(actNodeAssignee.getChooseWay())){
-            ActFullClassVo actFullClassVo = iActFullClassService.queryById(actNodeAssignee.getFullClassId());
-            Object assignee = workFlowUtils.assignList(actFullClassVo, task.getId());
+            ActBusinessRuleVo actBusinessRuleVo = iActBusinessRuleService.queryById(actNodeAssignee.getFullClassId());
+            Object assignee = workFlowUtils.assignList(actBusinessRuleVo, task.getId());
             List<Long> userIds = new ArrayList<>();
             String[] splitUserIds = assignee.toString().split(",");
             for (String userId : splitUserIds) {
@@ -683,8 +683,8 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                         processNode.setMultipleColumn(nodeAssignee.getMultipleColumn());
                         //按照业务规则设置查询人员信息
                     } else if (ObjectUtil.isNotNull(nodeAssignee) && nodeAssignee.getFullClassId() != null) {
-                        ActFullClassVo actFullClassVo = iActFullClassService.queryById(nodeAssignee.getFullClassId());
-                        Object assignee = workFlowUtils.assignList(actFullClassVo, processNode.getTaskId());
+                        ActBusinessRuleVo actBusinessRuleVo = iActBusinessRuleService.queryById(nodeAssignee.getFullClassId());
+                        Object assignee = workFlowUtils.assignList(actBusinessRuleVo, processNode.getTaskId());
                         processNode.setChooseWay(nodeAssignee.getChooseWay());
                         processNode.setAssignee("");
                         processNode.setAssigneeId(assignee.toString());

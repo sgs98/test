@@ -13,16 +13,16 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 /**
- * 方法参数对象 act_full_class_param
+ * 方法参数对象 act_business_rule_param
  *
  * @author gssong
  * @date 2021-12-17
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("act_full_class_param")
+@TableName("act_business_rule_param")
 @ApiModel("方法参数对象")
-public class ActFullClassParam extends BaseEntity {
+public class ActBusinessRuleParam extends BaseEntity {
 
     private static final long serialVersionUID=1L;
 

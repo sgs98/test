@@ -2,9 +2,7 @@ package com.ruoyi.workflow.domain.vo;
 
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.ruoyi.common.annotation.ExcelDictFormat;
-import com.ruoyi.common.convert.ExcelDictConvert;
-import com.ruoyi.workflow.domain.ActFullClassParam;
+import com.ruoyi.workflow.domain.ActBusinessRuleParam;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -13,7 +11,7 @@ import java.util.List;
 
 
 /**
- * 业务规则视图对象 act_full_class
+ * 业务规则视图对象 act_business_rule
  *
  * @author gssong
  * @date 2021-12-16
@@ -21,7 +19,7 @@ import java.util.List;
 @Data
 @ApiModel("业务规则视图对象")
 @ExcelIgnoreUnannotated
-public class ActFullClassVo {
+public class ActBusinessRuleVo {
 
 	private static final long serialVersionUID = 1L;
 
@@ -85,7 +83,7 @@ public class ActFullClassVo {
      * 参数
      */
     @ApiModelProperty(value = "参数")
-    private List<ActFullClassParam> fullClassParam;
+    private List<ActBusinessRuleParam> businessRuleParams;
 
 
 }
