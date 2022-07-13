@@ -548,6 +548,22 @@ public class WorkFlowUtils {
                 list.add(newTask);
             }
         }
+        if(CollectionUtil.isNotEmpty(list) && CollectionUtil.isNotEmpty(parentTaskList)){
+            String processInstanceId = parentTaskList.get(0).getProcessInstanceId();
+            String processDefinitionId = parentTaskList.get(0).getProcessDefinitionId();
+            List<String> taskIds = list.stream().map(Task::getId).collect(Collectors.toList());
+            LambdaQueryWrapper<ActHiTaskInst> wrapper = new LambdaQueryWrapper<>();
+            wrapper.in(ActHiTaskInst::getId,taskIds);
+            List<ActHiTaskInst> taskInstList = iActHiTaskInstService.list(wrapper);
+            if(CollectionUtil.isNotEmpty(taskInstList)){
+                for (ActHiTaskInst hiTaskInst : taskInstList) {
+                    hiTaskInst.setProcDefId(processDefinitionId);
+                    hiTaskInst.setProcInstId(processInstanceId);
+                    hiTaskInst.setStartTime(new Date());
+                }
+                iActHiTaskInstService.updateBatchById(taskInstList);
+            }
+        }
         return list;
     }
 
