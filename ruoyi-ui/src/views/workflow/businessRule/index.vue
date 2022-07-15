@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="全类名" prop="fullClass">
+      <el-form-item label="bean名称" prop="beanName">
         <el-input
-          v-model="queryParams.fullClass"
-          placeholder="请输入全类名"
+          v-model="queryParams.businessRule"
+          placeholder="请输入bean名称"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
@@ -33,7 +33,7 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          v-hasPermi="['workflow:fullClass:add']"
+          v-hasPermi="['workflow:businessRule:add']"
         >新增</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -44,7 +44,7 @@
           size="mini"
           :disabled="single"
           @click="handleUpdate"
-          v-hasPermi="['workflow:fullClass:edit']"
+          v-hasPermi="['workflow:businessRule:edit']"
         >修改</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -55,7 +55,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['workflow:fullClass:remove']"
+          v-hasPermi="['workflow:businessRule:remove']"
         >删除</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -65,16 +65,16 @@
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['workflow:fullClass:export']"
+          v-hasPermi="['workflow:businessRule:export']"
         >导出</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="fullClassList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="businessRuleList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="id" align="center" prop="id" v-if="false"/>
-      <el-table-column label="全类名" align="center" prop="fullClass" />
+      <el-table-column label="bean名称" align="center" prop="beanName" />
       <el-table-column label="方法名" align="center" prop="method" />
       <el-table-column label="备注" align="center" prop="remark" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
@@ -96,14 +96,14 @@
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
-            v-hasPermi="['workflow:fullClass:edit']"
+            v-hasPermi="['workflow:businessRule:edit']"
           >修改</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['workflow:fullClass:remove']"
+            v-hasPermi="['workflow:businessRule:remove']"
           >删除</el-button>
         </template>
       </el-table-column>
@@ -120,8 +120,8 @@
     <!-- 添加或修改业务规则对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="700px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="全类名" prop="fullClass">
-          <el-input v-model="form.fullClass" placeholder="请输入全类名" />
+        <el-form-item label="bean名称" prop="beanName">
+          <el-input v-model="form.beanName" placeholder="请输入bean名称" />
         </el-form-item>
         <el-form-item label="方法名" prop="method">
           <el-input v-model="form.method" placeholder="请输入方法名" />
@@ -131,7 +131,7 @@
         </el-form-item>
       </el-form>
       <el-button type="primary" size="mini" @click="addParam">添加</el-button>
-      <el-table :data="fullClassParam">
+      <el-table :data="businessRuleParams">
         <el-table-column label="参数类型" align="center" prop="paramType" >
              <template slot-scope="scope">
                 <el-input v-model="scope.row.paramType"/>
@@ -167,10 +167,10 @@
 </template>
 
 <script>
-import { listFullClass, getFullClass, delFullClass, addFullClass, updateFullClass } from "@/api/workflow/fullClass";
+import { listBusinessRule, getBusinessRule, delBusinessRule, addbusinessRule, updateBusinessRule } from "@/api/workflow/businessRule";
 
 export default {
-  name: "FullClass",
+  name: "businessRule",
   data() {
     return {
       // 按钮loading
@@ -188,7 +188,7 @@ export default {
       // 总条数
       total: 0,
       // 业务规则表格数据
-      fullClassList: [],
+      businessRuleList: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -197,19 +197,19 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        fullClass: undefined,
+        businessRule: undefined,
         method: undefined,
       },
       // 表单参数
       form: {},
-      fullClassParam: [],
+      businessRuleParams: [],
       // 表单校验
       rules: {
         id: [
           { required: true, message: "id不能为空", trigger: "blur" }
         ],
-        fullClass: [
-          { required: true, message: "全类名不能为空", trigger: "blur" }
+        beanName: [
+          { required: true, message: "bean名称不能为空", trigger: "blur" }
         ],
         method: [
           { required: true, message: "方法名不能为空", trigger: "blur" }
@@ -236,8 +236,8 @@ export default {
     /** 查询业务规则列表 */
     getList() {
       this.loading = true;
-      listFullClass(this.queryParams).then(response => {
-        this.fullClassList = response.rows;
+      listBusinessRule(this.queryParams).then(response => {
+        this.businessRuleList = response.rows;
         this.total = response.total;
         this.loading = false;
       });
@@ -251,7 +251,7 @@ export default {
     reset() {
       this.form = {
         id: undefined,
-        fullClass: undefined,
+        beanName: undefined,
         method: undefined,
         remark: undefined,
         createTime: undefined,
@@ -259,7 +259,7 @@ export default {
         createBy: undefined,
         updateBy: undefined
       };
-      this.fullClassParam = []
+      this.businessRuleParams = []
       this.resetForm("form");
     },
     /** 搜索按钮操作 */
@@ -289,10 +289,10 @@ export default {
       this.loading = true;
       this.reset();
       const id = row.id || this.ids
-      getFullClass(id).then(response => {
+      getBusinessRule(id).then(response => {
         this.loading = false;
         this.form = response.data;
-        this.fullClassParam = response.data.fullClassParam;
+        this.businessRuleParams = response.data.businessRuleParams;
         this.open = true;
         this.title = "修改业务规则";
       });
@@ -301,10 +301,10 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
-          this.form.fullClassParam = this.fullClassParam
+          this.form.businessRuleParams = this.businessRuleParams
           this.buttonLoading = true;
           if (this.form.id != null) {
-            updateFullClass(this.form).then(response => {
+            updateBusinessRule(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
@@ -312,7 +312,7 @@ export default {
               this.buttonLoading = false;
             });
           } else {
-            addFullClass(this.form).then(response => {
+            addbusinessRule(this.form).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
@@ -328,7 +328,7 @@ export default {
       const ids = row.id || this.ids;
       this.$modal.confirm('是否确认删除业务规则编号为"' + ids + '"的数据项？').then(() => {
         this.loading = true;
-        return delFullClass(ids);
+        return delBusinessRule(ids);
       }).then(() => {
         this.loading = false;
         this.getList();
@@ -339,22 +339,25 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('workflow/fullClass/export', {
+      this.download('workflow/businessRule/export', {
         ...this.queryParams
-      }, `fullClass_${new Date().getTime()}.xlsx`)
+      }, `businessRule_${new Date().getTime()}.xlsx`)
     },
     // 添加参数
     addParam(){
+        if(this.businessRuleParams === undefined || this.businessRuleParams === null) {
+          this.businessRuleParams = []
+        }
         let param = {
             paramType:'',
             type:'',
             remark:''
         }
-        this.fullClassParam.push(param);
+        this.businessRuleParams.push(param);
     },
     // 删除参数
     deleteParam(index){
-       this.fullClassParam.splice(index,1)
+       this.businessRuleParams.splice(index,1)
     },
     // 不可小于0
     checkOrder(row){

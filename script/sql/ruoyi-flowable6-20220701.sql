@@ -59,7 +59,7 @@ CREATE TABLE `act_full_class`  (
 -- ----------------------------
 -- Records of act_full_class
 -- ----------------------------
-INSERT INTO `act_full_class` VALUES (1471758168763731969, 'com.ruoyi.workflow.rule.WorkflowRuleUserService', 'queryUserById', '1', '2021-12-17 16:24:26', '2022-03-25 13:24:14', 'admin', 'admin');
+INSERT INTO `act_full_class` VALUES (1471758168763731969, 'com.ruoyi.workflow.rule.WorkflowRuleUserComponent', 'queryUserById', '1', '2021-12-17 16:24:26', '2022-03-25 13:24:14', 'admin', 'admin');
 
 -- ----------------------------
 -- Table structure for act_full_class_param

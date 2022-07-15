@@ -486,6 +486,7 @@ export default {
             this.taskVariables = {
                 entity: entity,  // 变量
                 //assignee: '1', // key
+                userId: '1',
                 //assigneeList: assigneeList
             }
             this.$refs.verifyRef.visible = true

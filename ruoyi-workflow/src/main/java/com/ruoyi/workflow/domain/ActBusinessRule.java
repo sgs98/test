@@ -34,6 +34,12 @@ public class ActBusinessRule extends BaseEntity {
      * 方法名
      */
     private String method;
+
+    /**
+     * 参数
+     */
+    private String param;
+
     /**
      * 备注
      */

@@ -5,13 +5,15 @@ import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.exception.user.UserException;
 import com.ruoyi.common.utils.spring.SpringUtils;
 import com.ruoyi.system.mapper.SysUserMapper;
+import org.springframework.stereotype.Component;
 
 /**
  * 业务规则选人
  *
  * @author  gssong
  */
-public class WorkflowRuleUserService {
+@Component
+public class WorkflowRuleUserComponent {
 
     /**
      * 按用户id查询
@@ -23,6 +25,14 @@ public class WorkflowRuleUserService {
         SysUser sysUser = userMapper.selectUserById(userId);
         if(ObjectUtil.isNull(sysUser)){
           throw new UserException("未找到审批人员");
+        }
+        return sysUser.getUserId();
+    }
+    public Long queryUserByIds(){
+        SysUserMapper userMapper = SpringUtils.getBean(SysUserMapper.class);
+        SysUser sysUser = userMapper.selectUserById(1L);
+        if(ObjectUtil.isNull(sysUser)){
+            throw new UserException("未找到审批人员");
         }
         return sysUser.getUserId();
     }

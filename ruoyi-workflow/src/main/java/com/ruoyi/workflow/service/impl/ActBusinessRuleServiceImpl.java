@@ -69,7 +69,11 @@ public class ActBusinessRuleServiceImpl implements IActBusinessRuleService {
 
     @Override
     public Boolean insertByBo(ActBusinessRuleBo bo) {
+        List<ActBusinessRuleParam> businessRuleParams = bo.getBusinessRuleParams();
         ActBusinessRule add = BeanUtil.toBean(bo, ActBusinessRule.class);
+        if(CollectionUtil.isNotEmpty(businessRuleParams)){
+            add.setParam(JsonUtils.toJsonString(businessRuleParams));
+        }
         int flag = baseMapper.insert(add);
         if (flag>0) {
             bo.setId(add.getId());
@@ -80,7 +84,11 @@ public class ActBusinessRuleServiceImpl implements IActBusinessRuleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateByBo(ActBusinessRuleBo bo) {
+        List<ActBusinessRuleParam> businessRuleParams = bo.getBusinessRuleParams();
         ActBusinessRule update = BeanUtil.toBean(bo, ActBusinessRule.class);
+        if(CollectionUtil.isNotEmpty(businessRuleParams)){
+            update.setParam(JsonUtils.toJsonString(businessRuleParams));
+        }
         return baseMapper.updateById(update)>0;
     }
 

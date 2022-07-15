@@ -247,6 +247,8 @@ export default {
           if(this.nodeName){
             this.form.nodeName = this.nodeName
             this.form.index = this.index
+                      console.log(this.form)
+
             add(this.form).then(response => {
               this.form = response.data
               this.$modal.msgSuccess("保存成功")
@@ -380,7 +382,7 @@ export default {
         },
         //业务规则
         clickRule(rule){
-          this.$set(this.form,'assignee',rule.fullClass+"."+rule.method)
+          this.$set(this.form,'assignee',rule.beanName+"."+rule.method)
           this.$set(this.form,'fullClassId',rule.id)
           this.$refs.processRuleRef.visible = false
         }

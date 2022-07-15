@@ -1,44 +1,44 @@
 import request from '@/utils/request'
 
 // 查询业务规则列表
-export function listFullClass(query) {
+export function listBusinessRule(query) {
   return request({
-    url: '/workflow/fullClass/list',
+    url: '/workflow/businessRule/list',
     method: 'get',
     params: query
   })
 }
 
 // 查询业务规则详细
-export function getFullClass(id) {
+export function getBusinessRule(id) {
   return request({
-    url: '/workflow/fullClass/' + id,
+    url: '/workflow/businessRule/' + id,
     method: 'get'
   })
 }
 
 // 新增业务规则
-export function addFullClass(data) {
+export function addbusinessRule(data) {
   return request({
-    url: '/workflow/fullClass',
+    url: '/workflow/businessRule',
     method: 'post',
     data: data
   })
 }
 
 // 修改业务规则
-export function updateFullClass(data) {
+export function updateBusinessRule(data) {
   return request({
-    url: '/workflow/fullClass',
+    url: '/workflow/businessRule',
     method: 'put',
     data: data
   })
 }
 
 // 删除业务规则
-export function delFullClass(id) {
+export function delBusinessRule(id) {
   return request({
-    url: '/workflow/fullClass/' + id,
+    url: '/workflow/businessRule/' + id,
     method: 'delete'
   })
 }

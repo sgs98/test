@@ -60,7 +60,7 @@ public class ActNodeAssigneeServiceImpl extends ServiceImpl<ActNodeAssigneeMappe
             throw new ServiceException("请选择选人方式");
         }
 
-        if(ActConstant.WORKFLOW_RULE .equals(actNodeAssignee.getChooseWay())){
+        if(!ActConstant.WORKFLOW_RULE .equals(actNodeAssignee.getChooseWay())){
             actNodeAssignee.setFullClassId(null);
         }
 
