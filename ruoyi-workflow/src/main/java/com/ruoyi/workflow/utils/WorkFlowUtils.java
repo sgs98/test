@@ -28,6 +28,7 @@ import com.ruoyi.workflow.domain.vo.ProcessNode;
 import com.ruoyi.workflow.service.IActBusinessStatusService;
 import com.ruoyi.workflow.service.IActHiTaskInstService;
 import com.ruoyi.workflow.service.ISysMessageService;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.*;
@@ -41,7 +42,6 @@ import org.flowable.identitylink.api.IdentityLink;
 import org.flowable.task.api.Task;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.flowable.variable.api.persistence.entity.VariableInstance;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
@@ -60,6 +60,7 @@ import static com.ruoyi.workflow.common.constant.ActConstant.*;
  * @created: 2021/10/03 19:31
  */
 @Component
+@RequiredArgsConstructor
 public class WorkFlowUtils {
 
     private final IActBusinessStatusService iActBusinessStatusService;
@@ -81,20 +82,6 @@ public class WorkFlowUtils {
     private final ISysMessageService iSysMessageService;
 
     private final IActHiTaskInstService iActHiTaskInstService;
-
-    public WorkFlowUtils(IActBusinessStatusService iActBusinessStatusService, TaskService taskService, SysUserMapper sysUserMapper, SysRoleMapper sysRoleMapper, SysUserRoleMapper userRoleMapper, ManagementService managementService, HistoryService historyService, RepositoryService repositoryService, ISysMessageService iSysMessageService, IActHiTaskInstService iActHiTaskInstService) {
-        this.iActBusinessStatusService = iActBusinessStatusService;
-        this.taskService = taskService;
-        this.sysUserMapper = sysUserMapper;
-        this.sysRoleMapper = sysRoleMapper;
-        this.userRoleMapper = userRoleMapper;
-        this.managementService = managementService;
-        this.historyService = historyService;
-        this.repositoryService = repositoryService;
-        this.iSysMessageService = iSysMessageService;
-        this.iActHiTaskInstService = iActHiTaskInstService;
-    }
-
 
     /**
      * @Description: bpmnModel转为xml
