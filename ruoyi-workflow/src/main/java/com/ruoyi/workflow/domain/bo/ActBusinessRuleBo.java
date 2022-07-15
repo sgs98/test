@@ -35,9 +35,9 @@ public class ActBusinessRuleBo extends BaseEntity {
     /**
      * 全类名
      */
-    @ApiModelProperty(value = "全类名", required = true)
-    @NotBlank(message = "全类名不能为空", groups = { AddGroup.class, EditGroup.class })
-    private String fullClass;
+    @ApiModelProperty(value = "bean名称", required = true)
+    @NotBlank(message = "bean名称为空", groups = { AddGroup.class, EditGroup.class })
+    private String beanName;
 
     /**
      * 方法名
@@ -45,6 +45,12 @@ public class ActBusinessRuleBo extends BaseEntity {
     @ApiModelProperty(value = "方法名", required = true)
     @NotBlank(message = "方法名不能为空", groups = { AddGroup.class, EditGroup.class })
     private String method;
+
+    /**
+     * 参数
+     */
+    @ApiModelProperty(value = "参数", required = true)
+    private String param;
 
     /**
      * 备注

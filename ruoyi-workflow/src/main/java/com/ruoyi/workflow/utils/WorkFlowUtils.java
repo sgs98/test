@@ -295,14 +295,16 @@ public class WorkFlowUtils {
      * @Date: 2022/4/11 13:35
      */
     @SneakyThrows
-    public Object assignList(ActBusinessRuleVo actFullClass, String taskId) {
+    public Object assignList(ActBusinessRuleVo businessRule, String taskId) {
         //方法名称
-        String methodName = actFullClass.getMethod();
+        String methodName = businessRule.getMethod();
         //全类名
-        String fullClass = actFullClass.getFullClass();
+        String beanName = businessRule.getBeanName();
+        List<ActBusinessRuleParam> businessRuleParams = null;
         List<Object> params = new ArrayList<>();
-
-        List<ActBusinessRuleParam> businessRuleParams = actFullClass.getBusinessRuleParams();
+        if(StringUtils.isNotBlank(businessRule.getParam())){
+            businessRuleParams = JsonUtils.parseArray(businessRule.getParam(),ActBusinessRuleParam.class);
+        }
         for (ActBusinessRuleParam param : businessRuleParams) {
             Map<String, VariableInstance> variables = taskService.getVariableInstances(taskId);
             if (variables.containsKey(param.getParam())) {
@@ -327,18 +329,11 @@ public class WorkFlowUtils {
                 }
             }
         }
-        Class<?> aClass = Class.forName(fullClass);
-        Method[] declaredMethods = aClass.getDeclaredMethods();
-        for (Method declaredMethod : declaredMethods) {
-            if (methodName.equals(declaredMethod.getName())) {
-                Class<?>[] parameterTypes = declaredMethod.getParameterTypes();
-                Method method = aClass.getDeclaredMethod(declaredMethod.getName(), parameterTypes);
-                Object newInstance = method.getDeclaringClass().newInstance();
-                Object invoke = method.invoke(newInstance, params.toArray());
-                return invoke;
-            }
+        Object obj = springInvokeMethod(beanName, methodName, params);
+        if(ObjectUtil.isEmpty(obj)){
+            throw new ServiceException("未找到审批人员");
         }
-        throw new ServiceException("未找到审批人员");
+        return obj;
     }
 
     /**
@@ -687,15 +682,21 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/7/12 21:27
      */
-    public void complateTask(String processInstanceId,List<ActNodeAssignee> actNodeAssignees){
+    public void completeTask(String processInstanceId,List<ActNodeAssignee> actNodeAssignees){
         List<Task> list = taskService.createTaskQuery().processInstanceId(processInstanceId)
             .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).list();
         if(CollectionUtil.isNotEmpty(list)){
             for (Task task : list) {
-                taskService.setAssignee(task.getId(),LoginHelper.getUserId().toString());
-                taskService.complete(task.getId());
+                ActNodeAssignee actNodeAssignee = actNodeAssignees.stream().filter(e -> e.getNodeId().equals(task.getTaskDefinitionKey())).findFirst().orElse(null);
+                if(ObjectUtil.isEmpty(actNodeAssignee)){
+                    throw new ServiceException("请检查【" + task.getName() + "】节点配置");
+                }
+                if(actNodeAssignee.getAutoComplete()){
+                    taskService.setAssignee(task.getId(),LoginHelper.getUserId().toString());
+                    taskService.complete(task.getId());
+                }
             }
-            complateTask(processInstanceId,actNodeAssignees);
+            completeTask(processInstanceId,actNodeAssignees);
         }
     }
 }

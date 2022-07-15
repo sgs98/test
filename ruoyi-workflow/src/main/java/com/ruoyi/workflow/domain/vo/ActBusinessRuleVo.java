@@ -31,11 +31,11 @@ public class ActBusinessRuleVo {
     private Long id;
 
     /**
-     * 全类名
+     * bean名称
      */
-	@ExcelProperty(value = "全类名")
-	@ApiModelProperty("全类名")
-	private String fullClass;
+	@ExcelProperty(value = "bean名称")
+	@ApiModelProperty("bean名称")
+	private String beanName;
 
     /**
      * 方法名
@@ -43,6 +43,13 @@ public class ActBusinessRuleVo {
 	@ExcelProperty(value = "方法名")
 	@ApiModelProperty("方法名")
 	private String method;
+
+    /**
+     * 参数
+     */
+    @ExcelProperty(value = "参数")
+    @ApiModelProperty(value = "参数")
+    private String param;
 
     /**
      * 备注

@@ -27,9 +27,9 @@ public class ActBusinessRule extends BaseEntity {
     @TableId(value = "id")
     private Long id;
     /**
-     * 全类名
+     * bean名称
      */
-    private String fullClass;
+    private String beanName;
     /**
      * 方法名
      */

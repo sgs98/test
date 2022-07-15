@@ -6,8 +6,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <resultMap type="com.ruoyi.workflow.domain.ActBusinessRule" id="ActFullClassResult">
         <result property="id" column="id"/>
-        <result property="fullClass" column="full_class"/>
+        <result property="beanName" column="bean_name"/>
         <result property="method" column="method"/>
+        <result property="param" column="param"/>
         <result property="remark" column="remark"/>
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>

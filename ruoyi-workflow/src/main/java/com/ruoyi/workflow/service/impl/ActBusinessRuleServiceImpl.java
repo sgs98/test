@@ -6,11 +6,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.common.core.domain.PageQuery;
 import com.ruoyi.common.core.validate.AddGroup;
 import com.ruoyi.common.core.validate.EditGroup;
+import com.ruoyi.common.utils.JsonUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.utils.ValidatorUtils;
 import com.ruoyi.workflow.domain.ActBusinessRuleParam;
-import com.ruoyi.workflow.service.IActBusinessRuleParamService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,14 +38,14 @@ import java.util.Collection;
 public class ActBusinessRuleServiceImpl implements IActBusinessRuleService {
 
     private final ActBusinessRuleMapper baseMapper;
-    @Autowired
-    private IActBusinessRuleParamService iActBusinessRuleParamService;
 
     @Override
     public ActBusinessRuleVo queryById(Long id){
-        List<ActBusinessRuleParam> list = iActBusinessRuleParamService.queryListByBusinessRuleId(id);
         ActBusinessRuleVo vo = baseMapper.selectVoById(id);
-        vo.setBusinessRuleParams(list);
+        if(StringUtils.isNotBlank(vo.getParam())){
+            List<ActBusinessRuleParam> params = JsonUtils.parseArray(vo.getParam(), ActBusinessRuleParam.class);
+            vo.setBusinessRuleParams(params);
+        }
         return vo;
     }
 
@@ -61,9 +61,8 @@ public class ActBusinessRuleServiceImpl implements IActBusinessRuleService {
     }
 
     private LambdaQueryWrapper<ActBusinessRule> buildQueryWrapper(ActBusinessRuleBo bo) {
-        Map<String, Object> params = bo.getParams();
         LambdaQueryWrapper<ActBusinessRule> lqw = Wrappers.lambdaQuery();
-        lqw.like(StringUtils.isNotBlank(bo.getFullClass()), ActBusinessRule::getFullClass, bo.getFullClass());
+        lqw.like(StringUtils.isNotBlank(bo.getBeanName()), ActBusinessRule::getBeanName, bo.getBeanName());
         lqw.like(StringUtils.isNotBlank(bo.getMethod()), ActBusinessRule::getMethod, bo.getMethod());
         return lqw;
     }
@@ -71,18 +70,9 @@ public class ActBusinessRuleServiceImpl implements IActBusinessRuleService {
     @Override
     public Boolean insertByBo(ActBusinessRuleBo bo) {
         ActBusinessRule add = BeanUtil.toBean(bo, ActBusinessRule.class);
-        validEntityBeforeSave(add);
         int flag = baseMapper.insert(add);
         if (flag>0) {
             bo.setId(add.getId());
-        }
-        List<ActBusinessRuleParam> actBusinessRuleParams = bo.getBusinessRuleParams();
-        if(CollectionUtil.isNotEmpty(actBusinessRuleParams)){
-            actBusinessRuleParams.forEach(e->{
-                e.setFullClassId(add.getId());
-                ValidatorUtils.validate(e, AddGroup.class);
-            });
-            iActBusinessRuleParamService.saveBatch(actBusinessRuleParams);
         }
         return flag>0;
     }
@@ -91,33 +81,11 @@ public class ActBusinessRuleServiceImpl implements IActBusinessRuleService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateByBo(ActBusinessRuleBo bo) {
         ActBusinessRule update = BeanUtil.toBean(bo, ActBusinessRule.class);
-        validEntityBeforeSave(update);
-        List<ActBusinessRuleParam> actBusinessRuleParams = bo.getBusinessRuleParams();
-        iActBusinessRuleParamService.remove(new LambdaQueryWrapper<ActBusinessRuleParam>().eq(ActBusinessRuleParam::getFullClassId,update.getId()));
-        if(CollectionUtil.isNotEmpty(actBusinessRuleParams)){
-            actBusinessRuleParams.forEach(e->{
-                e.setFullClassId(update.getId());
-                ValidatorUtils.validate(e, EditGroup.class);
-            });
-            iActBusinessRuleParamService.saveBatch(actBusinessRuleParams);
-        }
         return baseMapper.updateById(update)>0;
-    }
-
-    /**
-     * 保存前的数据校验
-     *
-     * @param entity 实体类数据
-     */
-    private void validEntityBeforeSave(ActBusinessRule entity){
-        //TODO 做一些数据校验,如唯一约束
     }
 
     @Override
     public Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid) {
-        if(isValid){
-            iActBusinessRuleParamService.remove(new LambdaQueryWrapper<ActBusinessRuleParam>().in(ActBusinessRuleParam::getFullClassId,ids));
-        }
         return baseMapper.deleteBatchIds(ids)>0;
     }
 }

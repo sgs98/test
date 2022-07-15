@@ -130,6 +130,11 @@ public class ActNodeAssignee extends BaseEntity{
     private String taskListener;
 
     /**
+     * 自动审批,当前节点自动办理,下一节点不可弹窗选人
+     */
+    private Boolean autoComplete;
+
+    /**
      * 任务监听
      */
     @TableField(exist = false)
