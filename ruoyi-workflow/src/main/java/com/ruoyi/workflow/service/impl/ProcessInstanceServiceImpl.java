@@ -480,8 +480,8 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
             }
             //业务状态
             ActBusinessStatus businessKey = iActBusinessStatusService.getInfoByBusinessKey(hpi.getBusinessKey());
-            if (ObjectUtil.isNotNull(businessKey)) {
-                processInstFinishVo.setStatus(Objects.requireNonNull(BusinessStatusEnum.getEumByStatus(businessKey.getStatus())).getDesc());
+            if (ObjectUtil.isNotNull(businessKey) && ObjectUtil.isNotEmpty(BusinessStatusEnum.getEumByStatus(businessKey.getStatus()))) {
+                processInstFinishVo.setStatus(BusinessStatusEnum.getEumByStatus(businessKey.getStatus()).getDesc());
             }
             processInstFinishVoList.add(processInstFinishVo);
         }

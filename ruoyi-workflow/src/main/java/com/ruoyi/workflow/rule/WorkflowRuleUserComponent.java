@@ -8,7 +8,7 @@ import com.ruoyi.system.mapper.SysUserMapper;
 import org.springframework.stereotype.Component;
 
 /**
- * 业务规则选人
+ * 业务规则选人 返回人员id，多个id用英文逗号隔开
  *
  * @author  gssong
  */

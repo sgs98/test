@@ -70,7 +70,7 @@ public class ProcessNode  implements Serializable {
      * 业务规则id
      */
     @ApiModelProperty("业务规则id")
-    private Long fullClassId;
+    private Long businessRuleId;
 
     /**
      * 是否弹窗选人

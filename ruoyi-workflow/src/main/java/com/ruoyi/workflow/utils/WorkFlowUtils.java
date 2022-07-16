@@ -3,6 +3,7 @@ package com.ruoyi.workflow.utils;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ruoyi.common.core.domain.entity.SysRole;
@@ -276,14 +277,15 @@ public class WorkFlowUtils {
 
     /**
      * @Description: 查询业务规则中的人员id
-     * @param: actFullClass 业务规则对象
+     * @param: businessRule 业务规则对象
      * @param: taskId 任务id
-     * @return: 查询业务规则
-     * @return: java.lang.Object
+     * @param: taskName 任务名称
+     * @return: 执行业务规则查询人员
+     * @return: java.util.List<java.lang.String>
      * @author: gssong
      * @Date: 2022/4/11 13:35
      */
-    public Object assignList(ActBusinessRuleVo businessRule, String taskId) {
+    public List<String> ruleAssignList(ActBusinessRuleVo businessRule, String taskId, String taskName) {
         try {
             //返回值
             Object obj;
@@ -291,12 +293,11 @@ public class WorkFlowUtils {
             String methodName = businessRule.getMethod();
             //全类名
             Object beanName = SpringUtils.getBean(businessRule.getBeanName());
-            List<ActBusinessRuleParam> businessRuleParams;
             if (StringUtils.isNotBlank(businessRule.getParam())) {
-                businessRuleParams = JsonUtils.parseArray(businessRule.getParam(), ActBusinessRuleParam.class);
+                List<ActBusinessRuleParam> businessRuleParams = JsonUtils.parseArray(businessRule.getParam(), ActBusinessRuleParam.class);
                 Class[] paramClass = new Class[businessRuleParams.size()];
                 List<Object> params = new ArrayList<>();
-                for (int i = 0; i < Objects.requireNonNull(businessRuleParams).size(); i++) {
+                for (int i = 0; i < businessRuleParams.size(); i++) {
                     Map<String, VariableInstance> variables = taskService.getVariableInstances(taskId);
                     if (variables.containsKey(businessRuleParams.get(i).getParam())) {
                         VariableInstance v = variables.get(businessRuleParams.get(i).getParam());
@@ -341,7 +342,10 @@ public class WorkFlowUtils {
                 assert method != null;
                 obj = ReflectionUtils.invokeMethod(method, beanName);
             }
-            return obj;
+            if (obj == null) {
+                throw new ServiceException("【" + taskName + "】任务环节未配置审批人");
+            }
+            return Arrays.asList(obj.toString().split(","));
         } catch (Exception e) {
             throw new ServiceException(e.getMessage());
         }
@@ -433,14 +437,14 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/4/11 13:36
      */
-    public List<Long> assignees(String params, String chooseWay, String nodeName) {
+    public List<Long> getAssigneeIdList(String params, String chooseWay, String nodeName) {
         List<Long> paramList = new ArrayList<>();
         String[] split = params.split(",");
         for (String userId : split) {
             paramList.add(Long.valueOf(userId));
         }
         List<SysUser> list = null;
-        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<SysUser> queryWrapper = Wrappers.lambdaQuery();
         // 按用户id查询
         if (WORKFLOW_PERSON.equals(chooseWay)) {
             queryWrapper.in(SysUser::getUserId, paramList);
