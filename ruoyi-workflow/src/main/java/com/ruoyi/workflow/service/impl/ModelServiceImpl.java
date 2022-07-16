@@ -35,6 +35,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import java.io.*;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -358,7 +359,7 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
         Model model = repositoryService.createModelQuery().modelKey(pd.getKey()).singleResult();
             try {
                 XMLInputFactory xif = XMLInputFactory.newInstance();
-                InputStreamReader in = new InputStreamReader(bpmnStream, ActConstant.UTF_8);
+                InputStreamReader in = new InputStreamReader(bpmnStream, StandardCharsets.UTF_8);
                 XMLStreamReader xtr = xif.createXMLStreamReader(in);
                 BpmnModel bpmnModel = new BpmnXMLConverter().convertToBpmnModel(xtr);
                 BpmnXMLConverter converter = new BpmnXMLConverter();
@@ -369,7 +370,6 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
                     if(inputStream!=null){
                         repositoryService.addModelEditorSourceExtra(model.getId(),IOUtils.toByteArray(inputStream));
                     }
-                    return true;
                 }else{
                     Model modelData = repositoryService.newModel();
                     modelData.setKey(pd.getKey());
@@ -386,8 +386,8 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
                     if(inputStream!=null){
                         repositoryService.addModelEditorSourceExtra(modelData.getId(),IOUtils.toByteArray(inputStream));
                     }
-                    return true;
                 }
+                return true;
 
             } catch (Exception e) {
                 e.printStackTrace();

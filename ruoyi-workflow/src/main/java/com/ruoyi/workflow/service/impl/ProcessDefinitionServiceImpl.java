@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -84,7 +85,7 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
             // 部署时间
             Deployment deployment = deploymentList.stream().filter(e -> e.getId().equals(processDefinition.getDeploymentId())).findFirst().orElse(null);
             ProcessDefinitionVo processDefinitionVo = BeanUtil.toBean(processDefinition, ProcessDefinitionVo.class);
-            if(ObjectUtil.isNotEmpty(deployment)&&deployment.getDeploymentTime()!=null){
+            if (ObjectUtil.isNotEmpty(deployment) && deployment.getDeploymentTime() != null) {
                 processDefinitionVo.setDeploymentTime(deployment.getDeploymentTime());
             }
             processDefinitionVoList.add(processDefinitionVo);
@@ -135,16 +136,16 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R<Void> deleteDeployment(String deploymentId,String definitionId) {
+    public R<Void> deleteDeployment(String deploymentId, String definitionId) {
         try {
             List<HistoricTaskInstance> taskInstanceList = historyService.createHistoricTaskInstanceQuery().processDefinitionId(definitionId).list();
-            if(CollectionUtil.isNotEmpty(taskInstanceList)){
+            if (CollectionUtil.isNotEmpty(taskInstanceList)) {
                 return R.fail("当前流程定义已被使用不可删除！");
             }
             repositoryService.deleteDeployment(deploymentId);
             iActNodeAssigneeService.delByDefinitionId(definitionId);
             return R.ok();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return R.fail(e.getMessage());
         }
@@ -164,6 +165,7 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
             // 文件名+后缀名
             String filename = file.getOriginalFilename();
             // 文件后缀名
+            assert filename != null;
             String suffix = filename.substring(filename.lastIndexOf(".") + 1).toUpperCase();
             InputStream inputStream = file.getInputStream();
             DeploymentBuilder deployment = repositoryService.createDeployment();
@@ -183,7 +185,7 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
             return R.ok();
         } catch (IOException e) {
             e.printStackTrace();
-            throw new ServiceException("部署失败"+e.getMessage());
+            throw new ServiceException("部署失败" + e.getMessage());
         }
     }
 
@@ -237,7 +239,7 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
         InputStream inputStream = null;
         try {
             inputStream = repositoryService.getResourceAsStream(processDefinition.getDeploymentId(), processDefinition.getResourceName());
-            xml.append(IOUtils.toString(inputStream,ActConstant.UTF_8));
+            xml.append(IOUtils.toString(inputStream, StandardCharsets.UTF_8));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -253,13 +255,13 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean updateProcDefState(Map<String,Object> data) {
+    public Boolean updateProcDefState(Map<String, Object> data) {
         try {
             String definitionId = data.get("definitionId").toString();
             String description = data.get("description").toString();
             ProcessDefinitionMapper processDefinitionMapper = sqlSessionTemplate.getMapper(ProcessDefinitionMapper.class);
             //更新原因
-            processDefinitionMapper.updateDescriptionById(definitionId,description);
+            processDefinitionMapper.updateDescriptionById(definitionId, description);
             ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
                 .processDefinitionId(definitionId).singleResult();
             if (processDefinition.isSuspended()) {
@@ -267,14 +269,13 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
                 // 参数说明：参数1：流程定义id,参数2：是否激活（true是否级联对应流程实例，激活了则对应流程实例都可以审批），
                 // 参数3：什么时候激活，如果为null则立即激活，如果为具体时间则到达此时间后激活
                 repositoryService.activateProcessDefinitionById(definitionId, true, null);
-                return true;
             } else {
                 // 将当前为激活状态更新为挂起状态
                 // 参数说明：参数1：流程定义id,参数2：是否挂起（true是否级联对应流程实例，挂起了则对应流程实例都不可以审批），
                 // 参数3：什么时候挂起，如果为null则立即挂起，如果为具体时间则到达此时间后挂起
                 repositoryService.suspendProcessDefinitionById(definitionId, true, null);
-                return true;
             }
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
             log.error("操作失败：{}", e.getMessage());
@@ -285,12 +286,12 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
     /**
      * @Description: 查询流程环节
      * @param: processDefinitionId
-     * @return: com.ruoyi.common.core.domain.R<java.util.List<com.ruoyi.workflow.domain.vo.ActProcessNodeVo>>
+     * @return: com.ruoyi.common.core.domain.R<java.util.List < com.ruoyi.workflow.domain.vo.ActProcessNodeVo>>
      * @author: gssong
      * @Date: 2021/11/19
      */
     @Override
-	@Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public R<List<ActProcessNodeVo>> setting(String processDefinitionId) {
         BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
         List<Process> processes = bpmnModel.getProcesses();
@@ -299,11 +300,11 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
         //获取开始节点后第一个节点
         ActProcessNodeVo firstNode = new ActProcessNodeVo();
         for (FlowElement element : elements) {
-            if(element instanceof StartEvent){
+            if (element instanceof StartEvent) {
                 List<SequenceFlow> outgoingFlows = ((StartEvent) element).getOutgoingFlows();
                 for (SequenceFlow outgoingFlow : outgoingFlows) {
                     FlowElement flowElement = outgoingFlow.getTargetFlowElement();
-                    if(flowElement instanceof UserTask){
+                    if (flowElement instanceof UserTask) {
                         firstNode.setNodeId(flowElement.getId());
                         firstNode.setNodeName(flowElement.getName());
                         firstNode.setProcessDefinitionId(processDefinitionId);
@@ -321,10 +322,10 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
                 actProcessNodeVo.setProcessDefinitionId(processDefinitionId);
                 actProcessNodeVo.setIndex(1);
                 processNodeVoList.add(actProcessNodeVo);
-            }else if(element instanceof SubProcess){
+            } else if (element instanceof SubProcess) {
                 Collection<FlowElement> flowElements = ((SubProcess) element).getFlowElements();
                 for (FlowElement flowElement : flowElements) {
-                    ActProcessNodeVo actProcessNode= new ActProcessNodeVo();
+                    ActProcessNodeVo actProcessNode = new ActProcessNodeVo();
                     if (flowElement instanceof UserTask && !firstNode.getNodeId().equals(flowElement.getId())) {
                         actProcessNode.setNodeId(flowElement.getId());
                         actProcessNode.setNodeName(flowElement.getName());
@@ -344,7 +345,7 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
         actNodeAssignee.setIsBack(true);
         actNodeAssignee.setMultiple(false);
         actNodeAssignee.setIndex(0);
-        iActNodeAssigneeService.delByDefinitionIdAndNodeId(actProcessNodeVo.getProcessDefinitionId(),actProcessNodeVo.getNodeId());
+        iActNodeAssigneeService.delByDefinitionIdAndNodeId(actProcessNodeVo.getProcessDefinitionId(), actProcessNodeVo.getNodeId());
         iActNodeAssigneeService.add(actNodeAssignee);
         return R.ok(processNodeVoList);
 

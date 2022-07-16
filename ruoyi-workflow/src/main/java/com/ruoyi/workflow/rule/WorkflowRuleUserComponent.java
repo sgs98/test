@@ -28,12 +28,4 @@ public class WorkflowRuleUserComponent {
         }
         return sysUser.getUserId();
     }
-    public Long queryUserByIds(){
-        SysUserMapper userMapper = SpringUtils.getBean(SysUserMapper.class);
-        SysUser sysUser = userMapper.selectUserById(1L);
-        if(ObjectUtil.isNull(sysUser)){
-            throw new UserException("未找到审批人员");
-        }
-        return sysUser.getUserId();
-    }
 }

@@ -862,9 +862,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 List<Task> taskCollect = newTaskList.stream().filter(e -> e.getTaskDefinitionKey().equals(backProcessBo.getTargetActivityId())).collect(Collectors.toList());
                 if (taskCollect.size() > 1) {
                     taskCollect.remove(0);
-                    taskCollect.forEach(e -> {
-                        workFlowUtils.deleteRuntimeTask(e);
-                    });
+                    taskCollect.forEach(workFlowUtils::deleteRuntimeTask);
                 }
             }
             if (ObjectUtil.isNotEmpty(actNodeAssignee) && !actNodeAssignee.getMultiple()) {
@@ -961,8 +959,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
      */
     @Override
     public List<ActTaskNode> getBackNodes(String processInstId) {
-        List<ActTaskNode> list = iActTaskNodeService.getListByInstanceId(processInstId).stream().filter(e -> e.getIsBack()).collect(Collectors.toList());
-        return list;
+        return iActTaskNodeService.getListByInstanceId(processInstId).stream().filter(ActTaskNode::getIsBack).collect(Collectors.toList());
     }
 
     /**

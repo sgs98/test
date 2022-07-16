@@ -449,9 +449,9 @@ public class WorkFlowUtils {
         } else if (WORKFLOW_ROLE.equals(chooseWay)) {
             List<SysRole> sysRoles = sysRoleMapper.selectList(new LambdaQueryWrapper<SysRole>().in(SysRole::getRoleId, paramList));
             if (CollectionUtil.isNotEmpty(sysRoles)) {
-                List<Long> collectRoleId = sysRoles.stream().map(e -> e.getRoleId()).collect(Collectors.toList());
+                List<Long> collectRoleId = sysRoles.stream().map(SysRole::getRoleId).collect(Collectors.toList());
                 List<SysUserRole> sysUserRoles = userRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>().in(SysUserRole::getRoleId, collectRoleId));
-                queryWrapper.in(SysUser::getUserId, sysUserRoles.stream().map(e -> e.getUserId()).collect(Collectors.toList()));
+                queryWrapper.in(SysUser::getUserId, sysUserRoles.stream().map(SysUserRole::getUserId).collect(Collectors.toList()));
                 list = sysUserMapper.selectList(queryWrapper);
             }
             //按部门id查询用户
@@ -462,7 +462,7 @@ public class WorkFlowUtils {
         if (CollectionUtil.isEmpty(list)) {
             throw new ServiceException(nodeName + "任务环节未配置审批人");
         }
-        List<Long> userIds = list.stream().map(e -> e.getUserId()).collect(Collectors.toList());
+        List<Long> userIds = list.stream().map(SysUser::getUserId).collect(Collectors.toList());
         //校验人员
         List<Long> missIds = paramList.stream().filter(id -> !userIds.contains(id)).collect(Collectors.toList());
         if (CollectionUtil.isNotEmpty(missIds)) {
@@ -538,7 +538,7 @@ public class WorkFlowUtils {
     public List<Task> createSubTask(List<Task> parentTaskList, String assignees) {
         List<Task> list = new ArrayList<>();
         for (Task parentTask : parentTaskList) {
-            List<String> userIds = Arrays.asList(assignees.split(","));
+            String[] userIds = assignees.split(",");
             for (String userId : userIds) {
                 TaskEntity newTask = (TaskEntity) taskService.newTask();
                 newTask.setParentTaskId(parentTask.getId());

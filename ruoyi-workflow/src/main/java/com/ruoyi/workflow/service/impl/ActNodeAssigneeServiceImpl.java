@@ -3,6 +3,7 @@ package com.ruoyi.workflow.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.helper.LoginHelper;
@@ -99,11 +100,10 @@ public class ActNodeAssigneeServiceImpl extends ServiceImpl<ActNodeAssigneeMappe
      */
     @Override
     public ActNodeAssignee getInfo(String processDefinitionId, String nodeId) {
-        LambdaQueryWrapper<ActNodeAssignee> wrapper = new LambdaQueryWrapper();
+        LambdaQueryWrapper<ActNodeAssignee> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(ActNodeAssignee::getProcessDefinitionId, processDefinitionId);
         wrapper.eq(ActNodeAssignee::getNodeId, nodeId);
-        ActNodeAssignee nodeAssignee = baseMapper.selectOne(wrapper);
-        return nodeAssignee;
+        return baseMapper.selectOne(wrapper);
     }
 
     /**
@@ -115,7 +115,7 @@ public class ActNodeAssigneeServiceImpl extends ServiceImpl<ActNodeAssigneeMappe
      */
     @Override
     public ActNodeAssignee getInfoSetting(String processDefinitionId, String nodeId) {
-        LambdaQueryWrapper<ActNodeAssignee> wrapper = new LambdaQueryWrapper();
+        LambdaQueryWrapper<ActNodeAssignee> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(ActNodeAssignee::getProcessDefinitionId, processDefinitionId);
         wrapper.eq(ActNodeAssignee::getNodeId, nodeId);
         ActNodeAssignee nodeAssignee = baseMapper.selectOne(wrapper);
@@ -165,7 +165,7 @@ public class ActNodeAssigneeServiceImpl extends ServiceImpl<ActNodeAssigneeMappe
      */
     @Override
     public List<ActNodeAssignee> getInfoByProcessDefinitionId(String processDefinitionId) {
-        LambdaQueryWrapper<ActNodeAssignee> wrapper = new LambdaQueryWrapper();
+        LambdaQueryWrapper<ActNodeAssignee> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(ActNodeAssignee::getProcessDefinitionId, processDefinitionId);
         return this.baseMapper.selectList(wrapper);
     }
@@ -180,7 +180,7 @@ public class ActNodeAssigneeServiceImpl extends ServiceImpl<ActNodeAssigneeMappe
     @Override
     public Boolean del(String id) {
         int i = baseMapper.deleteById(id);
-        return i == 1 ? true : false;
+        return i == 1;
     }
 
     /**
