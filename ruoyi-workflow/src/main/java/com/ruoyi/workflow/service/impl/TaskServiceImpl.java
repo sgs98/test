@@ -517,21 +517,22 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         FlowElement flowElement = bpmnModel.getFlowElement(task.getTaskDefinitionKey());
         //全部节点
         Collection<FlowElement> flowElements = bpmnModel.getProcesses().get(0).getFlowElements();
-        // 封装下一个用户任务节点信息
-        List<ProcessNode> nextNodes = new ArrayList<>();
-        // 保存没有表达式的节点
-        List<ProcessNode> tempNodes = new ArrayList<>();
+        //封装下一个用户任务节点信息
+        List<ProcessNode> nextNodeList = new ArrayList<>();
+        //保存没有表达式的节点
+        List<ProcessNode> tempNodeList = new ArrayList<>();
         ExecutionEntityImpl executionEntity = (ExecutionEntityImpl) runtimeService.createExecutionQuery()
             .executionId(task.getExecutionId()).singleResult();
-        workFlowUtils.getNextNodes(flowElements, flowElement, executionEntity, nextNodes, tempNodes, task.getId(), null);
-        if (CollectionUtil.isNotEmpty(nextNodes) && CollectionUtil.isNotEmpty(nextNodes.stream().filter(e -> e.getExpression() != null && e.getExpression()).collect(Collectors.toList()))) {
-            List<ProcessNode> processNodeList = getProcessNodeAssigneeList(nextNodes, task.getProcessDefinitionId());
+        workFlowUtils.getNextNodeList(flowElements, flowElement, executionEntity, nextNodeList, tempNodeList, task.getId(), null);
+        if (CollectionUtil.isNotEmpty(nextNodeList) && CollectionUtil.isNotEmpty(nextNodeList.stream().filter(e -> e.getExpression() != null && e.getExpression()).collect(Collectors.toList()))) {
+            List<ProcessNode> nodeList = nextNodeList.stream().filter(e -> e.getExpression() != null && e.getExpression()).collect(Collectors.toList());
+            List<ProcessNode> processNodeList = getProcessNodeAssigneeList(nodeList, task.getProcessDefinitionId());
             map.put("list", processNodeList);
-        } else if (CollectionUtil.isNotEmpty(tempNodes)) {
-            List<ProcessNode> processNodeList = getProcessNodeAssigneeList(tempNodes, task.getProcessDefinitionId());
+        } else if (CollectionUtil.isNotEmpty(tempNodeList)) {
+            List<ProcessNode> processNodeList = getProcessNodeAssigneeList(tempNodeList, task.getProcessDefinitionId());
             map.put("list", processNodeList);
         } else {
-            map.put("list", nextNodes);
+            map.put("list", nextNodeList);
         }
         return map;
     }

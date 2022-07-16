@@ -120,7 +120,7 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/4/11 13:37
      */
-    public void getNextNodes(Collection<FlowElement> flowElements, FlowElement flowElement, ExecutionEntityImpl executionEntity, List<ProcessNode> nextNodes, List<ProcessNode> tempNodes, String taskId, String gateway) {
+    public void getNextNodeList(Collection<FlowElement> flowElements, FlowElement flowElement, ExecutionEntityImpl executionEntity, List<ProcessNode> nextNodes, List<ProcessNode> tempNodes, String taskId, String gateway) {
         // 获取当前节点的连线信息
         List<SequenceFlow> outgoingFlows = ((FlowNode) flowElement).getOutgoingFlows();
         // 当前节点的所有下一节点出口
@@ -130,24 +130,24 @@ public class WorkFlowUtils {
             ProcessNode tempNode = new ProcessNode();
             FlowElement outFlowElement = sequenceFlow.getTargetFlowElement();
             if (outFlowElement instanceof UserTask) {
-                buildNode(executionEntity, nextNodes, tempNodes, taskId, gateway, sequenceFlow, processNode, tempNode, outFlowElement);
+                nextNodeBuild(executionEntity, nextNodes, tempNodes, taskId, gateway, sequenceFlow, processNode, tempNode, outFlowElement);
             } else if (outFlowElement instanceof ExclusiveGateway) { // 排他网关
-                getNextNodes(flowElements, outFlowElement, executionEntity, nextNodes, tempNodes, taskId, ActConstant.EXCLUSIVE_GATEWAY);
+                getNextNodeList(flowElements, outFlowElement, executionEntity, nextNodes, tempNodes, taskId, ActConstant.EXCLUSIVE_GATEWAY);
             } else if (outFlowElement instanceof ParallelGateway) { //并行网关
-                getNextNodes(flowElements, outFlowElement, executionEntity, nextNodes, tempNodes, taskId, ActConstant.PARALLEL_GATEWAY);
+                getNextNodeList(flowElements, outFlowElement, executionEntity, nextNodes, tempNodes, taskId, ActConstant.PARALLEL_GATEWAY);
             } else if (outFlowElement instanceof InclusiveGateway) { //包含网关
-                getNextNodes(flowElements, outFlowElement, executionEntity, nextNodes, tempNodes, taskId, ActConstant.INCLUSIVE_GATEWAY);
+                getNextNodeList(flowElements, outFlowElement, executionEntity, nextNodes, tempNodes, taskId, ActConstant.INCLUSIVE_GATEWAY);
             } else if (outFlowElement instanceof EndEvent) {
                 FlowElement subProcess = getSubProcess(flowElements, outFlowElement);
                 if (subProcess == null) {
                     continue;
                 }
-                getNextNodes(flowElements, subProcess, executionEntity, nextNodes, tempNodes, taskId, ActConstant.END_EVENT);
+                getNextNodeList(flowElements, subProcess, executionEntity, nextNodes, tempNodes, taskId, ActConstant.END_EVENT);
             } else if (outFlowElement instanceof SubProcess) {
                 Collection<FlowElement> subFlowElements = ((SubProcess) outFlowElement).getFlowElements();
                 for (FlowElement element : subFlowElements) {
                     if (element instanceof UserTask) {
-                        buildNode(executionEntity, nextNodes, tempNodes, taskId, gateway, sequenceFlow, processNode, tempNode, element);
+                        nextNodeBuild(executionEntity, nextNodes, tempNodes, taskId, gateway, sequenceFlow, processNode, tempNode, element);
                         break;
                     }
                 }
@@ -161,7 +161,7 @@ public class WorkFlowUtils {
      * @Description: 构建下一审批节点
      * @param: executionEntity
      * @param: nextNodes 下一节点信息
-     * @param: tempNodes 保存没有表达式的节点信息
+     * @param: tempNodes 保存没有表达式的节点信息(用于排他网关)
      * @param: taskId 任务id
      * @param: gateway 网关
      * @param: sequenceFlow  节点
@@ -172,7 +172,7 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/4/11 13:35
      */
-    private void buildNode(ExecutionEntityImpl executionEntity, List<ProcessNode> nextNodes, List<ProcessNode> tempNodes, String taskId, String gateway, SequenceFlow sequenceFlow, ProcessNode processNode, ProcessNode tempNode, FlowElement outFlowElement) {
+    private void nextNodeBuild(ExecutionEntityImpl executionEntity, List<ProcessNode> nextNodes, List<ProcessNode> tempNodes, String taskId, String gateway, SequenceFlow sequenceFlow, ProcessNode processNode, ProcessNode tempNode, FlowElement outFlowElement) {
         // 用户任务，则获取响应给前端设置办理人或者候选人
         // 判断是否为排它网关
         if (ActConstant.EXCLUSIVE_GATEWAY.equals(gateway)) {
@@ -181,77 +181,69 @@ public class WorkFlowUtils {
             if (StringUtils.isNotBlank(conditionExpression)) {
                 ExpressCmd expressCmd = new ExpressCmd(sequenceFlow, executionEntity);
                 Boolean condition = managementService.executeCommand(expressCmd);
-                if (condition) {
-                    processNode.setNodeId(outFlowElement.getId());
-                    processNode.setNodeName(outFlowElement.getName());
-                    processNode.setNodeType(ActConstant.EXCLUSIVE_GATEWAY);
-                    processNode.setTaskId(taskId);
-                    processNode.setExpression(true);
-                    processNode.setChooseWay(ActConstant.WORKFLOW_ASSIGNEE);
-                    processNode.setAssignee(((UserTask) outFlowElement).getAssignee());
-                    processNode.setAssigneeId(((UserTask) outFlowElement).getAssignee());
-                    nextNodes.add(processNode);
-                } else {
-                    processNode.setNodeId(outFlowElement.getId());
-                    processNode.setNodeName(outFlowElement.getName());
-                    processNode.setNodeType(ActConstant.EXCLUSIVE_GATEWAY);
-                    processNode.setTaskId(taskId);
-                    processNode.setExpression(false);
-                    processNode.setChooseWay(ActConstant.WORKFLOW_ASSIGNEE);
-                    processNode.setAssignee(((UserTask) outFlowElement).getAssignee());
-                    processNode.setAssigneeId(((UserTask) outFlowElement).getAssignee());
-                    nextNodes.add(processNode);
-                }
+                processNodeBuildList(processNode, outFlowElement, ActConstant.EXCLUSIVE_GATEWAY, taskId, condition, nextNodes);
             } else {
-                tempNode.setNodeId(outFlowElement.getId());
-                tempNode.setNodeName(outFlowElement.getName());
-                tempNode.setNodeType(ActConstant.EXCLUSIVE_GATEWAY);
-                tempNode.setTaskId(taskId);
-                tempNode.setExpression(true);
-                tempNode.setChooseWay(ActConstant.WORKFLOW_ASSIGNEE);
-                tempNode.setAssignee(((UserTask) outFlowElement).getAssignee());
-                tempNode.setAssigneeId(((UserTask) outFlowElement).getAssignee());
-                tempNodes.add(tempNode);
+                tempNodeBuildList(tempNodes, taskId, tempNode, outFlowElement);
             }
             //包含网关
         } else if (ActConstant.INCLUSIVE_GATEWAY.equals(gateway)) {
             String conditionExpression = sequenceFlow.getConditionExpression();
             if (StringUtils.isBlank(conditionExpression)) {
-                processNode.setNodeId(outFlowElement.getId());
-                processNode.setNodeName(outFlowElement.getName());
-                processNode.setNodeType(ActConstant.EXCLUSIVE_GATEWAY);
-                processNode.setTaskId(taskId);
-                processNode.setExpression(true);
-                processNode.setChooseWay(ActConstant.WORKFLOW_ASSIGNEE);
-                processNode.setAssignee(((UserTask) outFlowElement).getAssignee());
-                processNode.setAssigneeId(((UserTask) outFlowElement).getAssignee());
-                nextNodes.add(processNode);
+                processNodeBuildList(processNode, outFlowElement, ActConstant.INCLUSIVE_GATEWAY, taskId, true, nextNodes);
             } else {
                 ExpressCmd expressCmd = new ExpressCmd(sequenceFlow, executionEntity);
                 Boolean condition = managementService.executeCommand(expressCmd);
-                if (condition) {
-                    processNode.setNodeId(outFlowElement.getId());
-                    processNode.setNodeName(outFlowElement.getName());
-                    processNode.setNodeType(ActConstant.EXCLUSIVE_GATEWAY);
-                    processNode.setTaskId(taskId);
-                    processNode.setExpression(true);
-                    processNode.setChooseWay(ActConstant.WORKFLOW_ASSIGNEE);
-                    processNode.setAssignee(((UserTask) outFlowElement).getAssignee());
-                    processNode.setAssigneeId(((UserTask) outFlowElement).getAssignee());
-                    nextNodes.add(processNode);
-                }
+                processNodeBuildList(processNode, outFlowElement, ActConstant.INCLUSIVE_GATEWAY, taskId, condition, nextNodes);
             }
         } else {
-            processNode.setNodeId(outFlowElement.getId());
-            processNode.setNodeName(outFlowElement.getName());
-            processNode.setNodeType(ActConstant.USER_TASK);
-            processNode.setTaskId(taskId);
-            processNode.setExpression(true);
-            processNode.setChooseWay(ActConstant.WORKFLOW_ASSIGNEE);
-            processNode.setAssignee(((UserTask) outFlowElement).getAssignee());
-            processNode.setAssigneeId(((UserTask) outFlowElement).getAssignee());
-            nextNodes.add(processNode);
+            processNodeBuildList(processNode, outFlowElement, ActConstant.USER_TASK, taskId, true, nextNodes);
         }
+    }
+
+    /**
+     * @Description: 临时节点信息(排他网关)
+     * @param: tempNodes 临时节点集合
+     * @param: taskId 任务id
+     * @param: tempNode 节点对象
+     * @param: outFlowElement 节点信息
+     * @return: void
+     * @author: gssong
+     * @Date: 2022/7/16 19:17
+     */
+    private void tempNodeBuildList(List<ProcessNode> tempNodes, String taskId, ProcessNode tempNode, FlowElement outFlowElement) {
+        tempNode.setNodeId(outFlowElement.getId());
+        tempNode.setNodeName(outFlowElement.getName());
+        tempNode.setNodeType(ActConstant.EXCLUSIVE_GATEWAY);
+        tempNode.setTaskId(taskId);
+        tempNode.setExpression(true);
+        tempNode.setChooseWay(ActConstant.WORKFLOW_ASSIGNEE);
+        tempNode.setAssignee(((UserTask) outFlowElement).getAssignee());
+        tempNode.setAssigneeId(((UserTask) outFlowElement).getAssignee());
+        tempNodes.add(tempNode);
+    }
+
+    /**
+     * @Description: 保存节点信息
+     * @param: processNode 节点对象
+     * @param: outFlowElement 节点信息
+     * @param: exclusiveGateway 网关
+     * @param: taskId 任务id
+     * @param: condition 条件
+     * @param: nextNodes 节点集合
+     * @return: void
+     * @author: gssong
+     * @Date: 2022/7/16 19:17
+     */
+    private void processNodeBuildList(ProcessNode processNode, FlowElement outFlowElement, String exclusiveGateway, String taskId, Boolean condition, List<ProcessNode> nextNodes) {
+        processNode.setNodeId(outFlowElement.getId());
+        processNode.setNodeName(outFlowElement.getName());
+        processNode.setNodeType(exclusiveGateway);
+        processNode.setTaskId(taskId);
+        processNode.setExpression(condition);
+        processNode.setChooseWay(ActConstant.WORKFLOW_ASSIGNEE);
+        processNode.setAssignee(((UserTask) outFlowElement).getAssignee());
+        processNode.setAssigneeId(((UserTask) outFlowElement).getAssignee());
+        nextNodes.add(processNode);
     }
 
     /**
