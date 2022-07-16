@@ -43,12 +43,6 @@ public class ProcessNode  implements Serializable {
     private String taskId;
 
     /**
-     * 执行id
-     */
-    //@ApiModelProperty("执行id")
-    //private String extensionId;
-
-    /**
      * 表达式是否成立 true 成立 false 不成立
      */
     @ApiModelProperty("表达式是否成立")

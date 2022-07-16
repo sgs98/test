@@ -71,7 +71,7 @@ public class ActNodeAssignee extends BaseEntity{
     /**
      * 业务规则id
      */
-    private Long fullClassId;
+    private Long businessRuleId;
 
     /**
      * 是否弹出选人

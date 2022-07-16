@@ -357,7 +357,7 @@ public class WorkFlowUtils {
      */
     public void setStatusFileValue(Object o, List<String> idList, String id) {
         Class<?> aClass = o.getClass();
-        Field businessStatus = null;
+        Field businessStatus;
         try {
             businessStatus = aClass.getDeclaredField(ACT_BUSINESSS_TATUS);
         } catch (NoSuchFieldException e) {
@@ -398,7 +398,7 @@ public class WorkFlowUtils {
      */
     public void setProcessInstIdFileValue(Object o, List<String> idList, String id) {
         Class<?> aClass = o.getClass();
-        Field processInstanceId = null;
+        Field processInstanceId;
         try {
             processInstanceId = aClass.getDeclaredField(PROCESS_INSTANCE_ID);
         } catch (NoSuchFieldException e) {
