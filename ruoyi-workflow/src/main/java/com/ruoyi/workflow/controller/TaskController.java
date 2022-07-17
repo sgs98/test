@@ -257,6 +257,20 @@ public class TaskController extends BaseController {
         return iTaskService.deleteMultiInstanceExecution(deleteMultiREQ);
     }
 
+    /**
+     * @Description: 修改办理人
+     * @param: updateAssigneeBo
+     * @return: com.ruoyi.common.core.domain.R<java.lang.Void>
+     * @author: gssong
+     * @Date: 2022/7/17 13:31
+     */
+    @ApiOperation("修改办理人")
+    @Log(title = "任务管理", businessType = BusinessType.UPDATE)
+    @PostMapping("/updateAssignee}")
+    public R<Void> updateAssignee(@Validated({AddGroup.class}) @RequestBody UpdateAssigneeBo updateAssigneeBo) {
+        return iTaskService.updateAssignee(updateAssigneeBo);
+    }
+
 }
 
 

@@ -101,4 +101,11 @@ public interface ITaskService {
      * @return
      */
     R<Boolean> deleteMultiInstanceExecution(DeleteMultiREQ deleteMultiREQ);
+
+    /**
+     * 修改办理人
+     * @param updateAssigneeBo
+     * @return
+     */
+    R<Void> updateAssignee(UpdateAssigneeBo updateAssigneeBo);
 }

@@ -95,7 +95,7 @@ public class WorkFlowUtils {
         if (jsonBytes == null) {
             return null;
         }
-        // 1. json字节码转成 BpmnModel 对象
+        //1. json字节码转成 BpmnModel 对象
         ObjectMapper objectMapper = JsonUtils.getObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(jsonBytes);
         BpmnModel bpmnModel = new BpmnJsonConverter().convertToBpmnModel(jsonNode);
@@ -104,8 +104,7 @@ public class WorkFlowUtils {
             return null;
         }
         //2.将bpmnModel转为xml
-        byte[] bytes = new BpmnXMLConverter().convertToXML(bpmnModel);
-        return bytes;
+        return new BpmnXMLConverter().convertToXML(bpmnModel);
     }
 
     /**
@@ -335,7 +334,7 @@ public class WorkFlowUtils {
                 obj = ReflectionUtils.invokeMethod(method, beanName);
             }
             if (obj == null) {
-                throw new ServiceException("【" + taskName + "】任务环节未配置审批人");
+                throw new ServiceException("【" + taskName + "】任务环节未配置审批人,请确认传值是否正确,检查：【"+businessRule.getBeanName()+"】Bean容器中【"+methodName+"】方法");
             }
             return Arrays.asList(obj.toString().split(","));
         } catch (Exception e) {
@@ -406,7 +405,7 @@ public class WorkFlowUtils {
         try {
             if (CollectionUtil.isNotEmpty(infoByBusinessKey)) {
                 ActBusinessStatus actBusinessStatus = infoByBusinessKey.stream().filter(e -> e.getBusinessKey().equals(id)).findFirst().orElse(null);
-                if (ObjectUtil.isNotEmpty(actBusinessStatus)) {
+                if (ObjectUtil.isNotEmpty(actBusinessStatus) && StringUtils.isNotBlank(actBusinessStatus.getProcessInstanceId())) {
                     processInstanceId.set(o, actBusinessStatus.getProcessInstanceId());
                 } else {
                     processInstanceId.set(o, "");
@@ -655,7 +654,7 @@ public class WorkFlowUtils {
      */
     public void springInvokeMethod(String serviceName, String methodName, Object... params) {
         Object service = SpringUtils.getBean(serviceName);
-        Class<? extends Object>[] paramClass = null;
+        Class<?>[] paramClass = null;
         if (Objects.nonNull(params)) {
             int paramsLength = params.length;
             paramClass = new Class[paramsLength];

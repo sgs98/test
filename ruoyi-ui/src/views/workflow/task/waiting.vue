@@ -23,7 +23,7 @@
                 plain
                 icon="el-icon-edit"
                 size="mini"
-                :disabled="single"
+                :disabled="multiple"
               >修改办理人</el-button>
             </el-col>
             <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
@@ -123,7 +123,8 @@
         propUserList: [],
         processInstanceId: undefined,
         businessKey: undefined, // 业务唯一标识
-        visible: false
+        visible: false,
+        updateAssignee:{}
       }
     },
     created() {
@@ -161,18 +162,13 @@
          this.processInstanceId = row.processInstanceId
          this.visible = true
       },
-      //签收
-      clickClaim(row){
-         this.$modal.confirm('是否确认签收此任务？').then(() => {
-           this.loading = true;
-           return api.claim(row.id)
-         }).then(() => {
+      //修改办理人
+      updateAssignee(){
+        this.loading = true;
+        api.updateAssignee(this.updateAssignee).then(()=>{
            this.loading = false;
            this.getList();
-           this.$modal.msgSuccess("签收成功");
-         }).finally(() => {
-           this.loading = false;
-         });
+        })
       }
     }
   }

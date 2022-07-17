@@ -125,5 +125,13 @@ export default {
       method: 'post',
       data: data
     })
+  },
+  // 会签任务减签
+  updateAssignee(data) {
+    return request({
+      url: '/workflow/task/updateAssignee',
+      method: 'post',
+      data: data
+    })
   }
 }

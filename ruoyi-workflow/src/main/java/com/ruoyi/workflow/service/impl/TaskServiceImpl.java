@@ -762,6 +762,18 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             list.add(taskWaitingVo);
         }
         if (CollectionUtil.isNotEmpty(list)) {
+            //认领与归还标识
+            list.forEach(e -> {
+                List<IdentityLink> identityLinkList = workFlowUtils.getCandidateUser(e.getId());
+                if (CollectionUtil.isNotEmpty(identityLinkList)) {
+                    List<String> collectType = identityLinkList.stream().map(IdentityLink::getType).collect(Collectors.toList());
+                    if (StringUtils.isBlank(e.getAssignee()) && collectType.size() > 1 && collectType.contains(ActConstant.CANDIDATE)) {
+                        e.setIsClaim(false);
+                    } else if (StringUtils.isNotBlank(e.getAssignee()) && collectType.size() > 1 && collectType.contains(ActConstant.CANDIDATE)) {
+                        e.setIsClaim(true);
+                    }
+                }
+            });
             //办理人集合
             List<Long> assigneeList = list.stream().map(TaskWaitingVo::getAssigneeId).collect(Collectors.toList());
             if (CollectionUtil.isNotEmpty(assigneeList)) {
@@ -775,6 +787,17 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                         }
                     });
                 }
+            }
+            //业务id集合
+            List<String> businessKeyList = list.stream().map(TaskWaitingVo::getBusinessKey).collect(Collectors.toList());
+            List<ActBusinessStatus> infoList = iActBusinessStatusService.getListInfoByBusinessKey(businessKeyList);
+            if (CollectionUtil.isNotEmpty(infoList)) {
+                list.forEach(e -> {
+                    ActBusinessStatus businessStatus = infoList.stream().filter(t -> t.getBusinessKey().equals(e.getBusinessKey())).findFirst().orElse(null);
+                    if (ObjectUtil.isNotEmpty(businessStatus)) {
+                        e.setActBusinessStatus(businessStatus);
+                    }
+                });
             }
         }
         return new TableDataInfo(list, total);
@@ -1081,17 +1104,17 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         Task task = taskService.createTaskQuery().taskId(deleteMultiREQ.getTaskId())
             .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
         if (ObjectUtil.isEmpty(task)) {
-            throw new ServiceException("当前任务不存在或你不是任务办理人");
+            return R.fail("当前任务不存在或你不是任务办理人");
         }
         if (task.isSuspended()) {
-            throw new ServiceException("当前任务已被挂起");
+            return R.fail("当前任务已被挂起");
         }
         String taskDefinitionKey = task.getTaskDefinitionKey();
         String processInstanceId = task.getProcessInstanceId();
         String processDefinitionId = task.getProcessDefinitionId();
         MultiVo multiVo = workFlowUtils.isMultiInstance(processDefinitionId, taskDefinitionKey);
         if (ObjectUtil.isEmpty(multiVo)) {
-            throw new ServiceException("当前环节不是会签节点");
+            return R.fail("当前环节不是会签节点");
         }
         try {
             if (multiVo.getType() instanceof ParallelMultiInstanceBehavior) {
@@ -1113,8 +1136,30 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             return R.ok();
         } catch (Exception e) {
             e.printStackTrace();
-            return R.fail(e.getMessage());
+            throw new ServiceException(e.getMessage());
         }
     }
 
+    /**
+     * @Description: 修改办理人
+     * @param: updateAssigneeBo
+     * @return: com.ruoyi.common.core.domain.R<java.lang.Void>
+     * @author: gssong
+     * @Date: 2022/7/17 13:35
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R<Void> updateAssignee(UpdateAssigneeBo updateAssigneeBo) {
+
+        List<Task> list = taskService.createTaskQuery().taskAssigneeIds(updateAssigneeBo.getTaskIdList()).list();
+        if(CollectionUtil.isEmpty(list)){
+            return R.fail("办理失败，任务不存在");
+        }
+        try {
+            for (Task task : list) taskService.setAssignee(task.getId(), updateAssigneeBo.getUserId());
+            return R.ok();
+        } catch (Exception e) {
+            throw new ServiceException(e.getMessage());
+        }
+    }
 }

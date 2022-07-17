@@ -30,7 +30,7 @@ export default {
       categorys: [],
       isView: false,
       users: [
-        { name: '${assignee}', id: '${assignee}' }//,
+        // { name: '${assignee}', id: '${assignee}' },
         // { name: '李四', id: 'lisi' },
         // { name: '王五', id: 'wangwu' }
       ],
