@@ -1001,10 +1001,6 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             taskService.delegateTask(delegateREQ.getTaskId(), delegateREQ.getDelegateUserId());
             //办理生成的任务记录
             taskService.complete(newTask.getId());
-            ActHiTaskInst actHiTaskInst = new ActHiTaskInst();
-            actHiTaskInst.setId(task.getId());
-            actHiTaskInst.setStartTime(new Date());
-            iActHiTaskInstService.updateById(actHiTaskInst);
             //发送站内信
             workFlowUtils.sendMessage(delegateREQ.getSendMessage(), task.getProcessInstanceId());
             return true;

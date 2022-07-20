@@ -133,7 +133,7 @@
       </div>
     </div>
     <!-- 选择人员 -->
-    <sys-user ref="userRef" @confirmUser="clickUser" :propUserList = 'propUserList'/>
+    <sys-dept-user ref="userRef" @confirmUser="clickUser" :propUserList = 'propUserList'/>
     <!-- 选择角色 -->
     <sys-role ref="roleRef" @confirmUser="clickRole" :propRoleList = 'propRoleList'/>
     <!-- 选择部门 -->
@@ -144,7 +144,7 @@
 </template>
 
 <script>
-import  SysUser from "@/views/components/user/sys-user";
+import  SysDeptUser from "@/views/components/user/sys-dept-user";
 import  SysRole from "@/views/components/role/sys-role";
 import  SysDept from "@/views/components/dept/sys-dept";
 import  ProcessRule from "@/views/workflow/definition/components/processRule";
@@ -153,7 +153,7 @@ import {getInfoSetting,add,del} from "@/api/workflow/actNodeAssginee";
 
 export default {
     components: {
-       SysUser,
+       SysDeptUser,
        SysRole,
        SysDept,
        ProcessRule

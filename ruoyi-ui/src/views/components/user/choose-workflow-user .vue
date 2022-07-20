@@ -202,7 +202,9 @@ export default {
     // 多选框选中数据
     handleSelectionChange(val) {
         if(this.multiple === true){
-          this.chooseUserList = val
+          this.chooseUserList = val.filter((element,index,self)=>{
+             return self.findIndex(x=>x.userId===element.userId) === index
+          })
         }else{
           this.chooseUserList = val
           if (val.length > 1) {
