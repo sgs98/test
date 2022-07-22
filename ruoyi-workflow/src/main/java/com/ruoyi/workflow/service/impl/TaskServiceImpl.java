@@ -1146,8 +1146,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R<Void> updateAssignee(UpdateAssigneeBo updateAssigneeBo) {
-
-        List<Task> list = taskService.createTaskQuery().taskAssigneeIds(updateAssigneeBo.getTaskIdList()).list();
+        List<Task> list = taskService.createNativeTaskQuery().sql("select * from act_ru_task where id_ in " + getInParam(updateAssigneeBo.getTaskIdList())).list();
         if(CollectionUtil.isEmpty(list)){
             return R.fail("办理失败，任务不存在");
         }
@@ -1157,5 +1156,25 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         } catch (Exception e) {
             throw new ServiceException(e.getMessage());
         }
+    }
+
+    /**
+     * @Description: 拼接单引号,到数据库后台用in查询.
+     * @param: param
+     * @return: java.lang.String
+     * @author: gssong
+     * @Date: 2022/7/22 12:17
+     */
+    private String getInParam(List<String> param) {
+        StringBuilder sb = new  StringBuilder();
+        sb.append("(");
+        for (int i = 0; i < param.size(); i++) {
+            sb.append("'").append(param.get(i)).append("'");
+            if(i!=param.size()-1){
+                sb.append(",");
+            }
+        }
+        sb.append(")");
+        return sb.toString();
     }
 }

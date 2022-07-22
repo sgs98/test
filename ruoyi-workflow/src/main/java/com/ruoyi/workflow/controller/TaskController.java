@@ -266,7 +266,7 @@ public class TaskController extends BaseController {
      */
     @ApiOperation("修改办理人")
     @Log(title = "任务管理", businessType = BusinessType.UPDATE)
-    @PostMapping("/updateAssignee}")
+    @PostMapping("/updateAssignee")
     public R<Void> updateAssignee(@Validated({AddGroup.class}) @RequestBody UpdateAssigneeBo updateAssigneeBo) {
         return iTaskService.updateAssignee(updateAssigneeBo);
     }

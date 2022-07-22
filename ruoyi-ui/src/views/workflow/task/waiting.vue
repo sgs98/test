@@ -24,6 +24,7 @@
                 icon="el-icon-edit"
                 size="mini"
                 :disabled="multiple"
+                @click="openAssignee"
               >修改办理人</el-button>
             </el-col>
             <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
@@ -70,6 +71,8 @@
         </el-dialog>
 
         <approvalForm ref="approvalForm" :businessKey = 'businessKey' :processInstanceId = 'processInstanceId'/>
+        <!-- 选择人员 -->
+        <sys-dept-user ref="userRef" @confirmUser="clickUser" :propUserList = 'propUserList'/>
     </div>
 </template>
 
@@ -78,14 +81,15 @@
   import verify from "@/components/Process/Verify";
   import history from "@/components/Process/History";
   import Back from "@/components/Process/Back";
-  import  approvalForm from "@/views/components/approvalForm";
-
+  import approvalForm from "@/views/components/approvalForm";
+  import  SysDeptUser from "@/views/components/user/sys-dept-user";
   export default {
     components: {
       verify,
       Back,
       history,
-      approvalForm
+      approvalForm,
+      SysDeptUser
     },
     data () {
       return {
@@ -124,7 +128,11 @@
         processInstanceId: undefined,
         businessKey: undefined, // 业务唯一标识
         visible: false,
-        updateAssignee:{}
+        updateAssignee:{
+            taskIdList:[],
+            userId: undefined
+        },
+        propUserList:[]
       }
     },
     created() {
@@ -163,13 +171,26 @@
          this.visible = true
       },
       //修改办理人
-      updateAssignee(){
-        this.loading = true;
-        api.updateAssignee(this.updateAssignee).then(()=>{
-           this.loading = false;
-           this.getList();
-        })
-      }
+      openAssignee(){
+        this.$refs.userRef.visible = true
+      },
+      //选择人员
+      clickUser(userList){
+        this.$modal.confirm('是否确认修改？').then(() => {
+            this.loading = true;
+            let userId= userList.map(item => { return item.userId })
+            this.loading = true;
+            this.updateAssignee.taskIdList = this.ids
+            this.updateAssignee.userId = userId.toString()
+            this.$refs.userRef.visible = false
+            api.updateAssignee(this.updateAssignee).then(()=>{
+                this.$modal.msgSuccess("修改成功");
+                this.getList();
+            })
+        }).finally(() => {
+            this.loading = false;
+        });
+      },
     }
   }
 </script>
