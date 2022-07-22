@@ -177,7 +177,6 @@
       //选择人员
       clickUser(userList){
         this.$modal.confirm('是否确认修改？').then(() => {
-            this.loading = true;
             let userId= userList.map(item => { return item.userId })
             this.loading = true;
             this.updateAssignee.taskIdList = this.ids
@@ -187,9 +186,7 @@
                 this.$modal.msgSuccess("修改成功");
                 this.getList();
             })
-        }).finally(() => {
-            this.loading = false;
-        });
+        })
       },
     }
   }

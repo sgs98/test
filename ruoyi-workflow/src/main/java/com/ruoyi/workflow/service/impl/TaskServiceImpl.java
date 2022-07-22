@@ -100,7 +100,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             TaskWaitingVo taskWaitingVo = new TaskWaitingVo();
             BeanUtils.copyProperties(task, taskWaitingVo);
             taskWaitingVo.setAssigneeId(StringUtils.isNotBlank(task.getAssignee()) ? Long.valueOf(task.getAssignee()) : null);
-            taskWaitingVo.setProcessStatus(task.isSuspended() == true ? "挂起" : "激活");
+            taskWaitingVo.setProcessStatus(!task.isSuspended() ? "激活" : "挂起");
             // 查询流程实例
             ProcessInstance pi = runtimeService.createProcessInstanceQuery()
                 .processInstanceId(task.getProcessInstanceId()).singleResult();
@@ -486,11 +486,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
         //判断当前是否为会签
         MultiVo isMultiInstance = workFlowUtils.isMultiInstance(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
-        if (ObjectUtil.isEmpty(isMultiInstance)) {
-            map.put("isMultiInstance", false);
-        } else {
-            map.put("isMultiInstance", true);
-        }
+        map.put("isMultiInstance", ObjectUtil.isNotEmpty(isMultiInstance));
         //查询任务
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
         //可以减签的人员
@@ -744,7 +740,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             TaskWaitingVo taskWaitingVo = new TaskWaitingVo();
             BeanUtils.copyProperties(task, taskWaitingVo);
             taskWaitingVo.setAssigneeId(StringUtils.isNotBlank(task.getAssignee()) ? Long.valueOf(task.getAssignee()) : null);
-            taskWaitingVo.setProcessStatus(task.isSuspended() == true ? "挂起" : "激活");
+            taskWaitingVo.setProcessStatus(!task.isSuspended() ? "激活" : "挂起");
             // 查询流程实例
             ProcessInstance pi = runtimeService.createProcessInstanceQuery()
                 .processInstanceId(task.getProcessInstanceId()).singleResult();
@@ -759,11 +755,27 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             taskWaitingVo.setProcessDefinitionVersion(pi.getProcessDefinitionVersion());
             taskWaitingVo.setProcessDefinitionName(pi.getProcessDefinitionName());
             taskWaitingVo.setBusinessKey(pi.getBusinessKey());
+            //是否会签
+            MultiVo multiInstance = workFlowUtils.isMultiInstance(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+            taskWaitingVo.setMultiInstance(ObjectUtil.isNotEmpty(multiInstance));
+            //查询任务
+            List<Task> tasks = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
+            //可以减签的人员
+            if (ObjectUtil.isNotEmpty(multiInstance)) {
+                if (multiInstance.getType() instanceof ParallelMultiInstanceBehavior) {
+                    taskWaitingVo.setTaskVoList(multiList((TaskEntity) task, tasks, multiInstance.getType(), null));
+                } else if (multiInstance.getType() instanceof SequentialMultiInstanceBehavior) {
+                    List<Long> assigneeList = (List) runtimeService.getVariable(task.getExecutionId(), multiInstance.getAssigneeList());
+                    taskWaitingVo.setTaskVoList(multiList((TaskEntity) task, tasks, multiInstance.getType(), assigneeList));
+                }
+            }
             list.add(taskWaitingVo);
         }
         if (CollectionUtil.isNotEmpty(list)) {
-            //认领与归还标识
-            list.forEach(e -> {
+            List<String> businessKeyList = list.stream().map(TaskWaitingVo::getBusinessKey).collect(Collectors.toList());
+            List<ActBusinessStatus> infoList = iActBusinessStatusService.getListInfoByBusinessKey(businessKeyList);
+            for (TaskWaitingVo e : list) {
+                //认领与归还标识
                 List<IdentityLink> identityLinkList = workFlowUtils.getCandidateUser(e.getId());
                 if (CollectionUtil.isNotEmpty(identityLinkList)) {
                     List<String> collectType = identityLinkList.stream().map(IdentityLink::getType).collect(Collectors.toList());
@@ -773,31 +785,26 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                         e.setIsClaim(true);
                     }
                 }
-            });
-            //办理人集合
-            List<Long> assigneeList = list.stream().map(TaskWaitingVo::getAssigneeId).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(assigneeList)) {
-                List<SysUser> userList = iUserService.selectListUserByIds(assigneeList);
-                if (CollectionUtil.isNotEmpty(userList)) {
-                    list.forEach(e -> {
+                //办理人集合
+                List<Long> assigneeList = list.stream().map(TaskWaitingVo::getAssigneeId).filter(Objects::nonNull).collect(Collectors.toList());
+                if (CollectionUtil.isNotEmpty(assigneeList)) {
+                    List<SysUser> userList = iUserService.selectListUserByIds(assigneeList);
+                    if (CollectionUtil.isNotEmpty(userList)) {
                         SysUser sysUser = userList.stream().filter(t -> StringUtils.isNotBlank(e.getAssignee()) && t.getUserId().compareTo(e.getAssigneeId()) == 0).findFirst().orElse(null);
                         if (ObjectUtil.isNotEmpty(sysUser)) {
                             e.setAssignee(sysUser.getNickName());
                             e.setAssigneeId(sysUser.getUserId());
                         }
-                    });
+
+                    }
                 }
-            }
-            //业务id集合
-            List<String> businessKeyList = list.stream().map(TaskWaitingVo::getBusinessKey).collect(Collectors.toList());
-            List<ActBusinessStatus> infoList = iActBusinessStatusService.getListInfoByBusinessKey(businessKeyList);
-            if (CollectionUtil.isNotEmpty(infoList)) {
-                list.forEach(e -> {
+                //业务状态
+                if (CollectionUtil.isNotEmpty(infoList)) {
                     ActBusinessStatus businessStatus = infoList.stream().filter(t -> t.getBusinessKey().equals(e.getBusinessKey())).findFirst().orElse(null);
                     if (ObjectUtil.isNotEmpty(businessStatus)) {
                         e.setActBusinessStatus(businessStatus);
                     }
-                });
+                }
             }
         }
         return new TableDataInfo(list, total);
@@ -1001,6 +1008,10 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             taskService.delegateTask(delegateREQ.getTaskId(), delegateREQ.getDelegateUserId());
             //办理生成的任务记录
             taskService.complete(newTask.getId());
+            ActHiTaskInst actHiTaskInst = new ActHiTaskInst();
+            actHiTaskInst.setId(task.getId());
+            actHiTaskInst.setStartTime(new Date());
+            iActHiTaskInstService.updateById(actHiTaskInst);
             //发送站内信
             workFlowUtils.sendMessage(delegateREQ.getSendMessage(), task.getProcessInstanceId());
             return true;
@@ -1147,7 +1158,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     @Transactional(rollbackFor = Exception.class)
     public R<Void> updateAssignee(UpdateAssigneeBo updateAssigneeBo) {
         List<Task> list = taskService.createNativeTaskQuery().sql("select * from act_ru_task where id_ in " + getInParam(updateAssigneeBo.getTaskIdList())).list();
-        if(CollectionUtil.isEmpty(list)){
+        if (CollectionUtil.isEmpty(list)) {
             return R.fail("办理失败，任务不存在");
         }
         try {
@@ -1159,22 +1170,23 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     }
 
     /**
-     * @Description: 拼接单引号,到数据库后台用in查询.
+     * @Description: 拼接单引号, 到数据库后台用in查询.
      * @param: param
      * @return: java.lang.String
      * @author: gssong
      * @Date: 2022/7/22 12:17
      */
     private String getInParam(List<String> param) {
-        StringBuilder sb = new  StringBuilder();
+        StringBuilder sb = new StringBuilder();
         sb.append("(");
         for (int i = 0; i < param.size(); i++) {
             sb.append("'").append(param.get(i)).append("'");
-            if(i!=param.size()-1){
+            if (i != param.size() - 1) {
                 sb.append(",");
             }
         }
         sb.append(")");
         return sb.toString();
     }
+
 }

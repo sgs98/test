@@ -165,7 +165,7 @@ public class ModelController extends BaseController {
     @GetMapping("/convertToModel/{processDefinitionId}")
     public R<Void> convertToModel(@NotEmpty(message = "流程定义id不能为空") @PathVariable String processDefinitionId){
         Boolean convertToModel = iModelService.convertToModel(processDefinitionId);
-        return convertToModel==true?R.ok():R.fail();
+        return convertToModel ?R.ok():R.fail();
     }
 
 }
