@@ -492,7 +492,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
     public String getProcessInstanceId(String businessKey) {
         String processInstanceId;
         ActBusinessStatus infoByBusinessKey = iActBusinessStatusService.getInfoByBusinessKey(businessKey);
-        if (ObjectUtil.isNotEmpty(infoByBusinessKey) && infoByBusinessKey.getStatus().equals(BusinessStatusEnum.FINISH.getStatus())) {
+        if (ObjectUtil.isNotEmpty(infoByBusinessKey) && (infoByBusinessKey.getStatus().equals(BusinessStatusEnum.FINISH.getStatus())||infoByBusinessKey.getStatus().equals(BusinessStatusEnum.INVALID.getStatus()))) {
             HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceBusinessKey(businessKey).singleResult();
             processInstanceId = ObjectUtil.isNotEmpty(historicProcessInstance) ? historicProcessInstance.getId() : "";
         } else {

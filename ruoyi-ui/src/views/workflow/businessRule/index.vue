@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
+    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="80px">
       <el-form-item label="bean名称" prop="beanName">
         <el-input
           v-model="queryParams.businessRule"
@@ -75,20 +75,20 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="id" align="center" prop="id" v-if="false"/>
       <el-table-column label="bean名称" align="center" prop="beanName" />
-      <el-table-column label="方法名" align="center" prop="method" />
+      <el-table-column label="方法名" align="center" prop="method" width="180"/>
       <el-table-column label="备注" align="center" prop="remark" />
-      <el-table-column label="创建时间" align="center" prop="createTime" width="180">
+      <el-table-column label="创建时间" align="center" prop="createTime" width="120">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="更新时间" align="center" prop="updateTime" width="180">
+      <el-table-column label="更新时间" align="center" prop="updateTime" width="120">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="创建人" align="center" prop="createBy" />
-      <el-table-column label="更新人" align="center" prop="updateBy" />
+      <el-table-column label="创建人" align="center" prop="createBy" width="120"/>
+      <el-table-column label="更新人" align="center" prop="updateBy" width="120"/>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -119,7 +119,7 @@
 
     <!-- 添加或修改业务规则对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="700px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="bean名称" prop="beanName">
           <el-input v-model="form.beanName" placeholder="请输入bean名称" />
         </el-form-item>

@@ -70,6 +70,11 @@
                   <el-button size="mini" type="text"  icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
                 </el-col>
               </el-row>
+              <el-row :gutter="10" class="mb8">
+                <el-col :span="1.5">
+                  <el-button size="mini" type="text"  icon="el-icon-circle-close" @click="invalidRuntimeProcessInst(scope.row)">作废</el-button>
+                </el-col>
+              </el-row>
             </template>
           </el-table-column>
         </el-table>
@@ -172,6 +177,18 @@
            this.loading = false;
            this.getList();
            this.$modal.msgSuccess("删除成功");
+         }).finally(() => {
+           this.loading = false;
+         });
+      },
+      invalidRuntimeProcessInst(row){
+        this.$modal.confirm('是否确认作废流程实例ID为"' + row.processInstanceId + '"的数据项？').then(() => {
+           this.loading = true;
+           return api.deleteRuntimeProcessInst(row.processInstanceId);
+         }).then(() => {
+           this.loading = false;
+           this.getList();
+           this.$modal.msgSuccess("作废成功");
          }).finally(() => {
            this.loading = false;
          });
