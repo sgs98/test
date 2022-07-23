@@ -12,6 +12,7 @@ import com.ruoyi.workflow.domain.bo.*;
 import com.ruoyi.workflow.domain.bo.BackProcessBo;
 import com.ruoyi.workflow.domain.vo.TaskFinishVo;
 import com.ruoyi.workflow.domain.vo.TaskWaitingVo;
+import com.ruoyi.workflow.domain.vo.VariableVo;
 import com.ruoyi.workflow.service.ITaskService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
@@ -269,6 +270,19 @@ public class TaskController extends BaseController {
     @PostMapping("/updateAssignee")
     public R<Void> updateAssignee(@Validated({AddGroup.class}) @RequestBody UpdateAssigneeBo updateAssigneeBo) {
         return iTaskService.updateAssignee(updateAssigneeBo);
+    }
+
+    /**
+     * @Description: 查询流程变量
+     * @param: taskId
+     * @return: com.ruoyi.common.core.domain.R<java.util.List<com.ruoyi.workflow.domain.vo.VariableVo>>
+     * @author: gssong
+     * @Date: 2022/7/23 14:33
+     */
+    @ApiOperation("查询流程变量")
+    @GetMapping("/getProcessInstVariable/{taskId}")
+    public R<List<VariableVo>> getProcessInstVariable(@PathVariable String taskId) {
+        return iTaskService.getProcessInstVariable(taskId);
     }
 
 }

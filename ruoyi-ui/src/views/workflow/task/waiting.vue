@@ -70,10 +70,15 @@
                       size="mini"
                       icon="el-icon-tickets"
                   >加签</el-button>
+                  <el-button
+                      type="text"
+                      @click="getInstVariable(scope.row)"
+                      size="mini"
+                      icon="el-icon-tickets"
+                  >流程变量</el-button>
                 </template>
             </el-table-column>
         </el-table>
-
         <pagination v-show="total>0"
           :total="total"
           :page.sync="queryParams.pageNum"
@@ -106,6 +111,22 @@
           </span>
         </el-dialog>
         <!-- 减签结束 -->
+
+        <!-- 流程变量 -->
+        <el-dialog title="流程变量" :visible.sync="variableVisible" v-if="variableVisible" width="60%" :close-on-click-modal="false">
+          <el-card class="box-card">
+            <div slot="header" class="clearfix">
+              <span>流程定义名称：{{processDefinitionName}}</span>
+            </div>
+            <div v-for="(v,index) in variableList" :key="index">
+            <el-form :label-position="'right'" label-width="200px">
+              <el-form-item :label="v.key+'：'">
+                {{v.value}}
+              </el-form-item>
+            </el-form>
+            </div>
+          </el-card>
+        </el-dialog>
     </div>
 </template>
 
@@ -157,6 +178,7 @@
         // 点击的行数据
         task: {},
         taskVariables: undefined,
+        variableVisible: false,
         processInstanceId: undefined,
         businessKey: undefined, // 业务唯一标识
         visible: false,
@@ -174,6 +196,10 @@
         multiList: [],
         addMultiVisible: false,
         deleteMultiVisible: false,
+        //流程定义名称
+        processDefinitionName: undefined,
+        //流程变量
+        variableList:[]
       }
     },
     created() {
@@ -227,6 +253,14 @@
                 this.$modal.msgSuccess("修改成功");
                 this.getList();
             })
+        })
+      },
+      //查询流程变量
+      getInstVariable(row){
+        this.variableVisible = true
+        this.processDefinitionName = row.processDefinitionName
+        api.getProcessInstVariable(row.id).then(response=>{
+          this.variableList = response.data
         })
       },
       //关闭加签人员组件
@@ -320,3 +354,22 @@
     }
   }
 </script>
+<style scoped>
+.box-card {
+  word-break:break-all;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  padding: 8px 0px;
+  height: 630px;
+  width: inherit;
+  line-height: 8px;
+}
+/* 修改滚动条样式 */
+.box-card::-webkit-scrollbar {
+	width: 4px;
+}
+.box-card::-webkit-scrollbar-thumb {
+	border-radius: 10px;
+}
+</style>

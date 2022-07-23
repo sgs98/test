@@ -133,5 +133,12 @@ export default {
       method: 'post',
       data: data
     })
+  },
+  //查询流程变量
+  getProcessInstVariable(taskId) {
+    return request({
+      url: '/workflow/task/getProcessInstVariable/'+taskId,
+      method: 'get'
+    })
   }
 }

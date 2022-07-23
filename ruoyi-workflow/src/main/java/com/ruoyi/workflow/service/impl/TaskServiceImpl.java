@@ -35,6 +35,7 @@ import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.api.history.HistoricTaskInstanceQuery;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
+import org.flowable.variable.api.persistence.entity.VariableInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -1198,4 +1199,25 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         return sb.toString();
     }
 
+    /**
+     * @Description: 查询流程变量
+     * @param: taskId
+     * @return: com.ruoyi.common.core.domain.R<java.util.List<com.ruoyi.workflow.domain.vo.VariableVo>>
+     * @author: gssong
+     * @Date: 2022/7/23 14:33
+     */
+    @Override
+    public R<List<VariableVo>> getProcessInstVariable(String taskId) {
+        List<VariableVo> variableVoList = new ArrayList<>();
+        Map<String, VariableInstance> variableInstances = taskService.getVariableInstances(taskId);
+        if(CollectionUtil.isNotEmpty(variableInstances)){
+            for (Map.Entry<String, VariableInstance> entry : variableInstances.entrySet()) {
+                VariableVo variableVo = new VariableVo();
+                variableVo.setKey(entry.getKey());
+                variableVo.setValue(entry.getValue().getValue().toString());
+                variableVoList.add(variableVo);
+            }
+        }
+        return R.ok(variableVoList);
+    }
 }
