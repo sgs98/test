@@ -1061,10 +1061,14 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R<Boolean> addMultiInstanceExecution(AddMultiREQ addMultiREQ) {
-        String taskId = addMultiREQ.getTaskId();
-        Task task = taskService.createTaskQuery().taskId(taskId)
-            .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
-        if (ObjectUtil.isEmpty(task)) {
+        Task task;
+        if(LoginHelper.isAdmin()){
+            task = taskService.createTaskQuery().taskId(addMultiREQ.getTaskId()).singleResult();
+        }else{
+            task = taskService.createTaskQuery().taskId(addMultiREQ.getTaskId())
+                .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
+        }
+        if (ObjectUtil.isEmpty(task) && !LoginHelper.isAdmin()) {
             throw new ServiceException("当前任务不存在或你不是任务办理人");
         }
         if (task.isSuspended()) {
@@ -1108,9 +1112,14 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R<Boolean> deleteMultiInstanceExecution(DeleteMultiREQ deleteMultiREQ) {
-        Task task = taskService.createTaskQuery().taskId(deleteMultiREQ.getTaskId())
-            .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
-        if (ObjectUtil.isEmpty(task)) {
+        Task task;
+        if(LoginHelper.isAdmin()){
+            task = taskService.createTaskQuery().taskId(deleteMultiREQ.getTaskId()).singleResult();
+        }else{
+            task = taskService.createTaskQuery().taskId(deleteMultiREQ.getTaskId())
+                .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
+        }
+        if (ObjectUtil.isEmpty(task) && !LoginHelper.isAdmin()) {
             return R.fail("当前任务不存在或你不是任务办理人");
         }
         if (task.isSuspended()) {
