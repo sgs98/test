@@ -17,8 +17,6 @@
 </template>
 
 <script>
-import 'highlight.js/styles/a11y-dark.css'
-import Hljs from 'highlight.js'
 import ClipboardJS from 'clipboard'
 export default {
     props: {
