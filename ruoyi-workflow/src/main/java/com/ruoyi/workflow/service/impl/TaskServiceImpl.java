@@ -17,6 +17,7 @@ import com.ruoyi.workflow.domain.vo.*;
 import com.ruoyi.workflow.flowable.cmd.AddSequenceMultiInstanceCmd;
 import com.ruoyi.workflow.flowable.cmd.DeleteSequenceMultiInstanceCmd;
 import com.ruoyi.workflow.flowable.factory.WorkflowService;
+import com.ruoyi.workflow.mapper.TaskMapper;
 import com.ruoyi.workflow.service.*;
 import com.ruoyi.workflow.utils.WorkFlowUtils;
 import lombok.RequiredArgsConstructor;
@@ -75,6 +76,8 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     private final IActHiTaskInstService iActHiTaskInstService;
 
     private final ManagementService managementService;
+
+    private final TaskMapper taskMapper;
 
 
     /**
@@ -765,7 +768,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             if (ObjectUtil.isNotEmpty(multiInstance)) {
                 if (multiInstance.getType() instanceof ParallelMultiInstanceBehavior) {
                     taskWaitingVo.setTaskVoList(multiList((TaskEntity) task, tasks, multiInstance.getType(), null));
-                } else if (multiInstance.getType() instanceof SequentialMultiInstanceBehavior) {
+                } else if (multiInstance.getType() instanceof SequentialMultiInstanceBehavior && StringUtils.isNotBlank(task.getExecutionId())) {
                     List<Long> assigneeList = (List) runtimeService.getVariable(task.getExecutionId(), multiInstance.getAssigneeList());
                     taskWaitingVo.setTaskVoList(multiList((TaskEntity) task, tasks, multiInstance.getType(), assigneeList));
                 }
@@ -1063,9 +1066,9 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     @Transactional(rollbackFor = Exception.class)
     public R<Boolean> addMultiInstanceExecution(AddMultiREQ addMultiREQ) {
         Task task;
-        if(LoginHelper.isAdmin()){
+        if (LoginHelper.isAdmin()) {
             task = taskService.createTaskQuery().taskId(addMultiREQ.getTaskId()).singleResult();
-        }else{
+        } else {
             task = taskService.createTaskQuery().taskId(addMultiREQ.getTaskId())
                 .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
         }
@@ -1114,9 +1117,9 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     @Transactional(rollbackFor = Exception.class)
     public R<Boolean> deleteMultiInstanceExecution(DeleteMultiREQ deleteMultiREQ) {
         Task task;
-        if(LoginHelper.isAdmin()){
+        if (LoginHelper.isAdmin()) {
             task = taskService.createTaskQuery().taskId(deleteMultiREQ.getTaskId()).singleResult();
-        }else{
+        } else {
             task = taskService.createTaskQuery().taskId(deleteMultiREQ.getTaskId())
                 .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
         }
@@ -1202,7 +1205,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     /**
      * @Description: 查询流程变量
      * @param: taskId
-     * @return: com.ruoyi.common.core.domain.R<java.util.List<com.ruoyi.workflow.domain.vo.VariableVo>>
+     * @return: com.ruoyi.common.core.domain.R<java.util.List < com.ruoyi.workflow.domain.vo.VariableVo>>
      * @author: gssong
      * @Date: 2022/7/23 14:33
      */
@@ -1210,7 +1213,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     public R<List<VariableVo>> getProcessInstVariable(String taskId) {
         List<VariableVo> variableVoList = new ArrayList<>();
         Map<String, VariableInstance> variableInstances = taskService.getVariableInstances(taskId);
-        if(CollectionUtil.isNotEmpty(variableInstances)){
+        if (CollectionUtil.isNotEmpty(variableInstances)) {
             for (Map.Entry<String, VariableInstance> entry : variableInstances.entrySet()) {
                 VariableVo variableVo = new VariableVo();
                 variableVo.setKey(entry.getKey());
@@ -1219,5 +1222,24 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             }
         }
         return R.ok(variableVoList);
+    }
+
+    /**
+     * @Description: 修改审批意见
+     * @param: commentId
+     * @param: comment
+     * @return: com.ruoyi.common.core.domain.R<java.lang.Void>
+     * @author: gssong
+     * @Date: 2022/7/24 13:28
+     */
+    @Override
+    public R<Void> editComment(String commentId,String comment) {
+        try {
+            taskMapper.editComment(commentId,comment);
+            return R.ok();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return R.fail();
+        }
     }
 }

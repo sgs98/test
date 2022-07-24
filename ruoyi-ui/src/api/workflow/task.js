@@ -140,5 +140,12 @@ export default {
       url: '/workflow/task/getProcessInstVariable/'+taskId,
       method: 'get'
     })
+  },
+  //修改审批意见
+  editComment(commentId,comment) {
+    return request({
+      url: `/workflow/task/editComment/${commentId}/${comment}`,
+      method: 'put'
+    })
   }
 }

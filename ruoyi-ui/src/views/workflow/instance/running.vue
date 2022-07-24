@@ -84,19 +84,19 @@
           :page.sync="queryParams.pageNum"
           :limit.sync="queryParams.pageSize"
           @pagination="getList" />
-          <el-dialog
-            title="挂起或激活流程"
-            :close-on-click-modal="false"
-            :visible.sync="dialogVisible"
-            v-if="dialogVisible"
-            width="60%">
-            <el-input  type="textarea" v-model="reason" maxlength="300" placeholder="请输入原因"
-            :autosize="{ minRows: 4 }" show-word-limit ></el-input>
-            <span slot="footer" class="dialog-footer">
-              <el-button type="primary" size="small" v-loading = "buttonLoading" @click="clickUpdateProcDefState">确 定</el-button>
-              <el-button size="small" @click="dialogVisible = false">取 消</el-button>
-            </span>
-          </el-dialog>
+        <el-dialog
+          title="挂起或激活流程"
+          :close-on-click-modal="false"
+          :visible.sync="dialogVisible"
+          v-if="dialogVisible"
+          width="60%">
+          <el-input  type="textarea" v-model="reason" maxlength="300" placeholder="请输入原因"
+          :autosize="{ minRows: 4 }" show-word-limit ></el-input>
+          <span slot="footer" class="dialog-footer">
+            <el-button type="primary" size="small" v-loading = "buttonLoading" @click="clickUpdateProcDefState">确 定</el-button>
+            <el-button size="small" @click="dialogVisible = false">取 消</el-button>
+          </span>
+        </el-dialog>
     </div>
 </template>
 

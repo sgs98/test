@@ -94,10 +94,9 @@ public class TaskController extends BaseController {
         return iTaskService.getAllTaskWaitByPage(req);
     }
 
-
     /**
-     * @param req
      * @Description: 完成任务
+     * @param: req
      * @return: com.ruoyi.common.core.domain.R<java.lang.Void>
      * @author: gssong
      * @Date: 2021/10/21 13:34
@@ -283,6 +282,20 @@ public class TaskController extends BaseController {
     @GetMapping("/getProcessInstVariable/{taskId}")
     public R<List<VariableVo>> getProcessInstVariable(@PathVariable String taskId) {
         return iTaskService.getProcessInstVariable(taskId);
+    }
+
+    /**
+     * @Description: 修改审批意见
+     * @param: commentId
+     * @param: comment
+     * @return: com.ruoyi.common.core.domain.R<java.lang.Void>
+     * @author: gssong
+     * @Date: 2022/7/24 13:38
+     */
+    @ApiOperation("修改审批意见")
+    @PutMapping("/editComment/{commentId}/{comment}")
+    public R<Void> editComment(@PathVariable String commentId,@PathVariable String comment) {
+        return iTaskService.editComment(commentId,comment);
     }
 
 }

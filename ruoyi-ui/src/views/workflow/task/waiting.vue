@@ -32,15 +32,15 @@
 
         <el-table v-loading="loading" :data="dataList" @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="55" align="center" />
-            <el-table-column fixed align="center" type="index" label="序号" width="50"/>
-            <el-table-column fixed align="center" prop="name" label="任务名称"/>
-            <el-table-column  align="center" prop="processDefinitionName" label="流程定义名称" />
+            <el-table-column align="center" type="index" label="序号" width="50"/>
+            <el-table-column align="center" prop="name" label="任务名称"/>
+            <el-table-column align="center" prop="processDefinitionName" label="流程定义名称" />
             <el-table-column align="center" prop="processDefinitionVersion" label="版本号" width="90" >
               <template slot-scope="{row}"> v{{row.processDefinitionVersion}}.0</template>
             </el-table-column>
-            <el-table-column  align="center" prop="startUserNickName" label="流程发起人"  min-width="130"/>
-            <el-table-column  align="center" prop="assignee" label="当前流程办理人"  min-width="130"/>
-            <el-table-column  align="center" prop="isSuspended" label="流程状态" width="160">
+            <el-table-column  align="center" prop="startUserNickName" label="流程发起人" min-width="80"/>
+            <el-table-column  align="center" prop="assignee" label="当前流程办理人" min-width="80"/>
+            <el-table-column  align="center" prop="isSuspended" label="流程状态" width="80">
               <template slot-scope="scope">
                 <el-tag type="success" v-if="scope.row.processStatus=='激活'">激活</el-tag>
                 <el-tag type="danger" v-else>挂起</el-tag>
@@ -48,34 +48,47 @@
             </el-table-column>
             <el-table-column  align="center" prop="businessKey" :show-overflow-tooltip="true" label="流程关联业务ID" width="160"/>
             <el-table-column  align="center" prop="createTime" label="创建时间" width="160"/>
-            <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
+            <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
               <template slot-scope="scope">
-                  <el-button
-                      type="text"
-                      @click="clickHistPop(scope.row)"
-                      size="mini"
-                      icon="el-icon-tickets"
-                  >审批记录</el-button>
-                  <el-button
-                      v-if="scope.row.taskVoList&&scope.row.taskVoList.length>0"
-                      type="text"
-                      @click="deleteMultiClick(scope.row)"
-                      size="mini"
-                      icon="el-icon-tickets"
-                  >减签</el-button>
-                  <el-button
-                      v-if="scope.row.multiInstance"
-                      type="text"
-                      @click="addMultiPeople(scope.row)"
-                      size="mini"
-                      icon="el-icon-tickets"
-                  >加签</el-button>
-                  <el-button
-                      type="text"
-                      @click="getInstVariable(scope.row)"
-                      size="mini"
-                      icon="el-icon-tickets"
-                  >流程变量</el-button>
+                <el-row :gutter="20" class="mb8">
+                    <el-col :span="1.5">
+                      <el-button
+                          type="text"
+                          @click="clickHistPop(scope.row)"
+                          size="mini"
+                          icon="el-icon-tickets"
+                      >审批记录</el-button>
+                    </el-col>
+                    <el-col :span="1.5">
+                      <el-button
+                          v-if="scope.row.multiInstance && scope.row.parentTaskId===null"
+                          type="text"
+                          @click="addMultiPeople(scope.row)"
+                          size="mini"
+                          icon="el-icon-tickets"
+                      >加签</el-button>
+                    </el-col>
+                  </el-row>
+                  <el-row :gutter="20" class="mb8">
+                    <el-col :span="1.5">
+                      <el-button
+                          type="text"
+                          v-if="scope.row.parentTaskId===null"
+                          @click="getInstVariable(scope.row)"
+                          size="mini"
+                          icon="el-icon-tickets"
+                      >流程变量</el-button>
+                    </el-col>
+                    <el-col :span="1.5">
+                      <el-button
+                          v-if="scope.row.taskVoList && scope.row.taskVoList.length>0 && scope.row.parentTaskId===null"
+                          type="text"
+                          @click="deleteMultiClick(scope.row)"
+                          size="mini"
+                          icon="el-icon-tickets"
+                      >减签</el-button>
+                    </el-col>
+                  </el-row>
                 </template>
             </el-table-column>
         </el-table>
@@ -86,7 +99,7 @@
           @pagination="getList" />
         <!-- 驳回 -->
         <el-dialog title="审批记录" :visible.sync="visible" v-if="visible" width="60%" :close-on-click-modal="false">
-          <history :processInstanceId="processInstanceId"></history>
+          <history :processInstanceId="processInstanceId" :editMessage="true"></history>
         </el-dialog>
 
         <approvalForm ref="approvalForm" :businessKey = 'businessKey' :processInstanceId = 'processInstanceId'/>
@@ -99,7 +112,7 @@
 
         <!-- 减签开始 -->
         <el-dialog :close-on-click-modal="false" title="减签" :visible.sync="deleteMultiVisible" width="700px"  append-to-body>
-          <el-table border  @selection-change="handleSelectionMultiList" :data="multiList" style="width: 100%">
+          <el-table border @selection-change="handleSelectionMultiList" :data="multiList" style="width: 100%">
             <el-table-column type="selection" width="55"/>
             <el-table-column prop="name" label="任务名称" width="200"/>
             <el-table-column prop="assignee" label="办理人" width="200"/>

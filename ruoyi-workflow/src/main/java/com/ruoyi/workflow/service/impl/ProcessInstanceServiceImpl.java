@@ -131,10 +131,13 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
             BeanUtils.copyProperties(historicTaskInstance, actHistoryInfoVo);
             actHistoryInfoVo.setStatus(actHistoryInfoVo.getEndTime() == null ? "待处理" : "已处理");
             List<Comment> taskComments = taskService.getTaskComments(historicTaskInstance.getId());
-            String message = taskComments.stream()
-                .map(Comment::getFullMessage).collect(Collectors.joining("。"));
-            if (StringUtils.isNotBlank(message)) {
-                actHistoryInfoVo.setComment(message);
+            if(CollectionUtil.isNotEmpty(taskComments)){
+                actHistoryInfoVo.setCommentId(taskComments.get(0).getId());
+                String message = taskComments.stream()
+                    .map(Comment::getFullMessage).collect(Collectors.joining("。"));
+                if (StringUtils.isNotBlank(message)) {
+                    actHistoryInfoVo.setComment(message);
+                }
             }
             actHistoryInfoVoList.add(actHistoryInfoVo);
         }

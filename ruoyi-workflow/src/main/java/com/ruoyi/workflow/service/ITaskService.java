@@ -117,4 +117,12 @@ public interface ITaskService {
      * @return
      */
     R<List<VariableVo>> getProcessInstVariable(String taskId);
+
+    /**
+     * 修改审批意见
+     * @param commentId
+     * @param comment
+     * @return
+     */
+    R<Void> editComment(String commentId,String comment);
 }
