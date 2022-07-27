@@ -26,6 +26,7 @@ import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
 import com.ruoyi.workflow.domain.vo.ActBusinessRuleVo;
 import com.ruoyi.workflow.domain.vo.ProcessNode;
+import com.ruoyi.workflow.service.IActBusinessRuleService;
 import com.ruoyi.workflow.service.IActBusinessStatusService;
 import com.ruoyi.workflow.service.IActHiTaskInstService;
 import com.ruoyi.workflow.service.ISysMessageService;
@@ -83,6 +84,8 @@ public class WorkFlowUtils {
     private final ISysMessageService iSysMessageService;
 
     private final IActHiTaskInstService iActHiTaskInstService;
+
+    private final IActBusinessRuleService iActBusinessRuleService;
 
     /**
      * @Description: bpmnModel转为xml
@@ -487,7 +490,7 @@ public class WorkFlowUtils {
      * @Description: 判断当前节点是否为会签节点
      * @param: processDefinitionId 流程定义id
      * @param: taskDefinitionKey 当前节点id
-     * @return: java.lang.Boolean
+     * @return: com.ruoyi.workflow.domain.vo.MultiVo
      * @author: gssong
      * @Date: 2022/4/16 13:31
      */
@@ -681,28 +684,95 @@ public class WorkFlowUtils {
     }
 
     /**
-     * @Description: 办理任务
+     * @Description: 自动办理任务
      * @param: processInstanceId 流程实例id
+     * @param: businessKey 业务id
      * @param: actNodeAssignees 流程定义设置
      * @return: void
      * @author: gssong
      * @Date: 2022/7/12 21:27
      */
-    public void completeTask(String processInstanceId, List<ActNodeAssignee> actNodeAssignees) {
+    public void autoComplete(String processInstanceId, String businessKey, List<ActNodeAssignee> actNodeAssignees) {
+
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        if(!CollectionUtil.isNotEmpty(taskList)){
+            iActBusinessStatusService.updateState(businessKey, BusinessStatusEnum.FINISH);
+        }
         List<Task> list = taskService.createTaskQuery().processInstanceId(processInstanceId)
             .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).list();
         if (CollectionUtil.isNotEmpty(list)) {
-            for (Task task : list) {
-                ActNodeAssignee actNodeAssignee = actNodeAssignees.stream().filter(e -> e.getNodeId().equals(task.getTaskDefinitionKey())).findFirst().orElse(null);
-                if (ObjectUtil.isEmpty(actNodeAssignee)) {
-                    throw new ServiceException("请检查【" + task.getName() + "】节点配置");
+            for (Task t : list) {
+                ActNodeAssignee nodeAssignee = actNodeAssignees.stream().filter(e -> t.getTaskDefinitionKey().equals(e.getNodeId())).findFirst().orElse(null);
+                if (ObjectUtil.isNull(nodeAssignee)) {
+                    throw new ServiceException("请检查【" + t.getName() + "】节点配置");
                 }
-                if (actNodeAssignee.getAutoComplete()) {
-                    taskService.setAssignee(task.getId(), LoginHelper.getUserId().toString());
-                    taskService.complete(task.getId());
+                if(nodeAssignee.getAutoComplete()){
+                    // 不需要弹窗选人
+                    if (!nodeAssignee.getIsShow() && StringUtils.isBlank(t.getAssignee())) {
+                        //设置人员
+                        settingAssignee(t, nodeAssignee, false);
+                    }else{
+                        throw new ServiceException("请检查【" + t.getName() + "】节点配置，该节点为弹窗选人");
+                    }
                 }
             }
-            completeTask(processInstanceId, actNodeAssignees);
+            autoComplete(processInstanceId,businessKey, actNodeAssignees);
+        }
+    }
+
+    /**
+     * @Description: 设置任务执行人员
+     * @param: task 任务信息
+     * @param: actNodeAssignee 人员设置
+     * @param: multiple 是否为会签节点
+     * @return: void
+     * @author: gssong
+     * @Date: 2022/7/8
+     */
+    public void settingAssignee(Task task, ActNodeAssignee actNodeAssignee, Boolean multiple) {
+        //按业务规则选人
+        if (ActConstant.WORKFLOW_RULE.equals(actNodeAssignee.getChooseWay())) {
+            ActBusinessRuleVo actBusinessRuleVo = iActBusinessRuleService.queryById(actNodeAssignee.getBusinessRuleId());
+            List<String> ruleAssignList = ruleAssignList(actBusinessRuleVo, task.getId(), task.getName());
+            List<Long> userIdList = new ArrayList<>();
+            for (String userId : ruleAssignList) {
+                userIdList.add(Long.valueOf(userId));
+            }
+            if (multiple) {
+                taskService.setVariable(task.getId(), actNodeAssignee.getMultipleColumn(), userIdList);
+            } else {
+                setAssignee(task, userIdList);
+            }
+        } else {
+            if (StringUtils.isBlank(actNodeAssignee.getAssigneeId())) {
+                throw new ServiceException("请检查【" + task.getName() + "】节点配置");
+            }
+            // 设置审批人员
+            List<Long> assignees = getAssigneeIdList(actNodeAssignee.getAssigneeId(), actNodeAssignee.getChooseWay(), task.getName());
+            if (multiple) {
+                taskService.setVariable(task.getId(), actNodeAssignee.getMultipleColumn(), assignees);
+            } else {
+                setAssignee(task, assignees);
+            }
+        }
+    }
+
+    /**
+     * @Description: 设置任务人员
+     * @param: task 任务
+     * @param: assignees 办理人
+     * @return: void
+     * @author: gssong
+     * @Date: 2021/10/21
+     */
+    public void setAssignee(Task task, List<Long> assignees) {
+        if (assignees.size() == 1) {
+            taskService.setAssignee(task.getId(), assignees.get(0).toString());
+        } else {
+            // 多个作为候选人
+            for (Long assignee : assignees) {
+                taskService.addCandidateUser(task.getId(), assignee.toString());
+            }
         }
     }
 }
