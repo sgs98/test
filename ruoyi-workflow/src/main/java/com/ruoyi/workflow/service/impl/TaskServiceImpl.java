@@ -291,9 +291,14 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 workFlowUtils.createSubTask(taskList, req.getAssigneeIds());
             }
             // 校验自动办理
-            workFlowUtils.autoComplete(processInstance.getProcessInstanceId(),processInstance.getBusinessKey(),actNodeAssignees);
+            workFlowUtils.autoComplete(processInstance.getProcessInstanceId(), processInstance.getBusinessKey(), actNodeAssignees);
             // 8. 如果不为空 指定办理人
-            for (Task t : taskList) {
+            List<Task> nextTaskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
+            if (CollectionUtil.isEmpty(nextTaskList)) {
+                // 更新业务状态已完成 办结流程
+                return iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.FINISH);
+            }
+            for (Task t : nextTaskList) {
                 ActNodeAssignee nodeAssignee = actNodeAssignees.stream().filter(e -> t.getTaskDefinitionKey().equals(e.getNodeId())).findFirst().orElse(null);
                 if (ObjectUtil.isNull(nodeAssignee)) {
                     throw new ServiceException("请检查【" + t.getName() + "】节点配置");
@@ -1178,9 +1183,9 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
      * @Date: 2022/7/24 13:28
      */
     @Override
-    public R<Void> editComment(String commentId,String comment) {
+    public R<Void> editComment(String commentId, String comment) {
         try {
-            taskMapper.editComment(commentId,comment);
+            taskMapper.editComment(commentId, comment);
             return R.ok();
         } catch (Exception e) {
             e.printStackTrace();
