@@ -234,7 +234,7 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(val) {
-        if(this.multiple === false){
+        if(this.multiple){
           this.chooseUserList = val.filter((element,index,self)=>{
              return self.findIndex(x=>x.userId===element.userId) === index
           })

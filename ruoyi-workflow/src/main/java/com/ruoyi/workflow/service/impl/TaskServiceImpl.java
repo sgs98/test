@@ -293,6 +293,20 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             // 校验自动办理
             Boolean autoComplete = workFlowUtils.autoComplete(processInstance.getProcessInstanceId(), processInstance.getBusinessKey(), actNodeAssignees, req);
             if(autoComplete){
+                List<Task> nextTaskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
+                if (!CollectionUtil.isEmpty(nextTaskList)) {
+                    for (Task t : nextTaskList) {
+                        ActNodeAssignee nodeAssignee = actNodeAssignees.stream().filter(e -> t.getTaskDefinitionKey().equals(e.getNodeId())).findFirst().orElse(null);
+                        if (ObjectUtil.isNull(nodeAssignee)) {
+                            throw new ServiceException("请检查【" + t.getName() + "】节点配置");
+                        }
+                        logger.info("流程xml中存在人员：" + t.getAssignee());
+                        workFlowUtils.settingAssignee(t, nodeAssignee, nodeAssignee.getMultiple());
+                    }
+                }else{
+                    // 更新业务状态已完成 办结流程
+                    return iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.FINISH);
+                }
                 // 发送站内信
                 workFlowUtils.sendMessage(req.getSendMessage(), processInstance.getProcessInstanceId());
                 return true;

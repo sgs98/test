@@ -711,8 +711,8 @@ public class WorkFlowUtils {
             settingAssignee(t, nodeAssignee, nodeAssignee.getMultiple());
             List<Long> assignees = req.getAssignees(t.getTaskDefinitionKey());
             if (!nodeAssignee.getIsShow() && CollectionUtil.isNotEmpty(assignees) && assignees.contains(LoginHelper.getUserId())) {
-                taskService.complete(t.getId());
                 taskService.addComment(t.getId(), t.getProcessInstanceId(), "流程引擎满足条件自动办理");
+                taskService.complete(t.getId());
             } else {
                 settingAssignee(t, nodeAssignee, nodeAssignee.getMultiple());
             }
@@ -720,11 +720,12 @@ public class WorkFlowUtils {
         }
         List<Task> list = taskService.createTaskQuery().processInstanceId(processInstanceId)
             .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).list();
-        if (CollectionUtil.isNotEmpty(list)) {
-            for (Task task : list) {
-                taskService.complete(task.getId());
-                taskService.addComment(task.getId(), task.getProcessInstanceId(), "流程引擎满足条件自动办理");
-            }
+        if(CollectionUtil.isEmpty(list)){
+            return false;
+        }
+        for (Task task : list) {
+            taskService.addComment(task.getId(), task.getProcessInstanceId(), "流程引擎满足条件自动办理");
+            taskService.complete(task.getId());
         }
         autoComplete(processInstanceId, businessKey, actNodeAssignees, req);
         return true;
