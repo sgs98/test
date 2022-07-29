@@ -27,10 +27,7 @@ import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
 import com.ruoyi.workflow.domain.vo.ActBusinessRuleVo;
 import com.ruoyi.workflow.domain.vo.ProcessNode;
-import com.ruoyi.workflow.service.IActBusinessRuleService;
-import com.ruoyi.workflow.service.IActBusinessStatusService;
-import com.ruoyi.workflow.service.IActHiTaskInstService;
-import com.ruoyi.workflow.service.ISysMessageService;
+import com.ruoyi.workflow.service.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
@@ -87,6 +84,8 @@ public class WorkFlowUtils {
     private final IActHiTaskInstService iActHiTaskInstService;
 
     private final IActBusinessRuleService iActBusinessRuleService;
+
+    private final IActTaskNodeService iActTaskNodeService;
 
     /**
      * @Description: bpmnModel转为xml
@@ -699,22 +698,23 @@ public class WorkFlowUtils {
         if (CollectionUtil.isEmpty(taskList)) {
             iActBusinessStatusService.updateState(businessKey, BusinessStatusEnum.FINISH);
         }
-        for (Task t : taskList) {
-            ActNodeAssignee nodeAssignee = actNodeAssignees.stream().filter(e -> t.getTaskDefinitionKey().equals(e.getNodeId())).findFirst().orElse(null);
+        for (Task task : taskList) {
+            ActNodeAssignee nodeAssignee = actNodeAssignees.stream().filter(e -> task.getTaskDefinitionKey().equals(e.getNodeId())).findFirst().orElse(null);
             if (ObjectUtil.isNull(nodeAssignee)) {
-                throw new ServiceException("请检查【" + t.getName() + "】节点配置");
+                throw new ServiceException("请检查【" + task.getName() + "】节点配置");
             }
 
             if (!nodeAssignee.getAutoComplete()) {
                 return false;
             }
-            settingAssignee(t, nodeAssignee, nodeAssignee.getMultiple());
-            List<Long> assignees = req.getAssignees(t.getTaskDefinitionKey());
+            settingAssignee(task, nodeAssignee, nodeAssignee.getMultiple());
+            List<Long> assignees = req.getAssignees(task.getTaskDefinitionKey());
             if (!nodeAssignee.getIsShow() && CollectionUtil.isNotEmpty(assignees) && assignees.contains(LoginHelper.getUserId())) {
-                taskService.addComment(t.getId(), t.getProcessInstanceId(), "流程引擎满足条件自动办理");
-                taskService.complete(t.getId());
+                taskService.addComment(task.getId(), task.getProcessInstanceId(), "流程引擎满足条件自动办理");
+                taskService.complete(task.getId());
+                recordExecuteNode(task, actNodeAssignees);
             } else {
-                settingAssignee(t, nodeAssignee, nodeAssignee.getMultiple());
+                settingAssignee(task, nodeAssignee, nodeAssignee.getMultiple());
             }
 
         }
@@ -726,6 +726,7 @@ public class WorkFlowUtils {
         for (Task task : list) {
             taskService.addComment(task.getId(), task.getProcessInstanceId(), "流程引擎满足条件自动办理");
             taskService.complete(task.getId());
+            recordExecuteNode(task, actNodeAssignees);
         }
         autoComplete(processInstanceId, businessKey, actNodeAssignees, req);
         return true;
@@ -784,6 +785,37 @@ public class WorkFlowUtils {
             for (Long assignee : assignees) {
                 taskService.addCandidateUser(task.getId(), assignee.toString());
             }
+        }
+    }
+
+
+    /**
+     * @Description: 记录审批节点
+     * @param: task
+     * @param: actNodeAssignees
+     * @return: void
+     * @author: gssong
+     * @Date: 2022/7/29 20:57
+     */
+    public void recordExecuteNode(Task task, List<ActNodeAssignee> actNodeAssignees) {
+        List<ActTaskNode> actTaskNodeList = iActTaskNodeService.getListByInstanceId(task.getProcessInstanceId());
+        ActTaskNode actTaskNode = new ActTaskNode();
+        actTaskNode.setNodeId(task.getTaskDefinitionKey());
+        actTaskNode.setNodeName(task.getName());
+        actTaskNode.setInstanceId(task.getProcessInstanceId());
+        if (CollectionUtil.isEmpty(actTaskNodeList)) {
+            actTaskNode.setOrderNo(0);
+            actTaskNode.setIsBack(true);
+            iActTaskNodeService.save(actTaskNode);
+        } else {
+            ActNodeAssignee actNodeAssignee = actNodeAssignees.stream().filter(e -> e.getNodeId().equals(task.getTaskDefinitionKey())).findFirst().orElse(null);
+            //如果为设置流程定义配置默认 当前环节可以回退
+            if (ObjectUtil.isEmpty(actNodeAssignee)) {
+                actTaskNode.setIsBack(true);
+            } else {
+                actTaskNode.setIsBack(actNodeAssignee.getIsBack());
+            }
+            iActTaskNodeService.saveTaskNode(actTaskNode);
         }
     }
 }

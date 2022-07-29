@@ -249,26 +249,8 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                         , task.getProcessInstanceId());
                 }
             }
-            // 5. 记录执行过的流程任务
-            List<ActTaskNode> actTaskNodeList = iActTaskNodeService.getListByInstanceId(task.getProcessInstanceId());
-            ActTaskNode actTaskNode = new ActTaskNode();
-            actTaskNode.setNodeId(task.getTaskDefinitionKey());
-            actTaskNode.setNodeName(task.getName());
-            actTaskNode.setInstanceId(task.getProcessInstanceId());
-            if (CollectionUtil.isEmpty(actTaskNodeList)) {
-                actTaskNode.setOrderNo(0);
-                actTaskNode.setIsBack(true);
-                iActTaskNodeService.save(actTaskNode);
-            } else {
-                ActNodeAssignee actNodeAssignee = actNodeAssignees.stream().filter(e -> e.getNodeId().equals(task.getTaskDefinitionKey())).findFirst().orElse(null);
-                //如果为设置流程定义配置默认 当前环节可以回退
-                if (ObjectUtil.isEmpty(actNodeAssignee)) {
-                    actTaskNode.setIsBack(true);
-                } else {
-                    actTaskNode.setIsBack(actNodeAssignee.getIsBack());
-                }
-                iActTaskNodeService.saveTaskNode(actTaskNode);
-            }
+            // 5. 记录执行过的流程任务节点
+            workFlowUtils.recordExecuteNode(task, actNodeAssignees);
             // 更新业务状态为：办理中
             iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.WAITING, task.getProcessInstanceId());
             // 6. 查询下一个任务
@@ -290,7 +272,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 taskService.complete(newTask.getId());
                 workFlowUtils.createSubTask(taskList, req.getAssigneeIds());
             }
-            // 校验自动办理
+            // 自动办理
             Boolean autoComplete = workFlowUtils.autoComplete(processInstance.getProcessInstanceId(), processInstance.getBusinessKey(), actNodeAssignees, req);
             if(autoComplete){
                 List<Task> nextTaskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
@@ -300,7 +282,6 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                         if (ObjectUtil.isNull(nodeAssignee)) {
                             throw new ServiceException("请检查【" + t.getName() + "】节点配置");
                         }
-                        logger.info("流程xml中存在人员：" + t.getAssignee());
                         workFlowUtils.settingAssignee(t, nodeAssignee, nodeAssignee.getMultiple());
                     }
                 }else{
@@ -322,7 +303,6 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 if (ObjectUtil.isNull(nodeAssignee)) {
                     throw new ServiceException("请检查【" + t.getName() + "】节点配置");
                 }
-                logger.info("流程xml中存在人员：" + t.getAssignee());
                 // 不需要弹窗选人
                 if (!nodeAssignee.getIsShow() && StringUtils.isBlank(t.getAssignee())) {
                     // 设置人员
