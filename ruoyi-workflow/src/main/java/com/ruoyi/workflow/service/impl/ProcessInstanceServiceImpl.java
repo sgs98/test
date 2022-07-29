@@ -330,7 +330,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
             });
             list = processInstRunningVoList.stream().sorted(Comparator.comparing(ProcessInstRunningVo::getStartTime).reversed()).collect(Collectors.toList());
         }
-        return new TableDataInfo(list, total);
+        return new TableDataInfo<>(list, total);
     }
 
     /**
@@ -488,7 +488,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
             }
             processInstFinishVoList.add(processInstFinishVo);
         }
-        return new TableDataInfo(processInstFinishVoList, total);
+        return new TableDataInfo<>(processInstFinishVoList, total);
     }
 
     @Override

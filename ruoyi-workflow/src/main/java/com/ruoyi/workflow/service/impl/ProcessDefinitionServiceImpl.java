@@ -93,7 +93,7 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
         // 总记录数
         long total = query.count();
 
-        return new TableDataInfo(processDefinitionVoList, total);
+        return new TableDataInfo<>(processDefinitionVoList, total);
     }
 
     /**

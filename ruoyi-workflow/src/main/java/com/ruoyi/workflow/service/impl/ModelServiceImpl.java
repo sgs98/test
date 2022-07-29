@@ -175,7 +175,7 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
         }
         // 总记录数
         long total = query.count();
-        return new TableDataInfo(modelList, total);
+        return new TableDataInfo<>(modelList, total);
     }
 
     /**
@@ -391,7 +391,7 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
 
             } catch (Exception e) {
                 e.printStackTrace();
-                log.error("转化流程为模型失败:", e.getMessage());
+                log.error(e.getMessage());
                 return false;
             }
     }

@@ -18,6 +18,7 @@ import com.ruoyi.system.mapper.SysUserMapper;
 import com.ruoyi.system.mapper.SysUserRoleMapper;
 import com.ruoyi.workflow.domain.*;
 import com.ruoyi.workflow.domain.bo.SendMessage;
+import com.ruoyi.workflow.domain.bo.TaskCompleteREQ;
 import com.ruoyi.workflow.domain.vo.MultiVo;
 import com.ruoyi.workflow.flowable.cmd.DeleteExecutionCmd;
 import com.ruoyi.workflow.flowable.cmd.DeleteTaskCmd;
@@ -337,7 +338,7 @@ public class WorkFlowUtils {
                 obj = ReflectionUtils.invokeMethod(method, beanName);
             }
             if (obj == null) {
-                throw new ServiceException("【" + taskName + "】任务环节未配置审批人,请确认传值是否正确,检查：【"+businessRule.getBeanName()+"】Bean容器中【"+methodName+"】方法");
+                throw new ServiceException("【" + taskName + "】任务环节未配置审批人,请确认传值是否正确,检查：【" + businessRule.getBeanName() + "】Bean容器中【" + methodName + "】方法");
             }
             return Arrays.asList(obj.toString().split(","));
         } catch (Exception e) {
@@ -688,36 +689,45 @@ public class WorkFlowUtils {
      * @param: processInstanceId 流程实例id
      * @param: businessKey 业务id
      * @param: actNodeAssignees 流程定义设置
-     * @return: void
+     * @return: java.lang.Boolean
      * @author: gssong
      * @Date: 2022/7/12 21:27
      */
-    public void autoComplete(String processInstanceId, String businessKey, List<ActNodeAssignee> actNodeAssignees) {
+    public Boolean autoComplete(String processInstanceId, String businessKey, List<ActNodeAssignee> actNodeAssignees, TaskCompleteREQ req) {
 
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
-        if(!CollectionUtil.isNotEmpty(taskList)){
+        if (CollectionUtil.isEmpty(taskList)) {
             iActBusinessStatusService.updateState(businessKey, BusinessStatusEnum.FINISH);
+        }
+        for (Task t : taskList) {
+            ActNodeAssignee nodeAssignee = actNodeAssignees.stream().filter(e -> t.getTaskDefinitionKey().equals(e.getNodeId())).findFirst().orElse(null);
+            if (ObjectUtil.isNull(nodeAssignee)) {
+                throw new ServiceException("请检查【" + t.getName() + "】节点配置");
+            }
+
+            if (!nodeAssignee.getAutoComplete()) {
+                return false;
+            }
+            settingAssignee(t, nodeAssignee, nodeAssignee.getMultiple());
+            List<Long> assignees = req.getAssignees(t.getTaskDefinitionKey());
+            if (!nodeAssignee.getIsShow() && CollectionUtil.isNotEmpty(assignees) && assignees.contains(LoginHelper.getUserId())) {
+                taskService.complete(t.getId());
+                taskService.addComment(t.getId(), t.getProcessInstanceId(), "流程引擎满足条件自动办理");
+            } else {
+                settingAssignee(t, nodeAssignee, nodeAssignee.getMultiple());
+            }
+
         }
         List<Task> list = taskService.createTaskQuery().processInstanceId(processInstanceId)
             .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).list();
         if (CollectionUtil.isNotEmpty(list)) {
-            for (Task t : list) {
-                ActNodeAssignee nodeAssignee = actNodeAssignees.stream().filter(e -> t.getTaskDefinitionKey().equals(e.getNodeId())).findFirst().orElse(null);
-                if (ObjectUtil.isNull(nodeAssignee)) {
-                    throw new ServiceException("请检查【" + t.getName() + "】节点配置");
-                }
-                if(nodeAssignee.getAutoComplete()){
-                    // 不需要弹窗选人
-                    if (!nodeAssignee.getIsShow() && StringUtils.isBlank(t.getAssignee())) {
-                        //设置人员
-                        settingAssignee(t, nodeAssignee, false);
-                    }else{
-                        throw new ServiceException("请检查【" + t.getName() + "】节点配置，该节点为弹窗选人");
-                    }
-                }
+            for (Task task : list) {
+                taskService.complete(task.getId());
+                taskService.addComment(task.getId(), task.getProcessInstanceId(), "流程引擎满足条件自动办理");
             }
-            autoComplete(processInstanceId,businessKey, actNodeAssignees);
         }
+        autoComplete(processInstanceId, businessKey, actNodeAssignees, req);
+        return true;
     }
 
     /**

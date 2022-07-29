@@ -160,7 +160,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 });
             }
         }
-        return new TableDataInfo(list, total);
+        return new TableDataInfo<>(list, total);
     }
 
 
@@ -216,7 +216,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                     throw new ServiceException("请检查【" + processInstance.getProcessDefinitionKey() + "】配置 ");
                 }
                 if (actNodeAssignee.getMultiple() && !actNodeAssignee.getIsShow()) {
-                    workFlowUtils.settingAssignee(task, actNodeAssignee, true);
+                    workFlowUtils.settingAssignee(task, actNodeAssignee, actNodeAssignee.getMultiple());
                 }
             }
             // 3. 指定任务审批意见
@@ -291,7 +291,12 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 workFlowUtils.createSubTask(taskList, req.getAssigneeIds());
             }
             // 校验自动办理
-            workFlowUtils.autoComplete(processInstance.getProcessInstanceId(), processInstance.getBusinessKey(), actNodeAssignees);
+            Boolean autoComplete = workFlowUtils.autoComplete(processInstance.getProcessInstanceId(), processInstance.getBusinessKey(), actNodeAssignees, req);
+            if(autoComplete){
+                // 发送站内信
+                workFlowUtils.sendMessage(req.getSendMessage(), processInstance.getProcessInstanceId());
+                return true;
+            }
             // 8. 如果不为空 指定办理人
             List<Task> nextTaskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
             if (CollectionUtil.isEmpty(nextTaskList)) {
@@ -383,7 +388,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 }
             }
         }
-        return new TableDataInfo(taskFinishVoList, total);
+        return new TableDataInfo<>(taskFinishVoList, total);
     }
 
 
@@ -448,7 +453,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             if (isMultiInstance.getType() instanceof ParallelMultiInstanceBehavior) {
                 map.put("multiList", multiList(task, taskList, isMultiInstance.getType(), null));
             } else if (isMultiInstance.getType() instanceof SequentialMultiInstanceBehavior) {
-                List<Long> assigneeList = (List) runtimeService.getVariable(task.getExecutionId(), isMultiInstance.getAssigneeList());
+                List<Long> assigneeList = (List<Long>) runtimeService.getVariable(task.getExecutionId(), isMultiInstance.getAssigneeList());
                 map.put("multiList", multiList(task, taskList, isMultiInstance.getType(), assigneeList));
             }
         } else {
@@ -670,7 +675,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 }
             }
         }
-        return new TableDataInfo(taskFinishVoList, total);
+        return new TableDataInfo<>(taskFinishVoList, total);
     }
 
     /**
@@ -719,7 +724,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 if (multiInstance.getType() instanceof ParallelMultiInstanceBehavior) {
                     taskWaitingVo.setTaskVoList(multiList((TaskEntity) task, tasks, multiInstance.getType(), null));
                 } else if (multiInstance.getType() instanceof SequentialMultiInstanceBehavior && StringUtils.isNotBlank(task.getExecutionId())) {
-                    List<Long> assigneeList = (List) runtimeService.getVariable(task.getExecutionId(), multiInstance.getAssigneeList());
+                    List<Long> assigneeList = (List<Long>) runtimeService.getVariable(task.getExecutionId(), multiInstance.getAssigneeList());
                     taskWaitingVo.setTaskVoList(multiList((TaskEntity) task, tasks, multiInstance.getType(), assigneeList));
                 }
             }
@@ -761,7 +766,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 }
             }
         }
-        return new TableDataInfo(list, total);
+        return new TableDataInfo<>(list, total);
     }
 
     /**
@@ -822,9 +827,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 otherTasks = taskList.stream().filter(e -> !e.getId().equals(backProcessBo.getTaskId())).collect(Collectors.toList());
             }
             if (CollectionUtil.isNotEmpty(otherTasks) && otherTasks.size() > 0) {
-                otherTasks.forEach(e -> {
-                    historyService.deleteHistoricTaskInstance(e.getId());
-                });
+                otherTasks.forEach(e -> historyService.deleteHistoricTaskInstance(e.getId()));
             }
             //判断是否会签
             LambdaQueryWrapper<ActNodeAssignee> wrapper = new LambdaQueryWrapper<>();
