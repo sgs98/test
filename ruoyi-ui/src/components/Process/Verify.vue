@@ -265,6 +265,9 @@ export default {
                 type: this.sendMessageType,
                 messageContent: this.$store.state.user.name+"提交了"+this.sendMessage.messageContent
             }
+            if(this.businessStatus.status === 'draft'){
+                 this.formData.message = '提交单据'
+            }
             let response = await api.completeTask(this.formData);
             if (response.code === 200) {
               // 刷新数据
