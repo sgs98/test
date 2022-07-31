@@ -87,11 +87,13 @@ public class SysMessageServiceImpl implements ISysMessageService {
      * @return 消息通知
      */
     @Override
-    public TableDataInfo<SysMessageVo> queryPage(PageQuery pageQuery, String userName) {
-        SysUser sysUser = sysUserMapper.selectUserByUserName(userName);
+    public TableDataInfo<SysMessageVo> queryPage() {
+        PageQuery pageQuery = new PageQuery();
+        pageQuery.setPageNum(1);
+        pageQuery.setPageSize(3);
         LambdaQueryWrapper<SysMessage> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SysMessage::getStatus, false);
-        wrapper.eq(SysMessage::getRecordId, sysUser.getUserId());
+        wrapper.eq(SysMessage::getRecordId, LoginHelper.getUserId());
         Page<SysMessageVo> result = baseMapper.selectVoPage(pageQuery.build(), wrapper);
         return TableDataInfo.build(result);
     }
