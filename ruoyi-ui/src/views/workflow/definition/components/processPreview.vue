@@ -7,7 +7,7 @@
       </div>
       <div class="xml-data" v-if="type==='xml'">
         <div v-for="(xml,index) in url" :key="index">
-          <pre>{{xml}}</pre>
+          <pre class="font">{{xml}}</pre>
        </div>
       </div>
       <span slot="footer" v-if="type==='xml'" class="dialog-footer">
@@ -63,7 +63,11 @@ export default {
   padding: 8px 0px;
   height: 500px;
   width: inherit;
-  line-height: 8px;
+  line-height: 1px;
+}
+.font{
+  font-family:'幼圆';
+  font-weight:500;
 }
 /* 修改滚动条样式 */
 .xml-data::-webkit-scrollbar {
