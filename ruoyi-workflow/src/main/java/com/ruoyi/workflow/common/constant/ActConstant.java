@@ -32,6 +32,11 @@ public interface ActConstant {
     String INCLUSIVE_GATEWAY = "InclusiveGateway";
 
     /**
+     *结束节点
+     */
+    String END_EVENT = "EndEvent";
+
+    /**
      *连线
      */
     String SEQUENCE_FLOW = "sequenceFlow";
@@ -134,7 +139,5 @@ public interface ActConstant {
     String PARAM_DOUBLE = "Double";
 
     String PARAM_BOOLEAN = "Boolean";
-
-    String PARAM_CHARACTER = "Character";
 
 }
