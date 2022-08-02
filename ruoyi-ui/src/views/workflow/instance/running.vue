@@ -32,22 +32,22 @@
         <el-table v-loading="loading" :data="dataList" @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="55" align="center" />
             <el-table-column fixed align="center" type="index" label="序号" width="50"></el-table-column>
-            <el-table-column fixed align="center" prop="name" label="流程定义名称" width="120"></el-table-column>
+            <el-table-column fixed align="center" prop="name" label="流程定义名称" width="150"></el-table-column>
             <el-table-column  align="center" prop="processDefinitionKey" label="流程定义KEY" width="120"></el-table-column>
             <el-table-column align="center" prop="processDefinitionVersion" label="版本号" width="90" >
               <template slot-scope="{row}"> v{{row.processDefinitionVersion}}.0</template>
             </el-table-column>
-            <el-table-column  align="center" prop="startUserNickName" label="流程发起人"  min-width="130"></el-table-column>
+            <el-table-column  align="center" prop="startUserNickName" label="流程发起人" width="120"></el-table-column>
             <el-table-column  align="center" prop="isSuspended" label="流程状态" width="75">
               <template slot-scope="scope">
                 <el-tag type="success" v-if="scope.row.isSuspended=='激活'">激活</el-tag>
                 <el-tag type="danger" v-else>挂起</el-tag>
               </template>
             </el-table-column>
-            <el-table-column  align="center" prop="currTaskInfo" :show-overflow-tooltip="true" label="当前办理人" width="100"></el-table-column>
-            <el-table-column  align="center" prop="businessKey" :show-overflow-tooltip="true" label="流程关联业务ID" width="120"></el-table-column>
-            <el-table-column  align="center" prop="startTime" :show-overflow-tooltip="true" label="流程启动时间" width="100"></el-table-column>
-            <el-table-column  align="center" prop="actBusinessStatus.suspendedReason" :show-overflow-tooltip="true" label="挂起或激活原因" width="150"></el-table-column>
+            <el-table-column  align="center" prop="currTaskInfo" :show-overflow-tooltip="true" label="当前办理人"></el-table-column>
+            <el-table-column  align="center" prop="businessKey" :show-overflow-tooltip="true" label="流程关联业务ID" width="150"></el-table-column>
+            <el-table-column  align="center" prop="startTime" :show-overflow-tooltip="true" label="流程启动时间" width="150"></el-table-column>
+            <el-table-column  align="center" prop="actBusinessStatus.suspendedReason" :show-overflow-tooltip="true" label="挂起或激活原因" width="180"></el-table-column>
             <el-table-column label="操作" align="center" width="120" class-name="small-padding fixed-width">
             <template slot-scope="scope">
               <el-row :gutter="10" class="mb8">
