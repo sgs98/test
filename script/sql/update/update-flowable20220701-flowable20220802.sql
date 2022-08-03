@@ -17,3 +17,4 @@ INSERT INTO `sys_dict_data` (`dict_code`, `dict_sort`, `dict_label`, `dict_value
 
 ALTER TABLE act_node_assignee ADD auto_complete TINYINT(1) NOT NULL DEFAULT 0 COMMENT '自动审批,0不自动办理,1自动办理,当前节点自动办理';
 
+alter table act_node_assignee rename column full_class_id to business_rule_id;
