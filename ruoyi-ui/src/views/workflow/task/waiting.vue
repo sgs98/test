@@ -104,7 +104,7 @@
 
         <approvalForm ref="approvalForm" :businessKey = 'businessKey' :processInstanceId = 'processInstanceId'/>
         <!-- 选择人员 -->
-        <sys-dept-user ref="userRef" @confirmUser="clickUser"/>
+        <sys-dept-user ref="userRef" @confirmUser="clickUser" :multiple="false"/>
 
         <!-- 加签开始 -->
         <div v-if="addMultiVisible"><multi-user :taskId="taskId" ref="addMultiUserRef" @multiClose="multiClose" @confirmUser="confirmAddMultiUser"/></div>
