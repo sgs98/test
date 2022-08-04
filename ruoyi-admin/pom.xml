@@ -82,12 +82,6 @@
         <dependency>
             <groupId>com.ruoyi</groupId>
             <artifactId>ruoyi-workflow</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.xmlbeans</groupId>
-                    <artifactId>xmlbeans</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
     </dependencies>

@@ -1,5 +1,7 @@
-package com.ruoyi.workflow.config;
+package com.ruoyi.framework.config;
 
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ComponentScan(basePackages = {"org.jeecg.modules.jmreport"})
-public class JmreportConfig {
+@EnableAutoConfiguration(exclude={MongoAutoConfiguration.class})
+public class JmReportConfig {
 }
 
