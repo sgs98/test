@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ruoyi.common.utils.StringUtils;
 import org.jeecg.modules.jmreport.api.JmReportTokenServiceI;
+import org.springframework.stereotype.Component;
 
 /**
  * @author xycq
@@ -12,6 +13,7 @@ import org.jeecg.modules.jmreport.api.JmReportTokenServiceI;
  * @Description 积木报表Token验证
  * @createTime 2022年08月03日 15:12:00
  */
+@Component
 public class JmReportTokenServiceImpl implements JmReportTokenServiceI  {
     /**
      * 获得用户id
