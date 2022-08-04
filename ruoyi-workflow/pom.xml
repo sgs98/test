@@ -22,12 +22,6 @@
 
     <dependencies>
 
-        <!-- 通用工具-->
-        <dependency>
-            <groupId>com.ruoyi</groupId>
-            <artifactId>ruoyi-common</artifactId>
-        </dependency>
-
         <!-- 核心模块-->
         <dependency>
             <groupId>com.ruoyi</groupId>
@@ -43,14 +37,7 @@
         <!--JimuReport-->
         <dependency>
             <groupId>org.jeecgframework.jimureport</groupId>
-            <artifactId>spring-boot-starter-jimureport</artifactId>
-        </dependency>
-
-        <!--解决部署xml错误-->
-        <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
-            <version>${xerces.version}</version>
+            <artifactId>jimureport-spring-boot-starter</artifactId>
         </dependency>
 
         <!-- svg转png图片工具-->
