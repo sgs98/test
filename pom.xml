@@ -296,6 +296,14 @@
                         <artifactId>druid</artifactId>
                         <groupId>com.alibaba</groupId>
                     </exclusion>
+                    <exclusion>
+                        <artifactId>xmlbeans</artifactId>
+                        <groupId>org.apache.xmlbeans</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>xml-apis</artifactId>
+                        <groupId>xml-apis</groupId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
