@@ -47,6 +47,13 @@
             </exclusions>
         </dependency>
 
+        <!--解决部署xml错误-->
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>${xerces.version}</version>
+        </dependency>
+
     </dependencies>
 
 </project>
