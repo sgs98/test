@@ -30,10 +30,14 @@ public class SysReportView extends BaseEntity {
     /**
      * 报表id
      */
-    private Long reportId;
+    private String reportId;
     /**
      * 报表名称
      */
     private String reportName;
+    /**
+     * 排序
+     */
+    private Integer orderNo;
 
 }

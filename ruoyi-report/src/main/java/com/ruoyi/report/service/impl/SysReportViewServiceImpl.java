@@ -63,6 +63,7 @@ public class SysReportViewServiceImpl implements ISysReportViewService {
         LambdaQueryWrapper<SysReportView> lqw = Wrappers.lambdaQuery();
         lqw.eq(bo.getReportId() != null, SysReportView::getReportId, bo.getReportId());
         lqw.like(StringUtils.isNotBlank(bo.getReportName()), SysReportView::getReportName, bo.getReportName());
+        lqw.orderByAsc(SysReportView::getOrderNo);
         return lqw;
     }
 

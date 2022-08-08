@@ -1,115 +1,85 @@
 <template>
-  <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="报表id" prop="reportId">
-        <el-input
-          v-model="queryParams.reportId"
-          placeholder="请输入报表id"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="报表名称" prop="reportName">
-        <el-input
-          v-model="queryParams.reportName"
-          placeholder="请输入报表名称"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+<el-container class="container">
+  <el-aside class="aside">
+    <div class="left_aside">
+      <div class="main">
+        <el-form :model="queryParams" ref="queryForm" size="mini" :inline="true" v-show="showSearch" label-width="68px">
+          <el-form-item label="" prop="reportName">
+            <el-input
+              v-model="queryParams.reportName"
+              placeholder="请输入报表名称"
+              clearable
+              @keyup.enter.native="handleQuery"
+            >
+             <el-button slot="append" icon="el-icon-search" @click="handleQuery">搜索</el-button>
+            </el-input>
+          </el-form-item>
+        </el-form>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['report:reportView:add']"
-        >新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['report:reportView:edit']"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['report:reportView:remove']"
-        >删除</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          @click="handleExport"
-          v-hasPermi="['report:reportView:export']"
-        >导出</el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
-    </el-row>
+        <el-row :gutter="8" class="mb8">
+          <el-col :span="1.5">
+            <el-button
+              type="primary"
+              plain
+              icon="el-icon-plus"
+              size="mini"
+              @click="handleAdd"
+              v-hasPermi="['report:reportView:add']"
+            >新增</el-button>
+          </el-col>
+          <el-col :span="1.5">
+            <el-button
+              type="success"
+              plain
+              icon="el-icon-edit"
+              size="mini"
+              :disabled="single"
+              @click="handleUpdate"
+              v-hasPermi="['report:reportView:edit']"
+            >修改</el-button>
+          </el-col>
+          <el-col :span="1.5">
+            <el-button
+              type="danger"
+              plain
+              icon="el-icon-delete"
+              size="mini"
+              :disabled="multiple"
+              @click="handleDelete"
+              v-hasPermi="['report:reportView:remove']"
+            >删除</el-button>
+          </el-col>
+          <el-col :span="1.5">
+            <el-button
+              type="warning"
+              plain
+              icon="el-icon-download"
+              size="mini"
+              @click="handleExport"
+              v-hasPermi="['report:reportView:export']"
+            >导出</el-button>
+          </el-col>
+        </el-row>
 
-    <el-table v-loading="loading" :data="reportViewList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="id" align="center" prop="id" v-if="true"/>
-      <el-table-column label="报表id" align="center" prop="reportId" />
-      <el-table-column label="报表名称" align="center" prop="reportName" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['report:reportView:edit']"
-          >修改</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['report:reportView:remove']"
-          >删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
-      @pagination="getList"
-    />
-
+        <el-table @row-click="handdle" size="mini" v-loading="loading" :data="reportViewList" @selection-change="handleSelectionChange">
+          <el-table-column v-hasPermi="['report:reportView:remove']" type="selection" width="55" align="center" />
+          <el-table-column label="报表名称" align="center" prop="reportName" />
+        </el-table>
+      </div>
+     </div>
     <!-- 添加或修改报表查看对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="报表id" prop="reportId">
-          <el-input v-model="form.reportId" placeholder="请输入报表id" />
+        <el-form-item label="报表" prop="reportId" v-show="false">
+          <el-input v-model="form.reportId" readonly placeholder="请输入报表"/>
         </el-form-item>
         <el-form-item label="报表名称" prop="reportName">
-          <el-input v-model="form.reportName" placeholder="请输入报表名称" />
+          <el-input v-model="form.reportName" readonly placeholder="请输入报表名称" >
+            <el-button slot="append" @click="handleReportOpen">选择</el-button>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="排序" prop="orderNo">
+          <el-input type="number" v-model="form.orderNo" placeholder="请输入排序" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -117,14 +87,30 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
-  </div>
+
+    <ReportDb @report-db-submit="reportDbSubmit" ref="reportDb"/>
+    
+  </el-aside>
+  
+  <el-container>
+    <el-main>
+      <i-frame v-if="url" :src="url" />
+    </el-main>
+  </el-container>
+</el-container>
 </template>
 
 <script>
 import { listReportView, getReportView, delReportView, addReportView, updateReportView } from "@/api/report/reportView";
-
+import ReportDb from "@/views/jmreport/reportDb";
+import iFrame from "@/components/iFrame/index";
+import {getToken} from "@/utils/auth";
 export default {
   name: "ReportView",
+  components: {
+      ReportDb,
+      iFrame
+    },
   data() {
     return {
       // 按钮loading
@@ -147,10 +133,11 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      reportOpen: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
-        pageSize: 10,
+        pageSize: 10000,
         reportId: undefined,
         reportName: undefined,
       },
@@ -158,34 +145,34 @@ export default {
       form: {},
       // 表单校验
       rules: {
-        id: [
-          { required: true, message: "id不能为空", trigger: "blur" }
-        ],
         reportId: [
-          { required: true, message: "报表id不能为空", trigger: "blur" }
+          { required: true, message: "报表不能为空", trigger: "blur" }
         ],
         reportName: [
           { required: true, message: "报表名称不能为空", trigger: "blur" }
-        ],
-        createTime: [
-          { required: true, message: "创建时间不能为空", trigger: "blur" }
-        ],
-        updateTime: [
-          { required: true, message: "修改时间不能为空", trigger: "blur" }
-        ],
-        createBy: [
-          { required: true, message: "创建人不能为空", trigger: "blur" }
-        ],
-        updateBy: [
-          { required: true, message: "更新人不能为空", trigger: "blur" }
         ]
-      }
+      },
+      url:''
     };
   },
   created() {
     this.getList();
   },
   methods: {
+    //报表确认
+    reportDbSubmit(row){
+       this.form.reportId = row.jimuReportId
+       this.form.reportName = row.dbChName
+    },
+    //打开报表
+    handleReportOpen(){
+      this.$refs.reportDb.reportOpen = true
+    },
+    //切换报表
+    handdle(row, event, column){
+       console.log(row, event, column)
+       this.url = process.env.VUE_APP_JMREPORT_URL + "/view/"+ row.reportId +"?token=" + getToken();
+    },
     /** 查询报表查看列表 */
     getList() {
       this.loading = true;
@@ -295,25 +282,31 @@ export default {
   }
 };
 </script>
-
-<!-- <template>
-  <div>
-    <i-frame :src="url" />
-  </div>
-</template>
-<script>
-import iFrame from "@/components/iFrame/index";
-import {getToken} from "@/utils/auth";
-export default {
-  name: "JimuReport",
-  components: { iFrame },
-  data() {
-    return {
-      url: "",
-    };
-  },
-  created() {
-    this.url = process.env.VUE_APP_JMREPORT_URL + "/view/"+ this.$route.query.id +"?token=" + getToken();
+<style scoped>
+  .aside{
+    width: 280px !important;
+    height: 100%;
+    border-right:1px solid #000;
+    background: #fff;
   }
-};
-</script> -->
+  .left_aside{
+    position: relative;
+    height: 100%;
+    width: 250px;
+  }
+  .main{
+    width:inherit;
+  }
+  /* 修改滚动条样式 */
+  .aside::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+  }
+  .aside::-webkit-scrollbar {
+    width: 5px;
+  }
+  .el-table{
+    cursor: pointer;
+  }
+  
+</style>>
+

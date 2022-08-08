@@ -1,6 +1,7 @@
 <template>
+<el-dialog title="报表" class="reportDb" :visible.sync="reportOpen" v-if="reportOpen" width="900px" append-to-body>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
+    <el-form :model="queryParams" ref="queryForm" size="mini" :inline="true" v-show="showSearch" label-width="100px">
       <el-form-item label="数据集编码" prop="dbCode">
         <el-input
           v-model="queryParams.dbCode"
@@ -24,65 +25,16 @@
     </el-form>
 
     <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['report:reportDb:add']"
-        >新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['report:reportDb:edit']"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['report:reportDb:remove']"
-        >删除</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          @click="handleExport"
-          v-hasPermi="['report:reportDb:export']"
-        >导出</el-button>
-      </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="reportDbList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="id" align="center" prop="id" v-if="true"/>
+    <el-table v-loading="loading" @row-click="handdleClick" class="reportTable" :data="reportDbList" @selection-change="handleSelectionChange">
       <el-table-column label="主键字段" align="center" prop="jimuReportId" />
       <el-table-column label="数据集编码" align="center" prop="dbCode" />
       <el-table-column label="数据集名字" align="center" prop="dbChName" />
       <el-table-column label="数据源类型" align="center" prop="dbType" />
-      <el-table-column label="数据库表名" align="center" prop="dbTableName" />
       <el-table-column label="动态查询SQL" align="center" prop="dbDynSql" />
-      <el-table-column label="数据源KEY" align="center" prop="dbKey" />
-      <el-table-column label="填报数据源" align="center" prop="tbDbKey" />
-      <el-table-column label="填报数据表" align="center" prop="tbDbTableName" />
       <el-table-column label="请求地址" align="center" prop="apiUrl" />
-      <el-table-column label="数据源" align="center" prop="dbSource" />
     </el-table>
 
     <pagination
@@ -93,6 +45,10 @@
       @pagination="getList"
     />
   </div>
+  <span slot="footer" class="dialog-footer">
+    <el-button @click="reportOpen = false">取 消</el-button>
+  </span>
+</el-dialog>
 </template>
 
 <script>
@@ -128,13 +84,19 @@ export default {
         pageSize: 10,
         dbCode: undefined,
         dbChName: undefined
-      }
+      },
+      reportOpen: false,
     };
   },
   created() {
     this.getList();
   },
   methods: {
+    //选择
+    handdleClick(row){
+       this.$emit("report-db-submit",row)
+       this.reportOpen = false
+    },
     /** 查询报表数据列表 */
     getList() {
       this.loading = true;
@@ -163,3 +125,15 @@ export default {
   }
 };
 </script>
+<style scoped>
+ .reportTable{
+  height: 380px;
+  overflow-y: auto;
+ }
+ .reportTable::-webkit-scrollbar-thumb {
+	border-radius: 10px;
+  }
+  .reportTable::-webkit-scrollbar {
+    width: 5px;
+  }
+</style>

@@ -36,7 +36,7 @@ public class SysReportViewVo {
      */
     @ExcelProperty(value = "报表id")
     @ApiModelProperty("报表id")
-    private Long reportId;
+    private String reportId;
 
     /**
      * 报表名称
@@ -45,5 +45,11 @@ public class SysReportViewVo {
     @ApiModelProperty("报表名称")
     private String reportName;
 
+    /**
+     * 排序
+     */
+    @ExcelProperty(value = "排序")
+    @ApiModelProperty("排序")
+    private Integer orderNo;
 
 }

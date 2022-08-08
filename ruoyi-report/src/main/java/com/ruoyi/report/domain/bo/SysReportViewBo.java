@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import javax.validation.constraints.*;
 
-import java.util.Date;
 
 import com.ruoyi.common.core.domain.BaseEntity;
 
@@ -36,7 +35,7 @@ public class SysReportViewBo extends BaseEntity {
      */
     @ApiModelProperty(value = "报表id", required = true)
     @NotNull(message = "报表id不能为空", groups = { AddGroup.class, EditGroup.class })
-    private Long reportId;
+    private String reportId;
 
     /**
      * 报表名称
@@ -44,6 +43,12 @@ public class SysReportViewBo extends BaseEntity {
     @ApiModelProperty(value = "报表名称", required = true)
     @NotBlank(message = "报表名称不能为空", groups = { AddGroup.class, EditGroup.class })
     private String reportName;
+
+    /**
+     * 排序
+     */
+    @ApiModelProperty(value = "排序")
+    private Integer orderNo;
 
 
 }
