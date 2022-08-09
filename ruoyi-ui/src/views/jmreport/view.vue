@@ -1,72 +1,65 @@
 <template>
 <el-container class="container">
   <el-aside class="aside">
-    <div class="left_aside">
-      <div class="main">
-        <el-form :model="queryParams" ref="queryForm" size="mini" :inline="true" v-show="showSearch" label-width="68px">
-          <el-form-item label="" prop="reportName">
-            <el-input
-              v-model="queryParams.reportName"
-              placeholder="请输入报表名称"
-              clearable
-              @keyup.enter.native="handleQuery"
-            >
-             <el-button slot="append" icon="el-icon-search" @click="handleQuery">搜索</el-button>
-            </el-input>
-          </el-form-item>
-        </el-form>
+        <el-card class="box-card">
+            <el-form :model="queryParams" ref="queryForm" size="mini" :inline="true" v-show="showSearch" label-width="68px">
+                <el-form-item label="" prop="reportName">
+                    <el-input
+                    v-model="queryParams.reportName"
+                    placeholder="请输入报表名称"
+                    clearable
+                    @keyup.enter.native="handleQuery"
+                    >
+                    <el-button slot="append" icon="el-icon-search" @click="handleQuery">搜索</el-button>
+                    </el-input>
+                </el-form-item>
+            </el-form>
 
-        <el-row :gutter="8" class="mb8">
-          <el-col :span="1.5">
-            <el-button
-              type="primary"
-              plain
-              icon="el-icon-plus"
-              size="mini"
-              @click="handleAdd"
-              v-hasPermi="['report:reportView:add']"
-            >新增</el-button>
-          </el-col>
-          <el-col :span="1.5">
-            <el-button
-              type="success"
-              plain
-              icon="el-icon-edit"
-              size="mini"
-              :disabled="single"
-              @click="handleUpdate"
-              v-hasPermi="['report:reportView:edit']"
-            >修改</el-button>
-          </el-col>
-          <el-col :span="1.5">
-            <el-button
-              type="danger"
-              plain
-              icon="el-icon-delete"
-              size="mini"
-              :disabled="multiple"
-              @click="handleDelete"
-              v-hasPermi="['report:reportView:remove']"
-            >删除</el-button>
-          </el-col>
-          <el-col :span="1.5">
-            <el-button
-              type="warning"
-              plain
-              icon="el-icon-download"
-              size="mini"
-              @click="handleExport"
-              v-hasPermi="['report:reportView:export']"
-            >导出</el-button>
-          </el-col>
-        </el-row>
-
-        <el-table @row-click="handdle" size="mini" v-loading="loading" :data="reportViewList" @selection-change="handleSelectionChange">
-          <el-table-column v-hasPermi="['report:reportView:remove']" type="selection" width="55" align="center" />
-          <el-table-column label="报表名称" align="center" prop="reportName" />
-        </el-table>
-      </div>
-     </div>
+            <el-row :gutter="8" class="mb8">
+                <el-col :span="1.5">
+                    <el-button
+                    type="primary"
+                    plain
+                    icon="el-icon-plus"
+                    size="mini"
+                    @click="handleAdd"
+                    v-hasPermi="['report:reportView:add']"
+                    >新增</el-button>
+                </el-col>
+                <el-col :span="1.5">
+                    <el-button
+                    type="warning"
+                    plain
+                    icon="el-icon-download"
+                    size="mini"
+                    @click="handleExport"
+                    v-hasPermi="['report:reportView:export']"
+                    >导出</el-button>
+                </el-col>
+            </el-row>
+        <div v-for="(item,index) in reportViewList" :key="index" @click="handdle(item)" class="item">
+            <span v-if="item.reportName.length < 13" >{{item.reportName}}</span>
+            <el-tooltip v-else effect="dark" :content="item.reportName" placement="bottom-end">
+                <span>{{`${item.reportName.substring(0, 13)}...`}}</span>
+            </el-tooltip>
+            <span style="float:right;">
+                <el-button
+                type="text"
+                icon="el-icon-edit"
+                size="mini"
+                @click="handleUpdate(item)"
+                v-hasPermi="['report:reportView:edit']"
+                >修改</el-button>
+                <el-button
+                type="text"
+                icon="el-icon-delete"
+                size="mini"
+                @click="handleDelete(item)"
+                v-hasPermi="['report:reportView:remove']"
+                >删除</el-button>
+            </span>
+        </div>
+    </el-card>
     <!-- 添加或修改报表查看对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
@@ -92,8 +85,8 @@
     
   </el-aside>
   
-  <el-container>
-    <el-main>
+  <el-container class="main">
+    <el-main class="main">
       <i-frame v-if="url" :src="url" />
     </el-main>
   </el-container>
@@ -284,18 +277,9 @@ export default {
 </script>
 <style scoped>
   .aside{
-    width: 280px !important;
-    height: 100%;
-    border-right:1px solid #000;
+    width: 350px !important;
+    height: 850px;
     background: #fff;
-  }
-  .left_aside{
-    position: relative;
-    height: 100%;
-    width: 250px;
-  }
-  .main{
-    width:inherit;
   }
   /* 修改滚动条样式 */
   .aside::-webkit-scrollbar-thumb {
@@ -304,8 +288,27 @@ export default {
   .aside::-webkit-scrollbar {
     width: 5px;
   }
-  .el-table{
+  .main::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+  }
+  .main::-webkit-scrollbar {
+    width: 5px;
+  }
+  .item{
+    border-bottom: 1px solid #eff3fa;
+    white-space: nowrap;
+    line-height: 42px;
     cursor: pointer;
+  }
+  .box-card{
+    overflow-y: auto;
+    left: 0;
+    height: 100%;
+    width:300px;
+  }
+  .main{
+    height: 850px;
+    overflow-y: auto;
   }
   
 </style>>
