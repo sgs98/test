@@ -37,10 +37,10 @@
                     >导出</el-button>
                 </el-col>
             </el-row>
-        <div v-for="(item,index) in reportViewList" :key="index" @click="handdle(item)" class="item">
-            <span v-if="item.reportName.length < 13" >{{item.reportName}}</span>
+        <div v-for="(item,index) in reportViewList" :key="index" class="item">
+            <span @click="handdle(item)" v-if="item.reportName.length < 13" >{{item.reportName}}</span>
             <el-tooltip v-else effect="dark" :content="item.reportName" placement="bottom-end">
-                <span>{{`${item.reportName.substring(0, 13)}...`}}</span>
+                <span @click="handdle(item)">{{`${item.reportName.substring(0, 13)}...`}}</span>
             </el-tooltip>
             <span style="float:right;">
                 <el-button
