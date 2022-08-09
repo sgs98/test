@@ -1,65 +1,66 @@
 <template>
 <el-container class="container">
   <el-aside class="aside">
-        <el-card class="box-card">
-            <el-form :model="queryParams" ref="queryForm" size="mini" :inline="true" v-show="showSearch" label-width="68px">
-                <el-form-item label="" prop="reportName">
-                    <el-input
-                    v-model="queryParams.reportName"
-                    placeholder="请输入报表名称"
-                    clearable
-                    @keyup.enter.native="handleQuery"
-                    >
-                    <el-button slot="append" icon="el-icon-search" @click="handleQuery">搜索</el-button>
-                    </el-input>
-                </el-form-item>
-            </el-form>
+    <el-form :model="queryParams" ref="queryForm" size="mini" :inline="true" v-show="showSearch" label-width="68px">
+        <el-form-item label="" prop="reportName">
+            <el-input
+            v-model="queryParams.reportName"
+            placeholder="请输入报表名称"
+            clearable
+            @keyup.enter.native="handleQuery"
+            >
+            <el-button slot="append" icon="el-icon-search" @click="handleQuery">搜索</el-button>
+            </el-input>
+        </el-form-item>
+    </el-form>
 
-            <el-row :gutter="8" class="mb8">
-                <el-col :span="1.5">
-                    <el-button
-                    type="primary"
-                    plain
-                    icon="el-icon-plus"
-                    size="mini"
-                    @click="handleAdd"
-                    v-hasPermi="['report:reportView:add']"
-                    >新增</el-button>
-                </el-col>
-                <el-col :span="1.5">
-                    <el-button
-                    type="warning"
-                    plain
-                    icon="el-icon-download"
-                    size="mini"
-                    @click="handleExport"
-                    v-hasPermi="['report:reportView:export']"
-                    >导出</el-button>
-                </el-col>
-            </el-row>
-        <div v-for="(item,index) in reportViewList" :key="index" class="item">
-            <span @click="handdle(item)" v-if="item.reportName.length < 13" >{{item.reportName}}</span>
-            <el-tooltip v-else effect="dark" :content="item.reportName" placement="bottom-end">
-                <span @click="handdle(item)">{{`${item.reportName.substring(0, 13)}...`}}</span>
-            </el-tooltip>
-            <span style="float:right;">
-                <el-button
-                type="text"
-                icon="el-icon-edit"
-                size="mini"
-                @click="handleUpdate(item)"
-                v-hasPermi="['report:reportView:edit']"
-                >修改</el-button>
-                <el-button
-                type="text"
-                icon="el-icon-delete"
-                size="mini"
-                @click="handleDelete(item)"
-                v-hasPermi="['report:reportView:remove']"
-                >删除</el-button>
-            </span>
-        </div>
-    </el-card>
+    <el-row :gutter="8" class="mb8">
+        <el-col :span="1.5">
+            <el-button
+            type="primary"
+            plain
+            icon="el-icon-plus"
+            size="mini"
+            @click="handleAdd"
+            v-hasPermi="['report:reportView:add']"
+            >新增</el-button>
+        </el-col>
+        <el-col :span="1.5">
+            <el-button
+            type="warning"
+            plain
+            icon="el-icon-download"
+            size="mini"
+            @click="handleExport"
+            v-hasPermi="['report:reportView:export']"
+            >导出</el-button>
+        </el-col>
+    </el-row>
+    <div v-loading="loading" >
+      <div class="item_font">报表名称</div>
+      <div v-for="(item,index) in reportViewList" :key="index" class="item">
+          <span @click="handdle(item)" v-if="item.reportName.length < 13" >{{item.reportName}}</span>
+          <el-tooltip v-else effect="dark" :content="item.reportName" placement="bottom-end">
+              <span @click="handdle(item)">{{`${item.reportName.substring(0, 13)}...`}}</span>
+          </el-tooltip>
+          <span style="float:right;">
+              <el-button
+              type="text"
+              icon="el-icon-edit"
+              size="mini"
+              @click="handleUpdate(item)"
+              v-hasPermi="['report:reportView:edit']"
+              >修改</el-button>
+              <el-button
+              type="text"
+              icon="el-icon-delete"
+              size="mini"
+              @click="handleDelete(item)"
+              v-hasPermi="['report:reportView:remove']"
+              >删除</el-button>
+          </span>
+      </div>
+    </div>
     <!-- 添加或修改报表查看对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
@@ -85,11 +86,9 @@
     
   </el-aside>
   
-  <el-container class="main">
-    <el-main class="main">
-      <i-frame v-if="url" :src="url" />
-    </el-main>
-  </el-container>
+  <el-main class="main">
+    <i-frame v-if="url" :src="url" />
+  </el-main>
 </el-container>
 </template>
 
@@ -149,7 +148,7 @@ export default {
     };
   },
   created() {
-    this.getList();
+    this.createdList();
   },
   methods: {
     //报表确认
@@ -162,11 +161,21 @@ export default {
       this.$refs.reportDb.reportOpen = true
     },
     //切换报表
-    handdle(row, event, column){
-       console.log(row, event, column)
+    handdle(row){
        this.url = process.env.VUE_APP_JMREPORT_URL + "/view/"+ row.reportId +"?token=" + getToken();
     },
     /** 查询报表查看列表 */
+    createdList() {
+      this.loading = true;
+      listReportView(this.queryParams).then(response => {
+        this.reportViewList = response.rows;
+        this.total = response.total;
+        this.loading = false;
+        if(this.reportViewList && this.reportViewList.length>0){
+          this.url = process.env.VUE_APP_JMREPORT_URL + "/view/"+ this.reportViewList[0].reportId +"?token=" + getToken();
+        }
+      });
+    },
     getList() {
       this.loading = true;
       listReportView(this.queryParams).then(response => {
@@ -213,7 +222,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加报表查看";
+      this.title = "添加报表";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -224,7 +233,7 @@ export default {
         this.loading = false;
         this.form = response.data;
         this.open = true;
-        this.title = "修改报表查看";
+        this.title = "修改报表";
       });
     },
     /** 提交按钮 */
@@ -276,10 +285,16 @@ export default {
 };
 </script>
 <style scoped>
-  .aside{
-    width: 350px !important;
-    height: 850px;
-    background: #fff;
+  .container{
+    padding: 0;
+    margin: 0;
+    height: calc(100vh-84px);
+  }
+  .container::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+  }
+  .container::-webkit-scrollbar {
+    width: 5px;
   }
   /* 修改滚动条样式 */
   .aside::-webkit-scrollbar-thumb {
@@ -299,16 +314,22 @@ export default {
     white-space: nowrap;
     line-height: 42px;
     cursor: pointer;
+    font-size: 13px;
   }
-  .box-card{
-    overflow-y: auto;
-    left: 0;
-    height: 100%;
-    width:300px;
+  .item_font{
+    border-bottom: 1px solid #eff3fa;
+    white-space: nowrap;
+    line-height: 42px;
+    font-weight: 600;
+  }
+  .aside{
+    width: 270px !important;
+    background: #fff;
   }
   .main{
-    height: 850px;
-    overflow-y: auto;
+    padding: 0;
+    margin: 0;
+    width: calc(100%-350px);
   }
   
 </style>>
