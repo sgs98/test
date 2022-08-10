@@ -297,7 +297,7 @@ public class WorkFlowUtils {
                         VariableInstance v = variables.get(businessRuleParams.get(i).getParam());
                         String variable = v.getTextValue();
                         switch (businessRuleParams.get(i).getParamType()) {
-                            case ActConstant.PARAM_BYTE:
+                            case ActConstant.PARAM_STRING:
                                 paramClass[i] = String.valueOf(variable).getClass();
                                 params.add(String.valueOf(variable));
                                 break;
