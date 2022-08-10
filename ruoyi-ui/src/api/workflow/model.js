@@ -84,9 +84,3 @@ export function saveModelXml(data) {
     data: data
   })
 }
-export function generalModelId() {
-  return request({
-    url: `workflow/model/generalModelId`,
-    method: 'get'
-  })
-}
