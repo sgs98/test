@@ -38,8 +38,7 @@ export default {
         { name: 'web组', id: 'web' },
         { name: 'java组', id: 'java' },
         { name: 'python组', id: 'python' }
-      ],
-      categorys: []
+      ]
     }
   },
   mounted() {
@@ -59,9 +58,6 @@ export default {
            this.xml = response.data.xml
         })
       }
-    },
-    saveModeler(data) {
-      console.log(data)
     },
     saveModeler(data){
       this.$modal.confirm('是否确认保存模型？').then(() => {
