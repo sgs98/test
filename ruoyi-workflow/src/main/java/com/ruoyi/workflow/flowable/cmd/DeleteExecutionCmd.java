@@ -6,6 +6,7 @@ import org.flowable.engine.impl.persistence.entity.ExecutionEntityManager;
 import org.flowable.engine.impl.util.CommandContextUtil;
 
 import java.io.Serializable;
+
 /**
  * @program: ruoyi-vue-plus
  * @description: 删除执行数据
@@ -17,7 +18,7 @@ public class DeleteExecutionCmd implements Command<String>, Serializable {
     /**
      * 执行id
      */
-    private String executionId;
+    private final String executionId;
 
     public DeleteExecutionCmd(String executionId) {
         this.executionId = executionId;

@@ -5,6 +5,7 @@ import org.flowable.common.engine.impl.interceptor.Command;
 import org.flowable.common.engine.impl.interceptor.CommandContext;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.engine.impl.util.condition.ConditionUtil;
+
 /**
  * @program: ruoyi-vue-plus
  * @description: 校验流程变量
@@ -13,8 +14,8 @@ import org.flowable.engine.impl.util.condition.ConditionUtil;
  */
 public class ExpressCmd implements Command<Boolean> {
 
-    private SequenceFlow sequenceFlow;
-    private ExecutionEntityImpl executionEntity;
+    private final SequenceFlow sequenceFlow;
+    private final ExecutionEntityImpl executionEntity;
 
     public ExpressCmd(SequenceFlow sequenceFlow, ExecutionEntityImpl executionEntity) {
         this.sequenceFlow = sequenceFlow;

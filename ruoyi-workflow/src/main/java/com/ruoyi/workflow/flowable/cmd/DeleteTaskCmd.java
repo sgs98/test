@@ -25,7 +25,7 @@ public class DeleteTaskCmd extends NeedsActiveTaskCmd<String> {
     @Override
     protected String execute(CommandContext commandContext, TaskEntity task) {
         TaskService taskService = CommandContextUtil.getTaskService(commandContext);
-        taskService.deleteTask(task,true);
+        taskService.deleteTask(task, true);
         return null;
     }
 }
