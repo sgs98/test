@@ -161,20 +161,6 @@ export const dynamicRoutes = [
         meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
       }
     ]
-  },
-  {
-    path: '/workflow/processFormDesigne',
-    component: Layout,
-    hidden: true,
-    permissions: ['workflow:processForm:edit'],
-    children: [
-      {
-        path: ':id(\\d+)',
-        component: () => import('@/views/workflow/processForm/processFormDesigner'),
-        name: 'processFormDesigner',
-        meta: { title: '设计表单', activeMenu: '/workflow/processForm' }
-      }
-    ]
   }
 ]
 
