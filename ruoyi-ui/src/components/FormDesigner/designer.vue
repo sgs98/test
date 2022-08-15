@@ -110,6 +110,10 @@
         <el-button type="primary" @click="handlerSetJson()">确 定</el-button>
       </span>
     </el-dialog>
+    <el-dialog :visible.sync="processFormViewVisible" v-if="processFormViewVisible" fullscreen center :close-on-click-modal="false" append-to-body>
+      <processFormView/>
+    </el-dialog>
+    
   </div>
 </template>
 <script>
@@ -121,6 +125,7 @@ import { isLayout, isTable, inTable,jsonClone } from "./utils/index";
 import formConf from "./custom/formConf";
 import preview from "./preview";
 import {codemirror} from 'vue-codemirror';
+import processFormView from './processFormView'
 // 核心样式
 import 'codemirror/lib/codemirror.css';
 // 引入主题后还需要在 options 中指定主题才会生效
@@ -134,7 +139,8 @@ export default {
     configPanel,
     designItem,
     preview,
-    codemirror
+    codemirror,
+    processFormView
   },
   props:{
     list: { 
@@ -158,6 +164,7 @@ export default {
       lastActiveItem:{},
       formConfVisible:false,
       previewVisible:false,
+      processFormViewVisible:false,
       JSONVisible:false,
       itemList:[],
       activeName:'formConf',
@@ -190,7 +197,8 @@ export default {
     },
     view(){
       localStorage.setItem("formValue",this.code);
-      window.open('#/view');
+      //window.open('#/view');
+      this.processFormViewVisible = true
     },
     setting(){
       this.formConfVisible = true;

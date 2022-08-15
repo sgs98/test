@@ -50,6 +50,7 @@
 
 <script>
 const splitKey = ";";
+import axios from 'axios'
 export default {
     name:"fancyDialogList",
     props:{
@@ -104,7 +105,7 @@ export default {
     },
     mounted(){
         this.$nextTick(() => {
-            this.$axios.get(this.action).then(res => {
+            axios.get(this.action).then(res => {
                 this.gridData = [];
                 this.gridData = this.gridData.concat(res.data.list);
                 if(this.value !=='' && this.dialogValue ===''){
