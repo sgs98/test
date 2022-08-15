@@ -16,8 +16,8 @@ import org.apache.commons.lang3.StringUtils;
 public enum BusinessStatusEnum {
     CANCEL("cancel", "已撤回"), DRAFT("draft", "草稿"), WAITING("waiting", "处理中"),
     FINISH("finish", "已完成"), INVALID("invalid", "已作废"), DELETE("delete", "已删除"), BACK("back", "已退回");
-    private String status;
-    private String desc;
+    private final String status;
+    private final String desc;
 
     public static BusinessStatusEnum getEumByStatus(String status) {
         if (StringUtils.isBlank(status)) return null;
