@@ -66,15 +66,6 @@
           v-hasPermi="['workflow:processForm:export']"
         >导出</el-button>
       </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          @click="handleFormDesigner"
-        >设计表单</el-button>
-      </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
@@ -83,7 +74,6 @@
       <el-table-column label="主键" align="center" prop="id" v-if="true"/>
       <el-table-column label="表单key" align="center" prop="formKey" />
       <el-table-column label="表单名称" align="center" prop="formName" />
-      <el-table-column label="表单数据" align="center" prop="formDesignerText" />
       <el-table-column label="表单备注" align="center" prop="formRemark" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
@@ -94,6 +84,13 @@
             @click="handleUpdate(scope.row)"
             v-hasPermi="['workflow:processForm:edit']"
           >修改</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-thumb"
+            @click="handleFormDesigner(scope.row)"
+            v-hasPermi="['workflow:processForm:edit']"
+          >表单设计</el-button>
           <el-button
             size="mini"
             type="text"
@@ -134,11 +131,6 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
-
-     <!-- 设计表单 -->
-    <el-dialog title="设计表单" :visible.sync="formVisible" v-if="formVisible" fullscreen append-to-body>
-        <form-designer ref="formDesigner" v-model="designerForm"/>
-    </el-dialog>
   </div>
 </template>
 
@@ -169,7 +161,6 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
-      formVisible: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -190,16 +181,15 @@ export default {
         formName: [
           { required: true, message: "表单名称不能为空", trigger: "blur" }
         ]
-      },
-      designerForm: ''
+      }
     };
   },
   created() {
     this.getList();
   },
   methods: {
-    handleFormDesigner(){
-        this.$router.push('/workflow/processFormDesigne/1')
+    handleFormDesigner(row){
+        this.$router.push('/workflow/processFormDesigne/'+row.id)
     },
     /** 查询流程单列表 */
     getList() {

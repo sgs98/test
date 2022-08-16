@@ -131,6 +131,7 @@ import 'codemirror/lib/codemirror.css';
 // 引入主题后还需要在 options 中指定主题才会生效
 import 'codemirror/theme/dracula.css';
 import 'codemirror/mode/javascript/javascript'
+import { getProcessForm,updateProcessForm } from "@/api/workflow/processForm";
 
 export default {
   name:"designer",
@@ -180,10 +181,14 @@ export default {
         hintOptions: {
           completeSingle: true // 当匹配只有一项的时候是否自动补全
         }
-      }
+      },
+      formData:{}
     }
   },
   mounted() {
+    getProcessForm(this.$route.params.id).then(response => {
+      this.formData = response.data.formDesignerText;
+    });
   },
   methods: {
     preview(){
@@ -197,7 +202,6 @@ export default {
     },
     view(){
       localStorage.setItem("formValue",this.code);
-      //window.open('#/view');
       this.processFormViewVisible = true
     },
     setting(){
@@ -327,6 +331,10 @@ export default {
     },
     handlerSetJson(){
       this.$emit('updateJSON',this.viewCode);
+      this.formData.formDesignerText = this.viewCode
+      updateProcessForm(this.formData).then(response => {
+        this.$modal.msgSuccess("保存成功");
+      })
       this.JSONVisible = false;
     }
   },

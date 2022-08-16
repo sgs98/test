@@ -1,18 +1,3 @@
-/*
- Navicat Premium Data Transfer
-
- Source Server         : 阿里云
- Source Server Type    : MySQL
- Source Server Version : 80018
- Source Host           : rm-2ze36x32el4x85854uo.mysql.rds.aliyuncs.com:3306
- Source Schema         : ruoyi-flowable6
-
- Target Server Type    : MySQL
- Target Server Version : 80018
- File Encoding         : 65001
-
- Date: 16/08/2022 19:59:22
-*/
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;

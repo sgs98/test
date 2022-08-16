@@ -304,25 +304,17 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                     throw new ServiceException("请检查【" + t.getName() + "】节点配置");
                 }
                 // 不需要弹窗选人
-                if (!nodeAssignee.getIsShow() && StringUtils.isBlank(t.getAssignee())) {
+                if (!nodeAssignee.getIsShow() && StringUtils.isBlank(t.getAssignee()) && !nodeAssignee.getMultiple()) {
                     // 设置人员
                     workFlowUtils.settingAssignee(t, nodeAssignee, false);
-                } else if (nodeAssignee.getIsShow() && StringUtils.isBlank(t.getAssignee())) {
+                } else if (nodeAssignee.getIsShow() && StringUtils.isBlank(t.getAssignee()) && !nodeAssignee.getMultiple()) {
                     // 弹窗选人 根据当前任务节点id获取办理人
                     List<Long> assignees = req.getAssignees(t.getTaskDefinitionKey());
-                    // 设置选人
-                    if (CollectionUtil.isNotEmpty(assignees)) {
-                        workFlowUtils.setAssignee(t, assignees);
-                    } else if (StringUtils.isBlank(t.getAssignee())) {
-                        if (taskList.size() == 1) {
-                            throw new ServiceException("【" + t.getName() + "】任务环节未配置审批人");
-                        } else if (taskList.size() > 1) {
-                            List<IdentityLink> candidateUser = workFlowUtils.getCandidateUser(t.getId());
-                            if (CollectionUtil.isEmpty(candidateUser)) {
-                                throw new ServiceException("【" + t.getName() + "】任务环节未配置审批人");
-                            }
-                        }
+                    if(CollectionUtil.isEmpty(assignees)){
+                        throw new ServiceException("【" + t.getName() + "】任务环节未配置审批人");
                     }
+                    // 设置选人
+                    workFlowUtils.setAssignee(t, assignees);
                 }
             }
             // 发送站内信

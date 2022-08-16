@@ -44,6 +44,18 @@
       </el-form-item>
     </el-form>
 
+    <el-form label-width="68px">
+      <el-form-item label="流程Key" prop="processKey">
+        <el-input
+          v-model="processKey"
+          placeholder="请输入流程Key"
+          clearable
+          size="small"
+          style="width:200px"
+        />
+      </el-form-item>
+    </el-form>
+
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
@@ -317,7 +329,8 @@ export default {
       taskId: undefined, //任务id
       flag: true,
       // 消息提醒
-      sendMessage: {}
+      sendMessage: {},
+      processKey: 'huiqian'
     };
   },
   created() {
@@ -471,7 +484,7 @@ export default {
             entity: entity
         }
         const data = {
-            processKey: 'huiqian', // key
+            processKey: this.processKey, // key
             businessKey: entity.id, // 业务id
             variables: variables,
             classFullName: 'com.ruoyi.demo.domain.BsLeave'
