@@ -1,6 +1,8 @@
 package com.ruoyi.workflow.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
+import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.core.domain.PageQuery;
@@ -35,7 +37,7 @@ public class ActProcessFormServiceImpl implements IActProcessFormService {
      * 查询流程单
      */
     @Override
-    public ActProcessFormVo queryById(Long id){
+    public ActProcessFormVo queryById(Long id) {
         return baseMapper.selectVoById(id);
     }
 
@@ -90,11 +92,37 @@ public class ActProcessFormServiceImpl implements IActProcessFormService {
         return baseMapper.updateById(update) > 0;
     }
 
+    @Override
+    public Boolean editForm(ActProcessFormBo bo) {
+        ActProcessForm update = BeanUtil.toBean(bo, ActProcessForm.class);
+        return baseMapper.updateById(update) > 0;
+    }
+
     /**
      * 保存前的数据校验
      */
-    private void validEntityBeforeSave(ActProcessForm entity){
-        //TODO 做一些数据校验,如唯一约束
+    private void validEntityBeforeSave(ActProcessForm entity) {
+        LambdaQueryWrapper<ActProcessForm> wrapper = Wrappers.lambdaQuery();
+        wrapper.eq(ActProcessForm::getFormKey, entity.getFormKey());
+        if (entity.getId() != null) {
+            wrapper.ne(ActProcessForm::getId, entity.getId());
+            List<ActProcessForm> actProcessForms = baseMapper.selectList(wrapper);
+            validException(actProcessForms);
+        } else {
+            List<ActProcessForm> actProcessForms = baseMapper.selectList(wrapper);
+            validException(actProcessForms);
+        }
+    }
+
+    private void validException(List<ActProcessForm> actProcessForms) {
+
+        if (CollectionUtil.isNotEmpty(actProcessForms)) {
+            throw new ServiceException("表单key已存在");
+        }
+
+        if (CollectionUtil.isNotEmpty(actProcessForms) && actProcessForms.size() > 1) {
+            throw new ServiceException(actProcessForms.get(0).getFormKey() + "表单key存在" + actProcessForms.size() + "个,请检查数据！");
+        }
     }
 
     /**
@@ -102,7 +130,7 @@ public class ActProcessFormServiceImpl implements IActProcessFormService {
      */
     @Override
     public Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid) {
-        if(isValid){
+        if (isValid) {
             //TODO 做一些业务上的校验,判断是否需要校验
         }
         return baseMapper.deleteBatchIds(ids) > 0;

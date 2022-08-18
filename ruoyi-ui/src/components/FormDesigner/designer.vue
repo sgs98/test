@@ -20,6 +20,9 @@
       <el-button icon="el-icon-question" type="text" @click="help">
         帮助
       </el-button>
+      <el-button icon="el-icon-circle-check" type="text" @click="saveForm">
+        保存
+      </el-button>
     </div>
     <el-scrollbar class="center-scrollbar">
       <el-row class="center-board-row" :gutter="formConf.gutter">
@@ -131,7 +134,7 @@ import 'codemirror/lib/codemirror.css';
 // 引入主题后还需要在 options 中指定主题才会生效
 import 'codemirror/theme/dracula.css';
 import 'codemirror/mode/javascript/javascript'
-import { getProcessForm,updateProcessForm } from "@/api/workflow/processForm";
+import { editForm } from "@/api/workflow/processForm";
 
 export default {
   name:"designer",
@@ -186,9 +189,6 @@ export default {
     }
   },
   mounted() {
-    getProcessForm(this.$route.params.id).then(response => {
-      this.formData = response.data.formDesignerText;
-    });
   },
   methods: {
     preview(){
@@ -331,11 +331,19 @@ export default {
     },
     handlerSetJson(){
       this.$emit('updateJSON',this.viewCode);
-      this.formData.formDesignerText = this.viewCode
-      updateProcessForm(this.formData).then(response => {
-        this.$modal.msgSuccess("保存成功");
-      })
       this.JSONVisible = false;
+    },
+    //保存表单
+    saveForm(){
+      this.formData = {
+        id: this.$route.params.id,
+        formDesignerText: this.code
+      }
+      this.$modal.confirm('是否保存？').then(() => {
+        editForm(this.formData).then(response => {
+          this.$modal.msgSuccess("保存成功");
+        })
+      })
     }
   },
   computed:{

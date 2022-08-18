@@ -71,7 +71,7 @@
 
     <el-table v-loading="loading" :data="processFormList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="主键" align="center" prop="id" v-if="true"/>
+      <el-table-column label="主键" align="center" prop="id" v-if="false"/>
       <el-table-column label="表单key" align="center" prop="formKey" />
       <el-table-column label="表单名称" align="center" prop="formName" />
       <el-table-column label="表单备注" align="center" prop="formRemark" />
@@ -118,9 +118,6 @@
         </el-form-item>
         <el-form-item label="表单名称" prop="formName">
           <el-input v-model="form.formName" placeholder="请输入表单名称" />
-        </el-form-item>
-        <el-form-item label="表单数据" prop="formDesignerText">
-          <el-input v-model="form.formDesignerText" type="textarea" placeholder="请输入内容" />
         </el-form-item>
         <el-form-item label="表单备注" prop="formRemark">
           <el-input v-model="form.formRemark" type="textarea" placeholder="请输入内容" />
@@ -172,9 +169,6 @@ export default {
       form: {},
       // 表单校验
       rules: {
-        id: [
-          { required: true, message: "主键不能为空", trigger: "blur" }
-        ],
         formKey: [
           { required: true, message: "表单key不能为空", trigger: "blur" }
         ],

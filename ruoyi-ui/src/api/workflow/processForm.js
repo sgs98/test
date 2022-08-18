@@ -35,6 +35,15 @@ export function updateProcessForm(data) {
   })
 }
 
+// 修改流程单
+export function editForm(data) {
+  return request({
+    url: '/workflow/processForm/editForm',
+    method: 'put',
+    data: data
+  })
+}
+
 // 删除流程单
 export function delProcessForm(id) {
   return request({

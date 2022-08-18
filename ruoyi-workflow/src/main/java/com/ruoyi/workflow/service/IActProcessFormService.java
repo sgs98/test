@@ -32,7 +32,7 @@ public interface IActProcessFormService {
     List<ActProcessFormVo> queryList(ActProcessFormBo bo);
 
     /**
-     * 修改流程单
+     * 添加流程单
      */
     Boolean insertByBo(ActProcessFormBo bo);
 
@@ -40,6 +40,11 @@ public interface IActProcessFormService {
      * 修改流程单
      */
     Boolean updateByBo(ActProcessFormBo bo);
+
+    /**
+     * 修改流程单
+     */
+    Boolean editForm(ActProcessFormBo bo);
 
     /**
      * 校验并批量删除流程单信息

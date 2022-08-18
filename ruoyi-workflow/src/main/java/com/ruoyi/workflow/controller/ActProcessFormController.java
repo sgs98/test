@@ -100,6 +100,18 @@ public class ActProcessFormController extends BaseController {
     }
 
     /**
+     * 修改流程单
+     */
+    @ApiOperation("修改流程单")
+    @SaCheckPermission("workflow:processForm:edit")
+    @Log(title = "流程单", businessType = BusinessType.UPDATE)
+    @RepeatSubmit()
+    @PutMapping("/editForm")
+    public R<Void> editForm(@RequestBody ActProcessFormBo bo) {
+        return toAjax(iActProcessFormService.editForm(bo) ? 1 : 0);
+    }
+
+    /**
      * 删除流程单
      */
     @ApiOperation("删除流程单")
