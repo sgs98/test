@@ -9,6 +9,15 @@ export function listProcessForm(query) {
   })
 }
 
+// 查询启用流程单列表
+export function listProcessEnableForm(query) {
+  return request({
+    url: '/workflow/processForm/enableList',
+    method: 'get',
+    params: query
+  })
+}
+
 // 查询流程单详细
 export function getProcessForm(id) {
   return request({

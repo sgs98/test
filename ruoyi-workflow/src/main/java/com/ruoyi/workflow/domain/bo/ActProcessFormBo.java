@@ -56,5 +56,9 @@ public class ActProcessFormBo extends BaseEntity {
     @ApiModelProperty(value = "表单备注")
     private String formRemark;
 
-
+    /**
+     * 表单状态
+     */
+    @ApiModelProperty("表单状态")
+    private Boolean status;
 }

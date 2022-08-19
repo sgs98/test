@@ -27,6 +27,11 @@ public interface IActProcessFormService {
     TableDataInfo<ActProcessFormVo> queryPageList(ActProcessFormBo bo, PageQuery pageQuery);
 
     /**
+     * 查询启用流程单列表
+     */
+    TableDataInfo<ActProcessFormVo> queryPageEnableList(ActProcessFormBo bo, PageQuery pageQuery);
+
+    /**
      * 查询流程单列表
      */
     List<ActProcessFormVo> queryList(ActProcessFormBo bo);

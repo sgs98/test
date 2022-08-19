@@ -56,5 +56,12 @@ public class ActProcessFormVo {
     @ApiModelProperty("表单备注")
     private String formRemark;
 
+    /**
+     * 表单状态
+     */
+    @ExcelProperty(value = "表单状态")
+    @ApiModelProperty("表单状态")
+    private Boolean status;
+
 
 }

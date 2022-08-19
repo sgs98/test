@@ -1,6 +1,7 @@
 package com.ruoyi.workflow.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
+import liquibase.pro.packaged.B;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -40,5 +41,9 @@ public class ActProcessForm extends BaseEntity {
      * 表单备注
      */
     private String formRemark;
+    /**
+     * 表单状态
+     */
+    private Boolean status;
 
 }

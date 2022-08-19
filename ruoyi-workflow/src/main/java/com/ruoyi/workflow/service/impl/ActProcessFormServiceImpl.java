@@ -52,6 +52,17 @@ public class ActProcessFormServiceImpl implements IActProcessFormService {
     }
 
     /**
+     * 查询启用流程单列表
+     */
+    @Override
+    public TableDataInfo<ActProcessFormVo> queryPageEnableList(ActProcessFormBo bo, PageQuery pageQuery) {
+        LambdaQueryWrapper<ActProcessForm> lqw = buildQueryWrapper(bo);
+        lqw.eq(ActProcessForm::getStatus,true);
+        Page<ActProcessFormVo> result = baseMapper.selectVoPage(pageQuery.build(), lqw);
+        return TableDataInfo.build(result);
+    }
+
+    /**
      * 查询流程单列表
      */
     @Override

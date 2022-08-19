@@ -52,6 +52,15 @@ public class ActProcessFormController extends BaseController {
     }
 
     /**
+     * 查询启用流程单列表
+     */
+    @ApiOperation("查询启用流程单列表")
+    @GetMapping("/enableList")
+    public TableDataInfo<ActProcessFormVo> enableList(ActProcessFormBo bo, PageQuery pageQuery) {
+        return iActProcessFormService.queryPageEnableList(bo, pageQuery);
+    }
+
+    /**
      * 导出流程单列表
      */
     @ApiOperation("导出流程单列表")
