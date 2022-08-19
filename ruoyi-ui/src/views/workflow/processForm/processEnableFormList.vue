@@ -26,48 +26,51 @@
     <el-row :gutter="10" class="mb8">
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
-
-    <el-table v-loading="loading" :data="processFormList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="主键" align="center" prop="id" v-if="false"/>
-      <el-table-column label="表单key" align="center" prop="formKey" />
-      <el-table-column label="表单名称" align="center" prop="formName" />
-      <el-table-column label="表单备注" align="center" prop="formRemark" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleApply(scope.row)"
-          >提交申请</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
-      @pagination="getList"
-    />
-    
+    <div class="container-box" v-loading="loading" v-if="processFormList && processFormList.length>0">
+      <el-row :gutter="12" style="margin-left: 0px; margin-right: 0px;">
+        <el-col :span="4" v-for="(item,index) in processFormList" :key="index">
+          <el-card shadow="hover" class="card-item">
+            <div slot="header" class="clearfix">
+               <el-tooltip class="item" effect="dark" :content="'表单KEY:'+item.formName" placement="top-start">
+                 <span>{{item.formName}}</span>
+              </el-tooltip>
+              <span style="float: right;" @click="handleApply(item)"><el-link type="primary">提交申请</el-link></span>
+            </div>
+            <div>
+              {{item.formRemark}}
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+      <div class="pagination-box">
+        <pagination
+          v-show="total>0"
+          :total="total"
+          :page.sync="queryParams.pageNum"
+          :limit.sync="queryParams.pageSize"
+          @pagination="getList"
+        />
+      </div>
+    </div>
+    <el-empty class="el-empty-icon" v-else description="暂无数据"></el-empty>
     <!-- 动态表单预览 -->
-    <el-dialog :visible.sync="processFormViewVisible" v-if="processFormViewVisible" fullscreen center :close-on-click-modal="false" append-to-body>
-      <bussnessForm :formData="formData"/>
+    <el-dialog :visible.sync="processFormViewVisible" fullscreen
+        v-if="processFormViewVisible" 
+        center :close-on-click-modal="false" 
+        append-to-body>
+       <processBussnessForm :formData="formData"/>
     </el-dialog>
   </div>
 </template>
 
 <script>
 import { listProcessEnableForm } from "@/api/workflow/processForm";
-import bussnessForm from './bussnessForm'
+import processBussnessForm from './components/processBussnessForm'
 
 export default {
   name: "ProcessForm",
   components:{
-    bussnessForm
+    processBussnessForm
   },
   data() {
     return {
@@ -75,8 +78,6 @@ export default {
       buttonLoading: false,
       // 遮罩层
       loading: true,
-      // 选中数组
-      ids: [],
       // 非单个禁用
       single: true,
       // 非多个禁用
@@ -94,12 +95,12 @@ export default {
       // 查询参数
       queryParams: {
         pageNum: 1,
-        pageSize: 10,
+        pageSize: 30,
         formKey: undefined,
         formName: undefined,
       },
       processFormViewVisible: false,
-      formData: ""
+      formData: {}
     };
   },
   created() {
@@ -126,12 +127,6 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
-    // 多选框选中数据
-    handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.id)
-      this.single = selection.length!==1
-      this.multiple = !selection.length
-    },
     //提交申请
     handleApply(row){
        this.formData = row
@@ -140,3 +135,26 @@ export default {
   }
 };
 </script>
+<style scoped>
+  .card-item{
+    cursor: pointer;
+    height: 100px !important;
+    position: relative;
+  }
+  .clearfix{
+    font-size: 14px;
+    font-family: '幼圆' !important;
+  }
+  .container-box{
+    height: calc(100vh-120px);
+    overflow: hidden;
+  }
+  .pagination-box{
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+  }
+  .el-col{
+    padding: 10px;
+  }
+</style>

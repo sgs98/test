@@ -45,5 +45,9 @@ public class ActProcessForm extends BaseEntity {
      * 表单状态
      */
     private Boolean status;
+    /**
+     * 排序
+     */
+    private Integer orderNo;
 
 }

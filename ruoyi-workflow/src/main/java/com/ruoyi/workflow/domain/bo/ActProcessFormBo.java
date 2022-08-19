@@ -61,4 +61,10 @@ public class ActProcessFormBo extends BaseEntity {
      */
     @ApiModelProperty("表单状态")
     private Boolean status;
+
+    /**
+     * 排序
+     */
+    @ApiModelProperty("排序")
+    private Integer orderNo;
 }

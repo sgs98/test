@@ -63,10 +63,10 @@ export default {
       tableTabs: [{
           title: '编辑表单',
           name: 'form',
-        }, {
+        },/* {
           title: '配置',
           name: 'config',
-        }, {
+        },*/ {
           title: '数据',
           name: 'value',
         }],
@@ -75,8 +75,10 @@ export default {
   },
   mounted(){
     this.$nextTick(()=> {
-      const formValue = this.formData.formDesignerText;
-      this.formCode = formValue;
+      if(this.formData.formDesignerText){
+        const formValue = this.formData.formDesignerText;
+        this.formCode = formValue;
+      }
     })
     
   },
@@ -130,17 +132,20 @@ export default {
 } */
 
 .box-card{
-  width:60%;
   position:absolute;
-  top:0;
   left:0;
   right:0;
-  bottom:0;
   margin:auto;
   overflow: auto;
   display: block;
 }
 #app{
   position: relative;
+}
+.box-card::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+}
+.box-card::-webkit-scrollbar {
+  width: 5px;
 }
 </style>

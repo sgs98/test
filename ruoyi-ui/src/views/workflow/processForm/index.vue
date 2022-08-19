@@ -119,6 +119,9 @@
         <el-form-item label="表单名称" prop="formName">
           <el-input v-model="form.formName" placeholder="请输入表单名称" />
         </el-form-item>
+        <el-form-item label="排序" prop="orderNo">
+          <el-input-number v-model="form.orderNo" placeholder="排序" />
+        </el-form-item>
         <el-form-item label="表单备注" prop="formRemark">
           <el-input v-model="form.formRemark" type="textarea" placeholder="请输入内容" />
         </el-form-item>
@@ -210,7 +213,9 @@ export default {
         updateTime: undefined,
         createBy: undefined,
         updateBy: undefined,
-        formRemark: undefined
+        formRemark: undefined,
+        status: true,
+        orderNo: 0
       };
       this.resetForm("form");
     },

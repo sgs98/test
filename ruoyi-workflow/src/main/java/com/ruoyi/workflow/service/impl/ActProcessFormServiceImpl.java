@@ -76,6 +76,7 @@ public class ActProcessFormServiceImpl implements IActProcessFormService {
         LambdaQueryWrapper<ActProcessForm> lqw = Wrappers.lambdaQuery();
         lqw.like(StringUtils.isNotBlank(bo.getFormKey()), ActProcessForm::getFormKey, bo.getFormKey());
         lqw.like(StringUtils.isNotBlank(bo.getFormName()), ActProcessForm::getFormName, bo.getFormName());
+        lqw.orderByAsc(ActProcessForm::getOrderNo);
         return lqw;
     }
 

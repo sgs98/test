@@ -63,5 +63,11 @@ public class ActProcessFormVo {
     @ApiModelProperty("表单状态")
     private Boolean status;
 
+    /**
+     * 排序
+     */
+    @ExcelProperty(value = "排序")
+    @ApiModelProperty("排序")
+    private Integer orderNo;
 
 }
