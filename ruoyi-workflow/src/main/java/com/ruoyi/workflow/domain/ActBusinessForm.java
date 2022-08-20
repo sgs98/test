@@ -41,6 +41,10 @@ public class ActBusinessForm extends BaseEntity {
      */
     private String formText;
     /**
+     * 表单数据
+     */
+    private String formValue;
+    /**
      *单号
      */
     private String applyCode;

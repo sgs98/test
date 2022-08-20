@@ -57,7 +57,14 @@ public class ActBusinessFormVo {
     private String formText;
 
     /**
-     *
+     * 表单数据
+     */
+    @ExcelProperty(value = "表单内容")
+    @ApiModelProperty(value = "表单数据")
+    private String formValue;
+
+    /**
+     *单号
      */
     @ExcelProperty(value = "单号")
     @ApiModelProperty("单号")

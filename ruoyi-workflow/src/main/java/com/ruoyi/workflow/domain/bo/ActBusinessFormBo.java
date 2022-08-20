@@ -57,10 +57,15 @@ public class ActBusinessFormBo extends BaseEntity {
     private String formText;
 
     /**
+     * 表单数据
+     */
+    @ApiModelProperty(value = "表单数据")
+    private String formValue;
+
+    /**
      *单号
      */
     @ApiModelProperty(value = "单号", required = true)
-    @NotBlank(message = "单号不能为空", groups = { AddGroup.class, EditGroup.class })
     private String applyCode;
 
 

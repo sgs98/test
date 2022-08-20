@@ -1,12 +1,14 @@
 package com.ruoyi.workflow.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.core.domain.PageQuery;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.ruoyi.workflow.domain.bo.ActBusinessFormBo;
@@ -73,6 +75,10 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
     @Override
     public Boolean insertByBo(ActBusinessFormBo bo) {
         ActBusinessForm add = BeanUtil.toBean(bo, ActBusinessForm.class);
+        String date = DateUtils.dateTime();
+        //TODO 可自行设计
+        Long count = baseMapper.selectCount(new LambdaQueryWrapper<>());
+        add.setApplyCode("ACT"+date+(count+1));
         validEntityBeforeSave(add);
         boolean flag = baseMapper.insert(add) > 0;
         if (flag) {
@@ -80,6 +86,8 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
         }
         return flag;
     }
+
+
 
     /**
      * 修改业务表单

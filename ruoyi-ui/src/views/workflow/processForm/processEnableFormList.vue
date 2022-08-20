@@ -58,19 +58,19 @@
         v-if="processFormViewVisible" 
         center :close-on-click-modal="false" 
         append-to-body>
-       <processBussnessForm :formData="formData"/>
+       <dynamicFormEdit ref="formViewer" :buildData="formCode" :formData="formData"  @draftForm="draftProcessForm"/>
     </el-dialog>
   </div>
 </template>
 
 <script>
 import { listProcessEnableForm } from "@/api/workflow/processForm";
-import processBussnessForm from './components/processBussnessForm'
+import dynamicFormEdit from './components/dynamicFormEdit'
 
 export default {
   name: "ProcessForm",
   components:{
-    processBussnessForm
+    dynamicFormEdit
   },
   data() {
     return {
@@ -100,6 +100,7 @@ export default {
         formName: undefined,
       },
       processFormViewVisible: false,
+      formCode: '',
       formData: {}
     };
   },
@@ -129,8 +130,14 @@ export default {
     },
     //提交申请
     handleApply(row){
+       this.formCode = row.formDesignerText
        this.formData = row
        this.processFormViewVisible = true
+    },
+    //暂存单据
+    draftProcessForm(){
+       this.processFormViewVisible = false
+       this.$router.push('/workflow/from/businessForm')
     }
   }
 };

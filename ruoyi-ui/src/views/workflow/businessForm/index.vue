@@ -79,7 +79,6 @@
 
     <el-table v-loading="loading" :data="businessFormList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="" align="center" prop="id" v-if="true"/>
       <el-table-column label="单号" align="center" prop="applyCode" />
       <el-table-column label="表单key" align="center" prop="formKey" />
       <el-table-column label="表单名称" align="center" prop="formName" />
@@ -126,13 +125,27 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+    <!-- 动态表单预览 -->
+    <el-dialog :visible.sync="processFormViewVisible" fullscreen
+        v-if="processFormViewVisible" 
+        center :close-on-click-modal="false" 
+        append-to-body>
+       <dynamicFormEdit ref="formViewer" 
+       :buildData="formDataDetail.formText" 
+       :formDataDetail="formDataDetail" 
+       @draftForm="draftProcessForm"/>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { listBusinessForm, getBusinessForm, delBusinessForm, addBusinessForm, updateBusinessForm } from "@/api/workflow/businessForm";
+import dynamicFormEdit from '@/views/workflow/processForm/components/dynamicFormEdit'
 export default {
   name: "BusinessForm",
+  components:{
+    dynamicFormEdit
+  },
   data() {
     return {
       // 按钮loading
@@ -167,7 +180,9 @@ export default {
       form: {},
       // 表单校验
       rules: {
-      }
+      },
+      processFormViewVisible: false,
+      formDataDetail: {}
     };
   },
   created() {
@@ -182,6 +197,10 @@ export default {
         this.total = response.total;
         this.loading = false;
       });
+    },
+    //暂存
+    draftProcessForm(){
+      this.processFormViewVisible = false
     },
     // 取消按钮
     cancel() {
@@ -232,9 +251,9 @@ export default {
       const id = row.id || this.ids
       getBusinessForm(id).then(response => {
         this.loading = false;
-        this.form = response.data;
-        this.open = true;
-        this.title = "修改业务表单";
+        this.formDataDetail = response.data;
+        this.processFormViewVisible = true;
+        this.title = response.data.formName;
       });
     },
     /** 提交按钮 */
