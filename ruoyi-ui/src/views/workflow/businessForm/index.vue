@@ -131,16 +131,18 @@
         center :close-on-click-modal="false" 
         append-to-body>
        <dynamicFormEdit ref="formViewer" 
-       :buildData="formDataDetail.formText" 
-       :formDataDetail="formDataDetail" 
-       @draftForm="draftProcessForm"/>
+       :buildData="form.formText" 
+       v-model="form.formValue"
+       @draftForm="draftProcessForm"
+       @submitForm="submitProcessForm"
+       />
     </el-dialog>
   </div>
 </template>
 
 <script>
 import { listBusinessForm, getBusinessForm, delBusinessForm, addBusinessForm, updateBusinessForm } from "@/api/workflow/businessForm";
-import dynamicFormEdit from '@/views/workflow/processForm/components/dynamicFormEdit'
+import dynamicFormEdit from './dynamicFormEdit'
 export default {
   name: "BusinessForm",
   components:{
@@ -181,8 +183,7 @@ export default {
       // 表单校验
       rules: {
       },
-      processFormViewVisible: false,
-      formDataDetail: {}
+      processFormViewVisible: false
     };
   },
   created() {
@@ -199,8 +200,23 @@ export default {
       });
     },
     //暂存
-    draftProcessForm(){
-      this.processFormViewVisible = false
+    draftProcessForm(formText,formValue){
+      this.form.formText = formText
+      this.form.formValue = formValue
+      this.buttonLoading = true;
+      if (this.form.id != null) {
+        updateBusinessForm(this.form).then(response => {
+          this.$modal.msgSuccess("修改成功");
+          this.processFormViewVisible = false
+          this.getList();
+        }).finally(() => {
+          this.buttonLoading = false;
+        });
+      } 
+    },
+    //提交
+    submitProcessForm(){
+
     },
     // 取消按钮
     cancel() {
@@ -247,11 +263,10 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.loading = true;
-      this.reset();
       const id = row.id || this.ids
       getBusinessForm(id).then(response => {
         this.loading = false;
-        this.formDataDetail = response.data;
+        this.form = response.data;
         this.processFormViewVisible = true;
         this.title = response.data.formName;
       });

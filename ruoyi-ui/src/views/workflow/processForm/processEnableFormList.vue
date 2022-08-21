@@ -53,20 +53,24 @@
       </div>
     </div>
     <el-empty class="el-empty-icon" v-else description="暂无数据"></el-empty>
-    <!-- 动态表单预览 -->
+    <!-- 动态表单编辑 -->
     <el-dialog :visible.sync="processFormViewVisible" fullscreen
         v-if="processFormViewVisible" 
         center :close-on-click-modal="false" 
         append-to-body>
-       <dynamicFormEdit ref="formViewer" :buildData="formCode" :formData="formData"  @draftForm="draftProcessForm"/>
+       <dynamicFormEdit ref="formViewer" 
+       :buildData="formData.formDesignerText" 
+       @draftForm="draftProcessForm"
+       @submitForm="submitProcessForm"
+       />
     </el-dialog>
   </div>
 </template>
 
 <script>
 import { listProcessEnableForm } from "@/api/workflow/processForm";
-import dynamicFormEdit from './components/dynamicFormEdit'
-
+import dynamicFormEdit from '@/views/workflow/businessForm/dynamicFormEdit'
+import { addBusinessForm} from "@/api/workflow/businessForm";
 export default {
   name: "ProcessForm",
   components:{
@@ -100,7 +104,6 @@ export default {
         formName: undefined,
       },
       processFormViewVisible: false,
-      formCode: '',
       formData: {}
     };
   },
@@ -128,16 +131,33 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
-    //提交申请
+    //打开表单
     handleApply(row){
-       this.formCode = row.formDesignerText
        this.formData = row
        this.processFormViewVisible = true
     },
-    //暂存单据
-    draftProcessForm(){
-       this.processFormViewVisible = false
-       this.$router.push('/workflow/from/businessForm')
+    //暂存
+    draftProcessForm(formText,formValue){
+      let data = {
+        formId: this.formData.id,
+        formKey: this.formData.formKey,
+        formName: this.formData.formName,
+        formText:formText,
+        formValue: formValue
+      }
+      this.buttonLoading = true;
+        addBusinessForm(data).then(response => {
+          this.$modal.msgSuccess("保存成功");
+          this.$router.push('/workflow/from/businessForm')
+          this.processFormViewVisible = false
+          this.getList();
+        }).finally(() => {
+          this.buttonLoading = false;
+        });
+    },
+    //提交
+    submitProcessForm(){
+
     }
   }
 };
