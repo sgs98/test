@@ -74,7 +74,7 @@
 
 ### 其他
 
-* 同步升级 RuoYi-Vue-Plus
+* 同步升级 RuoYi-Vue-Plus [RuoYi-Vue-Plus](https://gitee.com/JavaLionLi/RuoYi-Vue-Plus)
 * GitHub 地址 [RuoYi-Vue-Plus-Activiti-github](https://github.com/sgs98/RuoYi-Vue-Plus-Activiti)
 * 参考bpmn.js 地址 [workflow-bpmn-modeler](https://github.com/GoldSubmarine/workflow-bpmn-modeler)
 
