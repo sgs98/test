@@ -15,6 +15,7 @@ import com.ruoyi.workflow.flowable.factory.WorkflowService;
 import com.ruoyi.workflow.mapper.ProcessDefinitionMapper;
 import com.ruoyi.workflow.service.IActNodeAssigneeService;
 import com.ruoyi.workflow.service.IProcessDefinitionService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,8 +26,6 @@ import org.flowable.engine.repository.DeploymentBuilder;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.repository.ProcessDefinitionQuery;
 import org.flowable.task.api.history.HistoricTaskInstance;
-import org.mybatis.spring.SqlSessionTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -51,13 +50,12 @@ import java.util.zip.ZipInputStream;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ProcessDefinitionServiceImpl extends WorkflowService implements IProcessDefinitionService {
 
-    @Autowired
-    private IActNodeAssigneeService iActNodeAssigneeService;
+    private final IActNodeAssigneeService iActNodeAssigneeService;
 
-    @Autowired
-    private SqlSessionTemplate sqlSessionTemplate;
+    private final ProcessDefinitionMapper processDefinitionMapper;
 
     /**
      * @Description: 查询流程定义列表
@@ -259,7 +257,6 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
         try {
             String definitionId = data.get("definitionId").toString();
             String description = data.get("description").toString();
-            ProcessDefinitionMapper processDefinitionMapper = sqlSessionTemplate.getMapper(ProcessDefinitionMapper.class);
             //更新原因
             processDefinitionMapper.updateDescriptionById(definitionId, description);
             ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()

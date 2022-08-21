@@ -31,7 +31,7 @@
         <el-col :span="4" v-for="(item,index) in processFormList" :key="index">
           <el-card shadow="hover" class="card-item">
             <div slot="header" class="clearfix">
-               <el-tooltip class="item" effect="dark" :content="'表单KEY:'+item.formName" placement="top-start">
+               <el-tooltip class="item" effect="dark" :content="'表单KEY:'+item.formKey" placement="top-start">
                  <span>{{item.formName}}</span>
               </el-tooltip>
               <span style="float: right;" @click="handleApply(item)"><el-link type="primary">提交申请</el-link></span>

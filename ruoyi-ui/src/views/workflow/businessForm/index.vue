@@ -378,5 +378,7 @@ export default {
     bottom: 0;
     position: absolute;
 }
-
+.el-dialog__header {
+    padding: 30px !important;
+}
 </style>

@@ -237,7 +237,6 @@ export default {
 .btn{
     position: relative;
     height: 50px;
-    top: -5px;
     background: #fff;
 }
 .btn .btn-content{
