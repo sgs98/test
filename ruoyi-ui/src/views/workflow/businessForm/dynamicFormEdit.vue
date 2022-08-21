@@ -1,10 +1,12 @@
 <template>
   <div >
     <div class="btn">
-        <span>
-          <el-button type="info" @click="draftForm">暂存</el-button>
-          <el-button type="primary" @click="submitForm">提交</el-button>
-        </span>
+        <div class="btn-content">
+          <span>
+            <el-button type="info" @click="draftForm">暂存</el-button>
+            <el-button type="primary" @click="submitForm">提交</el-button>
+          </span>
+        </div>
     </div>
     <div>
       <el-row  :gutter="formConf.gutter" class="form-builder">
@@ -120,7 +122,7 @@ import fancyDynamicTableItem from "@/components/FormDesigner/dynamic/fancyDynami
 import {datas,addRow,deleteRow,fillDatas} from "@/components/FormDesigner/custom/formDraw";
 import fancyEditTable from "@/components/FormDesigner/table/fancyEditTable";
 export default {
-  name:'formBuilder',
+  name:'dynamicFormEdit',
   props:{
     value:{
       type:String,
@@ -234,10 +236,18 @@ export default {
 }
 .btn{
     position: relative;
-    padding: 0px 10px 20px 0px;
     height: 50px;
+    top: -5px;
+    background: #fff;
 }
-.btn span{
-     float: right;   
+.btn .btn-content{
+    position: fixed;
+    z-index: 10;
+    width: 1084px;
+    height: 50px;
+    background: #fff;
+}
+.btn .btn-content span{
+  float: right;
 }
 </style>

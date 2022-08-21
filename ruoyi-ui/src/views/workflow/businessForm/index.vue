@@ -94,6 +94,12 @@
           <el-button
             size="mini"
             type="text"
+            icon="el-icon-view"
+            @click="handleView(scope.row)"
+          >查看</el-button>
+          <el-button
+            size="mini"
+            type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
             v-hasPermi="['workflow:businessForm:remove']"
@@ -125,16 +131,26 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
-    <!-- 动态表单预览 -->
-    <el-dialog :visible.sync="processFormViewVisible" fullscreen
-        v-if="processFormViewVisible" 
+    <!-- 动态表单编辑 -->
+    <el-dialog :visible.sync="processFormEditVisible" class="self_dialog"
+        v-if="processFormEditVisible" 
         center :close-on-click-modal="false" 
         append-to-body>
-       <dynamicFormEdit ref="formViewer" 
+       <dynamicFormEdit
        :buildData="form.formText" 
        v-model="form.formValue"
        @draftForm="draftProcessForm"
        @submitForm="submitProcessForm"
+       />
+    </el-dialog>
+    <!-- 动态表单查看 -->
+    <el-dialog :visible.sync="processFormViewVisible" class="self_dialog"
+        v-if="processFormViewVisible" 
+        center :close-on-click-modal="false" 
+        append-to-body>
+       <dynamicFormView
+       :buildData="form.formText" 
+       v-model="form.formValue"
        />
     </el-dialog>
   </div>
@@ -143,10 +159,12 @@
 <script>
 import { listBusinessForm, getBusinessForm, delBusinessForm, addBusinessForm, updateBusinessForm } from "@/api/workflow/businessForm";
 import dynamicFormEdit from './dynamicFormEdit'
+import dynamicFormView from './dynamicFormView'
 export default {
   name: "BusinessForm",
   components:{
-    dynamicFormEdit
+    dynamicFormEdit,
+    dynamicFormView
   },
   data() {
     return {
@@ -183,6 +201,9 @@ export default {
       // 表单校验
       rules: {
       },
+      //动态表单编辑
+      processFormEditVisible: false,
+      //动态表单查看
       processFormViewVisible: false
     };
   },
@@ -207,7 +228,7 @@ export default {
       if (this.form.id != null) {
         updateBusinessForm(this.form).then(response => {
           this.$modal.msgSuccess("修改成功");
-          this.processFormViewVisible = false
+          this.processFormEditVisible = false
           this.getList();
         }).finally(() => {
           this.buttonLoading = false;
@@ -267,6 +288,17 @@ export default {
       getBusinessForm(id).then(response => {
         this.loading = false;
         this.form = response.data;
+        this.processFormEditVisible = true;
+        this.title = response.data.formName;
+      });
+    },
+    /** 查看按钮操作 */
+    handleView(row){
+      this.loading = true;
+      const id = row.id || this.ids
+      getBusinessForm(id).then(response => {
+        this.loading = false;
+        this.form = response.data;
         this.processFormViewVisible = true;
         this.title = response.data.formName;
       });
@@ -319,3 +351,32 @@ export default {
   }
 };
 </script>
+<style scoped>
+.self_dialog {
+    display: flex;
+    justify-content: center;
+    align-items: Center;
+    overflow: hidden;
+}
+.self_dialog /deep/ .el-dialog {
+    margin: 0 auto !important;
+    height: 90%;
+    width: 70%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-left: 15px;
+}
+.self_dialog /deep/ .el-dialog .el-dialog__body {
+    padding-top: 15px !important;
+    overflow: hidden;
+    overflow-y: auto;
+    margin-bottom: 40px;
+}
+.self_dialog /deep/ .el-dialog .el-dialog__footer {
+    left: 40%;
+    bottom: 0;
+    position: absolute;
+}
+
+</style>

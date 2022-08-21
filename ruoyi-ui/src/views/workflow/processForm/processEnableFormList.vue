@@ -54,7 +54,7 @@
     </div>
     <el-empty class="el-empty-icon" v-else description="暂无数据"></el-empty>
     <!-- 动态表单编辑 -->
-    <el-dialog :visible.sync="processFormViewVisible" fullscreen
+    <el-dialog :visible.sync="processFormViewVisible" class="self_dialog"
         v-if="processFormViewVisible" 
         center :close-on-click-modal="false" 
         append-to-body>
@@ -183,5 +183,31 @@ export default {
   }
   .el-col{
     padding: 10px;
+  }
+  .self_dialog {
+      display: flex;
+      justify-content: center;
+      align-items: Center;
+      overflow: hidden;
+  }
+  .self_dialog /deep/ .el-dialog {
+      margin: 0 auto !important;
+      height: 90%;
+      width: 70%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding-left: 15px;
+  }
+  .self_dialog /deep/ .el-dialog .el-dialog__body {
+      padding-top: 5px !important;
+      overflow: hidden;
+      overflow-y: auto;
+      margin-bottom: 40px;
+  }
+  .self_dialog /deep/ .el-dialog .el-dialog__footer {
+      left: 40%;
+      bottom: 0;
+      position: absolute;
   }
 </style>
