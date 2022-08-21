@@ -79,6 +79,10 @@
 * 参考bpmn.js 地址 [workflow-bpmn-modeler](https://github.com/GoldSubmarine/workflow-bpmn-modeler)
 
 
+### 友情链接
+
+* 动态表单地址(作者：骚年) [formDesigner](https://gitee.com/wurong19870715/formDesigner)
+
 ## 业务功能
 
 | 功能 | 介绍 |
