@@ -483,7 +483,7 @@ public class WorkFlowUtils {
         managementService.executeCommand(deleteExecutionCmd);
         historyService.deleteHistoricTaskInstance(task.getId());
         historyService.createNativeHistoricActivityInstanceQuery()
-            .sql("DELETE  FROM ACT_HI_ACTINST WHERE EXECUTION_ID_ = '" + task.getExecutionId() + "'").list();
+            .sql("DELETE  FROM ACT_HI_ACTINST WHERE EXECUTION_ID_ = '" + task.getExecutionId() + "'");
     }
 
     /**
