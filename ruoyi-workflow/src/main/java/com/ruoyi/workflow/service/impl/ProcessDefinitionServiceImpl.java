@@ -21,6 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.*;
 import org.flowable.bpmn.model.Process;
+import org.flowable.engine.ProcessMigrationService;
 import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.repository.DeploymentBuilder;
 import org.flowable.engine.repository.ProcessDefinition;
@@ -345,6 +346,36 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
         iActNodeAssigneeService.delByDefinitionIdAndNodeId(actProcessNodeVo.getProcessDefinitionId(), actProcessNodeVo.getNodeId());
         iActNodeAssigneeService.add(actNodeAssignee);
         return R.ok(processNodeVoList);
+    }
 
+    /**
+     * @Description: 迁移流程定义
+     * @param: currentProcessDefinitionId 当前流程定义id
+     * @param: fromProcessDefinitionId 需要迁移到的流程定义id
+     * @return: java.lang.Boolean
+     * @author: gssong
+     * @Date: 2022/8/22 13:11
+     */
+    @Override
+    public Boolean migrationProcessDefinition(String currentProcessDefinitionId, String fromProcessDefinitionId) {
+        try {
+            ProcessMigrationService processMigrationService = processEngine.getProcessMigrationService();
+            // 迁移验证
+            boolean migrationValid = processMigrationService.createProcessInstanceMigrationBuilder()
+                .migrateToProcessDefinition(currentProcessDefinitionId)
+                .validateMigrationOfProcessInstances(fromProcessDefinitionId)
+                .isMigrationValid();
+            // 验证失败
+            if (!migrationValid) {
+                throw new ServiceException("流程定义差异过大不满足在途流程的迁移，请修改流程图");
+            }
+            // 已结束的流程实例不会迁移
+            processMigrationService.createProcessInstanceMigrationBuilder()
+                .migrateToProcessDefinition(currentProcessDefinitionId)
+                .migrateProcessInstances(fromProcessDefinitionId);
+        }catch (Exception e){
+            throw new ServiceException(e.getMessage());
+        }
+        return true;
     }
 }

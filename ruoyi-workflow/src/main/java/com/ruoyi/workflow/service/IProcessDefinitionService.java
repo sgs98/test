@@ -68,4 +68,12 @@ public interface IProcessDefinitionService {
      * @return
      */
     R<List<ActProcessNodeVo>> setting(String processDefinitionId);
+
+    /**
+     * 迁移流程定义
+     * @param currentProcessDefinitionId 当前流程定义id
+     * @param fromProcessDefinitionId 需要迁移到的流程定义id
+     * @return
+     */
+    Boolean migrationProcessDefinition(String currentProcessDefinitionId,String fromProcessDefinitionId);
 }
