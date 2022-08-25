@@ -1,15 +1,16 @@
 package com.ruoyi.workflow.utils;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.ruoyi.common.utils.spring.SpringUtils;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.domain.vo.ProcessNodePath;
 import com.ruoyi.workflow.flowable.cmd.ExpressCheckCmd;
-import com.ruoyi.workflow.flowable.factory.WorkflowService;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.*;
+import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
-import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,8 +21,13 @@ import java.util.stream.Collectors;
  * @author: gssong
  * @created: 2022/8/22 18:40
  */
-@Component
-public class ProcessRunningPathUtils extends WorkflowService {
+@RequiredArgsConstructor
+public class ProcessRunningPathUtils{
+
+    /**
+     * 流程引擎
+     */
+    private static final ProcessEngine processEngine = SpringUtils.getBean(ProcessEngine.class);
 
     /**
      * @Description: 获取流程审批路线
@@ -30,18 +36,19 @@ public class ProcessRunningPathUtils extends WorkflowService {
      * @author: gssong
      * @Date: 2022/8/23 19:28
      */
-    public List<ProcessNodePath> nodeList(String processInstanceId) {
-        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-        BpmnModel bpmnModel = repositoryService.getBpmnModel(processInstance.getProcessDefinitionId());
+    public static List<ProcessNodePath> nodeList(String processInstanceId) {
+
+        ProcessInstance processInstance = processEngine.getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+        BpmnModel bpmnModel = processEngine.getRepositoryService().getBpmnModel(processInstance.getProcessDefinitionId());
         Collection<FlowElement> flowElements = bpmnModel.getMainProcess().getFlowElements();
-        List<Task> list = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        List<Task> list = processEngine.getTaskService().createTaskQuery().processInstanceId(processInstanceId).list();
         List<ProcessNodePath> processNodePathList = new ArrayList<>();
-        Map<String, Object> variables = runtimeService.getVariables(list.get(0).getExecutionId());
+        Map<String, Object> variables = processEngine.getRuntimeService().getVariables(list.get(0).getExecutionId());
         FlowElement startElement = flowElements.stream().filter(f -> f instanceof StartEvent).findFirst().orElse(null);
         assert startElement != null;
         List<SequenceFlow> outgoingFlows = ((StartEvent) startElement).getOutgoingFlows();
         if (outgoingFlows.size() == 1) {
-            this.getNextNodeList(processNodePathList, flowElements, outgoingFlows.get(0), variables, processInstance.getProcessInstanceId(), null);
+            getNextNodeList(processNodePathList, flowElements, outgoingFlows.get(0), variables, processInstance.getProcessInstanceId(), null);
         }
         Map<String, List<ProcessNodePath>> listMap = processNodePathList.stream().collect(Collectors.groupingBy(ProcessNodePath::getSourceFlowElementId));
         List<ProcessNodePath> buildList = new ArrayList<>();
@@ -85,7 +92,7 @@ public class ProcessRunningPathUtils extends WorkflowService {
      * @author: gssong
      * @Date: 2022/8/23 19:40
      */
-    private void getNextNodeList(List<ProcessNodePath> processNodePathList, Collection<FlowElement> flowElements, SequenceFlow sequenceFlow, Map<String, Object> variables, String processInstanceId, String gateway) {
+    private static void getNextNodeList(List<ProcessNodePath> processNodePathList, Collection<FlowElement> flowElements, SequenceFlow sequenceFlow, Map<String, Object> variables, String processInstanceId, String gateway) {
         FlowElement targetFlowElement = sequenceFlow.getTargetFlowElement();
         List<SequenceFlow> outgoingFlows = ((FlowNode) targetFlowElement).getOutgoingFlows();
         for (SequenceFlow outgoingFlow : outgoingFlows) {
@@ -121,7 +128,7 @@ public class ProcessRunningPathUtils extends WorkflowService {
      * @author: gssong
      * @Date: 2022/8/23 20:11
      */
-    private void nextNodeBuild(List<ProcessNodePath> processNodePathList, Collection<FlowElement> flowElements, FlowElement currentFlowElement, SequenceFlow sequenceFlow, Map<String, Object> variableMap, String processInstanceId, String gateway) {
+    private static void nextNodeBuild(List<ProcessNodePath> processNodePathList, Collection<FlowElement> flowElements, FlowElement currentFlowElement, SequenceFlow sequenceFlow, Map<String, Object> variableMap, String processInstanceId, String gateway) {
         String conditionExpression = sequenceFlow.getConditionExpression();
         ProcessNodePath processNodePath = new ProcessNodePath();
         FlowElement sourceFlowElement = sequenceFlow.getSourceFlowElement();
@@ -132,7 +139,7 @@ public class ProcessRunningPathUtils extends WorkflowService {
         } else {
             buildData(processNodePath, conditionExpression, processInstanceId, variableMap, currentFlowElement, sourceFlowElement, ActConstant.USER_TASK, processNodePathList);
         }
-        this.getNextNodeList(processNodePathList, flowElements, sequenceFlow, variableMap, processInstanceId, null);
+        getNextNodeList(processNodePathList, flowElements, sequenceFlow, variableMap, processInstanceId, null);
     }
 
     /**
@@ -149,7 +156,7 @@ public class ProcessRunningPathUtils extends WorkflowService {
      * @author: gssong
      * @Date: 2022/8/23 20:26
      */
-    private void buildData(ProcessNodePath processNodePath, String conditionExpression, String processInstanceId, Map<String, Object> variableMap, FlowElement currentFlowElement, FlowElement sourceFlowElement, String gateway, List<ProcessNodePath> processNodePathList) {
+    private static void buildData(ProcessNodePath processNodePath, String conditionExpression, String processInstanceId, Map<String, Object> variableMap, FlowElement currentFlowElement, FlowElement sourceFlowElement, String gateway, List<ProcessNodePath> processNodePathList) {
         if (ActConstant.USER_TASK.equals(gateway)) {
             processNodePath.setExpression(true);
             processNodePath.setExpressionStr(true);
@@ -182,7 +189,7 @@ public class ProcessRunningPathUtils extends WorkflowService {
      * @author: gssong
      * @Date: 2022/7/11 20:39
      */
-    private FlowElement getSubProcess(Collection<FlowElement> flowElements, FlowElement endElement) {
+    public static FlowElement getSubProcess(Collection<FlowElement> flowElements, FlowElement endElement) {
         for (FlowElement mainElement : flowElements) {
             if (mainElement instanceof SubProcess) {
                 for (FlowElement subEndElement : ((SubProcess) mainElement).getFlowElements()) {
