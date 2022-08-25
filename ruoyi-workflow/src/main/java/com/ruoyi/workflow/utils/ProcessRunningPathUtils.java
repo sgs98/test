@@ -36,7 +36,7 @@ public class ProcessRunningPathUtils{
      * @author: gssong
      * @Date: 2022/8/23 19:28
      */
-    public static List<ProcessNodePath> nodeList(String processInstanceId) {
+    public static List<ProcessNodePath> getProcessNodeList(String processInstanceId) {
 
         ProcessInstance processInstance = processEngine.getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         BpmnModel bpmnModel = processEngine.getRepositoryService().getBpmnModel(processInstance.getProcessDefinitionId());
@@ -106,7 +106,7 @@ public class ProcessRunningPathUtils{
             } else if (currentFlowElement instanceof InclusiveGateway) { //包含网关
                 getNextNodeList(processNodePathList, flowElements, outgoingFlow, variables, processInstanceId, ActConstant.INCLUSIVE_GATEWAY);
             } else if (currentFlowElement instanceof EndEvent) {
-                FlowElement subProcess = getSubProcess(flowElements, currentFlowElement);
+                FlowElement subProcess = WorkFlowUtils.getSubProcess(flowElements, currentFlowElement);
                 if (subProcess != null) {
                     getNextNodeList(processNodePathList, flowElements, outgoingFlow, variables, processInstanceId, ActConstant.END_EVENT);
                 }
@@ -179,27 +179,6 @@ public class ProcessRunningPathUtils{
         if (!collect.contains(currentFlowElement.getId())) {
             processNodePathList.add(processNodePath);
         }
-    }
-
-    /**
-     * @Description: 判断是否为主流程结束节点
-     * @param: flowElements全部节点
-     * @param: endElement 结束节点
-     * @return: org.flowable.bpmn.model.FlowElement
-     * @author: gssong
-     * @Date: 2022/7/11 20:39
-     */
-    public static FlowElement getSubProcess(Collection<FlowElement> flowElements, FlowElement endElement) {
-        for (FlowElement mainElement : flowElements) {
-            if (mainElement instanceof SubProcess) {
-                for (FlowElement subEndElement : ((SubProcess) mainElement).getFlowElements()) {
-                    if (endElement.equals(subEndElement)) {
-                        return mainElement;
-                    }
-                }
-            }
-        }
-        return null;
     }
 
 }

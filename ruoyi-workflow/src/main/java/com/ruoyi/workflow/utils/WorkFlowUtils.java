@@ -42,7 +42,6 @@ import org.flowable.identitylink.api.IdentityLink;
 import org.flowable.task.api.Task;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.flowable.variable.api.persistence.entity.VariableInstance;
-import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
 import java.io.IOException;
@@ -59,33 +58,26 @@ import static com.ruoyi.workflow.common.constant.ActConstant.*;
  * @author: gssong
  * @created: 2021/10/03 19:31
  */
-@Component
 @RequiredArgsConstructor
 public class WorkFlowUtils {
 
-    private final IActBusinessStatusService iActBusinessStatusService;
+    private static final IActBusinessStatusService iActBusinessStatusService = SpringUtils.getBean(IActBusinessStatusService.class);
 
-    private final TaskService taskService;
+    private static final SysUserMapper sysUserMapper = SpringUtils.getBean(SysUserMapper.class);
 
-    private final SysUserMapper sysUserMapper;
+    private static final SysRoleMapper sysRoleMapper = SpringUtils.getBean(SysRoleMapper.class);
 
-    private final SysRoleMapper sysRoleMapper;
+    private static final SysUserRoleMapper userRoleMapper = SpringUtils.getBean(SysUserRoleMapper.class);
 
-    private final SysUserRoleMapper userRoleMapper;
+    private static final ProcessEngine processEngine = SpringUtils.getBean(ProcessEngine.class);
 
-    private final ManagementService managementService;
+    private static final ISysMessageService iSysMessageService = SpringUtils.getBean(ISysMessageService.class);
 
-    private final HistoryService historyService;
+    private static final IActHiTaskInstService iActHiTaskInstService = SpringUtils.getBean(IActHiTaskInstService.class);
 
-    private final RepositoryService repositoryService;
+    private static final IActBusinessRuleService iActBusinessRuleService = SpringUtils.getBean(IActBusinessRuleService.class);
 
-    private final ISysMessageService iSysMessageService;
-
-    private final IActHiTaskInstService iActHiTaskInstService;
-
-    private final IActBusinessRuleService iActBusinessRuleService;
-
-    private final IActTaskNodeService iActTaskNodeService;
+    private static final IActTaskNodeService iActTaskNodeService = SpringUtils.getBean(IActTaskNodeService.class);
 
     /**
      * @Description: bpmnModel转为xml
@@ -94,7 +86,7 @@ public class WorkFlowUtils {
      * @Author: gssong
      * @Date: 2021/11/5
      */
-    public byte[] bpmnJsonToXmlBytes(byte[] jsonBytes) throws IOException {
+    public static byte[] bpmnJsonToXmlBytes(byte[] jsonBytes) throws IOException {
         if (jsonBytes == null) {
             return null;
         }
@@ -122,7 +114,7 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/4/11 13:37
      */
-    public void getNextNodeList(Collection<FlowElement> flowElements, FlowElement flowElement, ExecutionEntityImpl executionEntity, List<ProcessNode> nextNodes, List<ProcessNode> tempNodes, String taskId, String gateway) {
+    public static void getNextNodeList(Collection<FlowElement> flowElements, FlowElement flowElement, ExecutionEntityImpl executionEntity, List<ProcessNode> nextNodes, List<ProcessNode> tempNodes, String taskId, String gateway) {
         // 获取当前节点的连线信息
         List<SequenceFlow> outgoingFlows = ((FlowNode) flowElement).getOutgoingFlows();
         // 当前节点的所有下一节点出口
@@ -174,7 +166,7 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/4/11 13:35
      */
-    private void nextNodeBuild(ExecutionEntityImpl executionEntity, List<ProcessNode> nextNodes, List<ProcessNode> tempNodes, String taskId, String gateway, SequenceFlow sequenceFlow, ProcessNode processNode, ProcessNode tempNode, FlowElement outFlowElement) {
+    private static void nextNodeBuild(ExecutionEntityImpl executionEntity, List<ProcessNode> nextNodes, List<ProcessNode> tempNodes, String taskId, String gateway, SequenceFlow sequenceFlow, ProcessNode processNode, ProcessNode tempNode, FlowElement outFlowElement) {
         // 用户任务，则获取响应给前端设置办理人或者候选人
         // 判断是否为排它网关
         if (ActConstant.EXCLUSIVE_GATEWAY.equals(gateway)) {
@@ -182,7 +174,7 @@ public class WorkFlowUtils {
             //判断是否有条件
             if (StringUtils.isNotBlank(conditionExpression)) {
                 ExpressCmd expressCmd = new ExpressCmd(sequenceFlow, executionEntity);
-                Boolean condition = managementService.executeCommand(expressCmd);
+                Boolean condition = processEngine.getManagementService().executeCommand(expressCmd);
                 processNodeBuildList(processNode, outFlowElement, ActConstant.EXCLUSIVE_GATEWAY, taskId, condition, nextNodes);
             } else {
                 tempNodeBuildList(tempNodes, taskId, tempNode, outFlowElement);
@@ -194,7 +186,7 @@ public class WorkFlowUtils {
                 processNodeBuildList(processNode, outFlowElement, ActConstant.INCLUSIVE_GATEWAY, taskId, true, nextNodes);
             } else {
                 ExpressCmd expressCmd = new ExpressCmd(sequenceFlow, executionEntity);
-                Boolean condition = managementService.executeCommand(expressCmd);
+                Boolean condition = processEngine.getManagementService().executeCommand(expressCmd);
                 processNodeBuildList(processNode, outFlowElement, ActConstant.INCLUSIVE_GATEWAY, taskId, condition, nextNodes);
             }
         } else {
@@ -212,7 +204,7 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/7/16 19:17
      */
-    private void tempNodeBuildList(List<ProcessNode> tempNodes, String taskId, ProcessNode tempNode, FlowElement outFlowElement) {
+    private static void tempNodeBuildList(List<ProcessNode> tempNodes, String taskId, ProcessNode tempNode, FlowElement outFlowElement) {
         tempNode.setNodeId(outFlowElement.getId());
         tempNode.setNodeName(outFlowElement.getName());
         tempNode.setNodeType(ActConstant.EXCLUSIVE_GATEWAY);
@@ -236,7 +228,7 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/7/16 19:17
      */
-    private void processNodeBuildList(ProcessNode processNode, FlowElement outFlowElement, String exclusiveGateway, String taskId, Boolean condition, List<ProcessNode> nextNodes) {
+    private static void processNodeBuildList(ProcessNode processNode, FlowElement outFlowElement, String exclusiveGateway, String taskId, Boolean condition, List<ProcessNode> nextNodes) {
         processNode.setNodeId(outFlowElement.getId());
         processNode.setNodeName(outFlowElement.getName());
         processNode.setNodeType(exclusiveGateway);
@@ -256,7 +248,7 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/7/11 20:39
      */
-    public FlowElement getSubProcess(Collection<FlowElement> flowElements, FlowElement endElement) {
+    public static FlowElement getSubProcess(Collection<FlowElement> flowElements, FlowElement endElement) {
         for (FlowElement mainElement : flowElements) {
             if (mainElement instanceof SubProcess) {
                 for (FlowElement subEndElement : ((SubProcess) mainElement).getFlowElements()) {
@@ -279,7 +271,7 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/4/11 13:35
      */
-    public List<String> ruleAssignList(ActBusinessRuleVo businessRule, String taskId, String taskName) {
+    public static List<String> ruleAssignList(ActBusinessRuleVo businessRule, String taskId, String taskName) {
         try {
             //返回值
             Object obj;
@@ -292,7 +284,7 @@ public class WorkFlowUtils {
                 Class[] paramClass = new Class[businessRuleParams.size()];
                 List<Object> params = new ArrayList<>();
                 for (int i = 0; i < businessRuleParams.size(); i++) {
-                    Map<String, VariableInstance> variables = taskService.getVariableInstances(taskId);
+                    Map<String, VariableInstance> variables = processEngine.getTaskService().getVariableInstances(taskId);
                     if (variables.containsKey(businessRuleParams.get(i).getParam())) {
                         VariableInstance v = variables.get(businessRuleParams.get(i).getParam());
                         String variable = v.getTextValue();
@@ -353,7 +345,7 @@ public class WorkFlowUtils {
      * @Author: gssong
      * @Date: 2022/1/16
      */
-    public void setStatusFileValue(Object o, List<String> idList, String id) {
+    public static void setStatusFileValue(Object o, List<String> idList, String id) {
         Class<?> aClass = o.getClass();
         Field businessStatus;
         try {
@@ -394,7 +386,7 @@ public class WorkFlowUtils {
      * @Author: gssong
      * @Date: 2022/1/16
      */
-    public void setProcessInstIdFileValue(Object o, List<String> idList, String id) {
+    public static void setProcessInstIdFileValue(Object o, List<String> idList, String id) {
         Class<?> aClass = o.getClass();
         Field processInstanceId;
         try {
@@ -431,7 +423,7 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/4/11 13:36
      */
-    public List<Long> getAssigneeIdList(String params, String chooseWay, String nodeName) {
+    public static List<Long> getAssigneeIdList(String params, String chooseWay, String nodeName) {
         List<Long> paramList = new ArrayList<>();
         String[] split = params.split(",");
         for (String userId : split) {
@@ -476,13 +468,13 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/4/11 13:36
      */
-    public void deleteRuntimeTask(Task task) {
+    public static void deleteRuntimeTask(Task task) {
         DeleteTaskCmd deleteTaskCmd = new DeleteTaskCmd(task.getId());
-        managementService.executeCommand(deleteTaskCmd);
+        processEngine.getManagementService().executeCommand(deleteTaskCmd);
         DeleteExecutionCmd deleteExecutionCmd = new DeleteExecutionCmd(task.getExecutionId());
-        managementService.executeCommand(deleteExecutionCmd);
-        historyService.deleteHistoricTaskInstance(task.getId());
-        historyService.createNativeHistoricActivityInstanceQuery()
+        processEngine.getManagementService().executeCommand(deleteExecutionCmd);
+        processEngine.getHistoryService().deleteHistoricTaskInstance(task.getId());
+        processEngine.getHistoryService().createNativeHistoricActivityInstanceQuery()
             .sql("DELETE  FROM ACT_HI_ACTINST WHERE EXECUTION_ID_ = '" + task.getExecutionId() + "'");
     }
 
@@ -494,8 +486,8 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/4/16 13:31
      */
-    public MultiVo isMultiInstance(String processDefinitionId, String taskDefinitionKey) {
-        BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
+    public static MultiVo isMultiInstance(String processDefinitionId, String taskDefinitionKey) {
+        BpmnModel bpmnModel = processEngine.getRepositoryService().getBpmnModel(processDefinitionId);
         FlowNode flowNode = (FlowNode) bpmnModel.getFlowElement(taskDefinitionKey);
         MultiVo multiVo = new MultiVo();
         //判断是否为并行会签节点
@@ -534,19 +526,19 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/5/6 19:18
      */
-    public List<Task> createSubTask(List<Task> parentTaskList, String assignees) {
+    public static List<Task> createSubTask(List<Task> parentTaskList, String assignees) {
         List<Task> list = new ArrayList<>();
         for (Task parentTask : parentTaskList) {
             String[] userIds = assignees.split(",");
             for (String userId : userIds) {
-                TaskEntity newTask = (TaskEntity) taskService.newTask();
+                TaskEntity newTask = (TaskEntity) processEngine.getTaskService().newTask();
                 newTask.setParentTaskId(parentTask.getId());
                 newTask.setAssignee(userId);
                 newTask.setName("【抄送】-" + parentTask.getName());
                 newTask.setProcessDefinitionId(parentTask.getProcessDefinitionId());
                 newTask.setProcessInstanceId(parentTask.getProcessInstanceId());
                 newTask.setTaskDefinitionKey(parentTask.getTaskDefinitionKey());
-                taskService.saveTask(newTask);
+                processEngine.getTaskService().saveTask(newTask);
                 list.add(newTask);
             }
         }
@@ -577,10 +569,10 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/3/13
      */
-    public TaskEntity createNewTask(Task currentTask, Date createTime) {
+    public static TaskEntity createNewTask(Task currentTask, Date createTime) {
         TaskEntity task = null;
         if (ObjectUtil.isNotEmpty(currentTask)) {
-            task = (TaskEntity) taskService.newTask();
+            task = (TaskEntity) processEngine.getTaskService().newTask();
             task.setCategory(currentTask.getCategory());
             task.setDescription(currentTask.getDescription());
             task.setTenantId(currentTask.getTenantId());
@@ -591,7 +583,7 @@ public class WorkFlowUtils {
             task.setTaskDefinitionKey(currentTask.getTaskDefinitionKey());
             task.setPriority(currentTask.getPriority());
             task.setCreateTime(createTime);
-            taskService.saveTask(task);
+            processEngine.getTaskService().saveTask(task);
         }
         if (ObjectUtil.isNotNull(task)) {
             ActHiTaskInst hiTaskInst = iActHiTaskInstService.getById(task.getId());
@@ -614,9 +606,9 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/6/18 13:26
      */
-    public void sendMessage(SendMessage sendMessage, String processInstanceId) {
+    public static void sendMessage(SendMessage sendMessage, String processInstanceId) {
         List<SysMessage> messageList = new ArrayList<>();
-        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        List<Task> taskList = processEngine.getTaskService().createTaskQuery().processInstanceId(processInstanceId).list();
         for (Task taskInfo : taskList) {
             if (StringUtils.isNotBlank(taskInfo.getAssignee())) {
                 SysMessage sysMessage = new SysMessage();
@@ -656,7 +648,7 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/6/26 15:37
      */
-    public void springInvokeMethod(String serviceName, String methodName, Object... params) {
+    public static void springInvokeMethod(String serviceName, String methodName, Object... params) {
         Object service = SpringUtils.getBean(serviceName);
         Class<?>[] paramClass = null;
         if (Objects.nonNull(params)) {
@@ -680,8 +672,8 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/7/9 17:55
      */
-    public List<IdentityLink> getCandidateUser(String taskId) {
-        return taskService.getIdentityLinksForTask(taskId);
+    public static List<IdentityLink> getCandidateUser(String taskId) {
+        return processEngine.getTaskService().getIdentityLinksForTask(taskId);
     }
 
     /**
@@ -693,9 +685,9 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/7/12 21:27
      */
-    public Boolean autoComplete(String processInstanceId, String businessKey, List<ActNodeAssignee> actNodeAssignees, TaskCompleteREQ req) {
+    public static Boolean autoComplete(String processInstanceId, String businessKey, List<ActNodeAssignee> actNodeAssignees, TaskCompleteREQ req) {
 
-        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        List<Task> taskList = processEngine.getTaskService().createTaskQuery().processInstanceId(processInstanceId).list();
         if (CollectionUtil.isEmpty(taskList)) {
             iActBusinessStatusService.updateState(businessKey, BusinessStatusEnum.FINISH);
         }
@@ -711,22 +703,22 @@ public class WorkFlowUtils {
             settingAssignee(task, nodeAssignee, nodeAssignee.getMultiple());
             List<Long> assignees = req.getAssignees(task.getTaskDefinitionKey());
             if (!nodeAssignee.getIsShow() && CollectionUtil.isNotEmpty(assignees) && assignees.contains(LoginHelper.getUserId())) {
-                taskService.addComment(task.getId(), task.getProcessInstanceId(), "流程引擎满足条件自动办理");
-                taskService.complete(task.getId());
+                processEngine.getTaskService().addComment(task.getId(), task.getProcessInstanceId(), "流程引擎满足条件自动办理");
+                processEngine.getTaskService().complete(task.getId());
                 recordExecuteNode(task, actNodeAssignees);
             } else {
                 settingAssignee(task, nodeAssignee, nodeAssignee.getMultiple());
             }
 
         }
-        List<Task> list = taskService.createTaskQuery().processInstanceId(processInstanceId)
+        List<Task> list = processEngine.getTaskService().createTaskQuery().processInstanceId(processInstanceId)
             .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).list();
         if(CollectionUtil.isEmpty(list)){
             return false;
         }
         for (Task task : list) {
-            taskService.addComment(task.getId(), task.getProcessInstanceId(), "流程引擎满足条件自动办理");
-            taskService.complete(task.getId());
+            processEngine.getTaskService().addComment(task.getId(), task.getProcessInstanceId(), "流程引擎满足条件自动办理");
+            processEngine.getTaskService().complete(task.getId());
             recordExecuteNode(task, actNodeAssignees);
         }
         autoComplete(processInstanceId, businessKey, actNodeAssignees, req);
@@ -742,7 +734,7 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/7/8
      */
-    public void settingAssignee(Task task, ActNodeAssignee actNodeAssignee, Boolean multiple) {
+    public static void settingAssignee(Task task, ActNodeAssignee actNodeAssignee, Boolean multiple) {
         //按业务规则选人
         if (ActConstant.WORKFLOW_RULE.equals(actNodeAssignee.getChooseWay())) {
             ActBusinessRuleVo actBusinessRuleVo = iActBusinessRuleService.queryById(actNodeAssignee.getBusinessRuleId());
@@ -752,7 +744,7 @@ public class WorkFlowUtils {
                 userIdList.add(Long.valueOf(userId));
             }
             if (multiple) {
-                taskService.setVariable(task.getId(), actNodeAssignee.getMultipleColumn(), userIdList);
+                processEngine.getTaskService().setVariable(task.getId(), actNodeAssignee.getMultipleColumn(), userIdList);
             } else {
                 setAssignee(task, userIdList);
             }
@@ -763,7 +755,7 @@ public class WorkFlowUtils {
             // 设置审批人员
             List<Long> assignees = getAssigneeIdList(actNodeAssignee.getAssigneeId(), actNodeAssignee.getChooseWay(), task.getName());
             if (multiple) {
-                taskService.setVariable(task.getId(), actNodeAssignee.getMultipleColumn(), assignees);
+                processEngine.getTaskService().setVariable(task.getId(), actNodeAssignee.getMultipleColumn(), assignees);
             } else {
                 setAssignee(task, assignees);
             }
@@ -778,13 +770,13 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2021/10/21
      */
-    public void setAssignee(Task task, List<Long> assignees) {
+    public static void setAssignee(Task task, List<Long> assignees) {
         if (assignees.size() == 1) {
-            taskService.setAssignee(task.getId(), assignees.get(0).toString());
+            processEngine.getTaskService().setAssignee(task.getId(), assignees.get(0).toString());
         } else {
             // 多个作为候选人
             for (Long assignee : assignees) {
-                taskService.addCandidateUser(task.getId(), assignee.toString());
+                processEngine.getTaskService().addCandidateUser(task.getId(), assignee.toString());
             }
         }
     }
@@ -798,7 +790,7 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/7/29 20:57
      */
-    public void recordExecuteNode(Task task, List<ActNodeAssignee> actNodeAssignees) {
+    public static void recordExecuteNode(Task task, List<ActNodeAssignee> actNodeAssignees) {
         List<ActTaskNode> actTaskNodeList = iActTaskNodeService.getListByInstanceId(task.getProcessInstanceId());
         ActTaskNode actTaskNode = new ActTaskNode();
         actTaskNode.setNodeId(task.getTaskDefinitionKey());

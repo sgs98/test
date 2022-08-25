@@ -60,8 +60,6 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
     private final IActBusinessStatusService iActBusinessStatusService;
     private final IUserService iUserService;
     private final IActTaskNodeService iActTaskNodeService;
-    private final WorkFlowUtils workFlowUtils;
-
 
     /**
      * @Description: 提交申请，启动流程实例
@@ -553,7 +551,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
                 List<Task> taskCollect = newTaskList.stream().filter(e -> e.getTaskDefinitionKey().equals(actTaskNode.getNodeId())).collect(Collectors.toList());
                 if (taskCollect.size() > 1) {
                     taskCollect.remove(0);
-                    taskCollect.forEach(workFlowUtils::deleteRuntimeTask);
+                    taskCollect.forEach(WorkFlowUtils::deleteRuntimeTask);
                 }
             }
             List<Task> cancelTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();

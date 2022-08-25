@@ -42,7 +42,7 @@
           </el-card>
         </el-col>
       </el-row>
-      <div class="pagination-box">
+      <div class="pagination-box" v-show="total>0">
         <pagination
           v-show="total>0"
           :total="total"
