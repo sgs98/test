@@ -82,7 +82,7 @@
 
 ### 友情链接
 
-* 动态表单地址(作者：骚年) [formDesigner](https://gitee.com/wurong19870715/formDesigner)
+* 动态表单地址(作者：wison) [formDesigner](https://gitee.com/wurong19870715/formDesigner)
 
 ## 业务功能
 
