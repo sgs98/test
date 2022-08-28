@@ -112,6 +112,14 @@
                 @click="handleSetting(scope.row)"
                 >设置</el-button>
             </el-col>
+            <el-col :span="1.5">
+              <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-postcard"
+                @click="handleForm(scope.row)"
+                >表单</el-button>
+            </el-col>
           </el-row>
         </template>
       </el-table-column>
@@ -140,28 +148,31 @@
     <!-- 预览图片或xml -->
     <process-preview ref="previewRef" :url="url" :type="type"/>
 
-     <!-- 历史版本 -->
+    <!-- 历史版本 -->
     <process-his-list ref="hisListRef" :propKey="propKey" :definitionId="definitionId" />
 
-     <!-- 流程设置 -->
+    <!-- 流程设置 -->
     <process-setting ref="settingRef"/>
+
+    <!-- 表单设置 -->
+    <process-form-list ref="formRef" :fromData="fromData"/>
 
 
   </div>
 </template>
 <script>
 import {list,del,updateProcDefState,getXml} from "@/api/workflow/definition";
+import { getProcessDefFormByDefId } from "@/api/workflow/processDefForm";
 import {convertToModel} from "@/api/workflow/model";
 import processDeploy from './components/processDeploy'
 import processPreview from './components/processPreview'
 import processHisList from './components/processHisList'
 import processSetting from './components/processSetting'
-
-
+import processFormList from './components/processFormList'
 
 export default {
     name: 'Definition', // 和对应路由表中配置的name值一致
-    components: { processDeploy, processPreview,processHisList,processSetting },
+    components: { processDeploy, processPreview,processHisList,processSetting,processFormList },
     data() {
         return {
             // 弹窗
@@ -204,6 +215,8 @@ export default {
             // 流程定义对象
             procedefData: {},
             type: '',//png,xml
+            // 表单数据
+            fromData: {}
         }
     },
     created() {
@@ -331,6 +344,25 @@ export default {
         this.$nextTick(() => {
           this.$refs.settingRef.visible = true
           this.$refs.settingRef.init(row.id)
+        })
+      },
+      //打开表单
+      handleForm(row){
+        this.loading = true
+        getProcessDefFormByDefId(row.id).then(response => {
+          this.fromData = {
+            processDefinitionId: row.id,
+            processDefinitionKey: row.key,
+            processDefinitionName: row.name
+          }
+          if(response.data){
+            this.fromData.formId = response.data.formId
+            this.fromData.formKey = response.data.formKey
+            this.fromData.formName = response.data.formName
+            this.fromData.formVariable = response.data.formVariable
+          }
+          this.loading = false
+          this.$refs.formRef.visible = true
         })
       }
     }
