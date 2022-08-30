@@ -35,12 +35,12 @@ public interface IActBusinessFormService {
     /**
      * 修改业务表单
      */
-    Boolean insertByBo(ActBusinessFormBo bo);
+    ActBusinessFormVo insertByBo(ActBusinessFormBo bo);
 
     /**
      * 修改业务表单
      */
-    Boolean updateByBo(ActBusinessFormBo bo);
+    ActBusinessFormVo updateByBo(ActBusinessFormBo bo);
 
     /**
      * 校验并批量删除业务表单信息

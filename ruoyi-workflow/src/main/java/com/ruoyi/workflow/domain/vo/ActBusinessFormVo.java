@@ -2,6 +2,7 @@ package com.ruoyi.workflow.domain.vo;
 
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.ruoyi.workflow.domain.ActProcessDefForm;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -69,6 +70,13 @@ public class ActBusinessFormVo {
     @ExcelProperty(value = "单号")
     @ApiModelProperty("单号")
     private String applyCode;
+
+    /**
+     *流程与表单关联对象
+     */
+    @ExcelProperty(value = "流程与表单关联对象")
+    @ApiModelProperty("流程与表单关联对象")
+    private ActProcessDefForm actProcessDefForm;
 
 
 }

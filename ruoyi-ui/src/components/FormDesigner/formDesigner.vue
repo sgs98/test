@@ -193,7 +193,7 @@ export default {
   },
   watch:{
     value(newVal){
-      if(newVal !==''){
+      if(newVal !=='' && newVal !== null){
         const formData = JSON.parse(newVal);
         this.designList= formData.list;
         this.formConfig = formData.config;

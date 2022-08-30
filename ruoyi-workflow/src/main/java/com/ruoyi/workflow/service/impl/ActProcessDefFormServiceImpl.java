@@ -145,4 +145,18 @@ public class ActProcessDefFormServiceImpl implements IActProcessDefFormService {
         }
         return baseMapper.deleteBatchIds(ids) > 0;
     }
+
+    /**
+     * @Description: 按照表单id查询
+     * @param: formId
+     * @return: com.ruoyi.workflow.domain.ActProcessDefForm
+     * @author: gssong
+     * @Date: 2022/8/30 22:10
+     */
+    @Override
+    public ActProcessDefForm queryByFormId(Long formId) {
+        LambdaQueryWrapper<ActProcessDefForm> lqw = Wrappers.lambdaQuery();
+        lqw.eq(ActProcessDefForm::getFormId, formId);
+        return baseMapper.selectOne(lqw);
+    }
 }

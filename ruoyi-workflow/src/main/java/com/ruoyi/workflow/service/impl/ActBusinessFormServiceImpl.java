@@ -1,6 +1,7 @@
 package com.ruoyi.workflow.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.ruoyi.common.utils.BeanCopyUtils;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.core.page.TableDataInfo;
@@ -8,7 +9,8 @@ import com.ruoyi.common.core.domain.PageQuery;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import lombok.Data;
+import com.ruoyi.workflow.domain.ActProcessDefForm;
+import com.ruoyi.workflow.service.IActProcessDefFormService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.ruoyi.workflow.domain.bo.ActBusinessFormBo;
@@ -32,6 +34,8 @@ import java.util.Collection;
 public class ActBusinessFormServiceImpl implements IActBusinessFormService {
 
     private final ActBusinessFormMapper baseMapper;
+
+    private final IActProcessDefFormService iActProcessDefFormService;
 
     /**
      * 查询业务表单
@@ -73,7 +77,7 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
      * 新增业务表单
      */
     @Override
-    public Boolean insertByBo(ActBusinessFormBo bo) {
+    public ActBusinessFormVo insertByBo(ActBusinessFormBo bo) {
         ActBusinessForm add = BeanUtil.toBean(bo, ActBusinessForm.class);
         String date = DateUtils.dateTime();
         //TODO 可自行设计
@@ -84,7 +88,11 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
         if (flag) {
             bo.setId(add.getId());
         }
-        return flag;
+        ActBusinessFormVo actBusinessFormVo = new ActBusinessFormVo();
+        BeanCopyUtils.copy(add,actBusinessFormVo);
+        ActProcessDefForm actProcessDefForm = iActProcessDefFormService.queryByFormId(add.getFormId());
+        actBusinessFormVo.setActProcessDefForm(actProcessDefForm);
+        return actBusinessFormVo;
     }
 
 
@@ -93,10 +101,14 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
      * 修改业务表单
      */
     @Override
-    public Boolean updateByBo(ActBusinessFormBo bo) {
+    public ActBusinessFormVo updateByBo(ActBusinessFormBo bo) {
         ActBusinessForm update = BeanUtil.toBean(bo, ActBusinessForm.class);
         validEntityBeforeSave(update);
-        return baseMapper.updateById(update) > 0;
+        ActBusinessFormVo actBusinessFormVo = new ActBusinessFormVo();
+        BeanCopyUtils.copy(update,actBusinessFormVo);
+        ActProcessDefForm actProcessDefForm = iActProcessDefFormService.queryByFormId(update.getFormId());
+        actBusinessFormVo.setActProcessDefForm(actProcessDefForm);
+        return actBusinessFormVo;
     }
 
     /**

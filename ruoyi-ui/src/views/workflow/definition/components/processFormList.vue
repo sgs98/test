@@ -16,14 +16,14 @@
       <el-row>
         <el-col class="line" :span="12">
           <el-form-item label="表单Key" prop="formKey">
-            <el-input v-model="fromData.formKey" placeholder="请选择表单" >
+            <el-input v-model="fromData.formKey" placeholder="请选择表单" disabled>
              <el-button slot="append" @click="handerOpenForm" icon="el-icon-search"></el-button>
             </el-input>
           </el-form-item>
         </el-col>
         <el-col class="line" :span="12">
           <el-form-item label="表单名称" prop="formName">
-            <el-input v-model="fromData.formName" ></el-input>
+            <el-input v-model="fromData.formName" disabled></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -89,7 +89,7 @@
 </template>
 
 <script>
-import { listProcessEnableForm } from "@/api/workflow/dynamicForm";
+import { listDynamicFormEnable } from "@/api/workflow/dynamicForm";
 import { addProcessDefForm,checkProcessDefFormByDefId } from "@/api/workflow/processDefForm";
 export default {
   props:{
@@ -143,7 +143,7 @@ export default {
     /** 查询流程单列表 */
     getList() {
       this.loading = true;
-      listProcessEnableForm(this.queryParams).then(response => {
+      listDynamicFormEnable(this.queryParams).then(response => {
         this.dynamicFormList = response.rows;
         this.total = response.total;
         this.loading = false;

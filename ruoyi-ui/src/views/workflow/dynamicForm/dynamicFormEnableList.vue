@@ -178,7 +178,7 @@ export default {
     },
     //提交流程
     submitFormApply(entity){
-        if(!entity.actProcessForm){
+        if(!entity.actProcessDefForm){
           this.$modal.msgError("未绑定流程");
           return
         }
@@ -186,7 +186,7 @@ export default {
             entity: entity
         }
         const data = {
-            //processKey: entity.actProcessForm., // key
+            processKey: entity.actProcessDefForm.processDefinitionKey, // key
             businessKey: entity.id, // 业务id
             variables: variables,
             classFullName: entity.formKey

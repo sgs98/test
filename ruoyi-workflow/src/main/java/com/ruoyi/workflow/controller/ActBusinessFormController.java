@@ -83,8 +83,8 @@ public class ActBusinessFormController extends BaseController {
     @Log(title = "业务表单", businessType = BusinessType.INSERT)
     @RepeatSubmit()
     @PostMapping()
-    public R<Void> add(@Validated(AddGroup.class) @RequestBody ActBusinessFormBo bo) {
-        return toAjax(iActBusinessFormService.insertByBo(bo) ? 1 : 0);
+    public R<ActBusinessFormVo> add(@Validated(AddGroup.class) @RequestBody ActBusinessFormBo bo) {
+        return R.ok(iActBusinessFormService.insertByBo(bo));
     }
 
     /**
@@ -95,8 +95,8 @@ public class ActBusinessFormController extends BaseController {
     @Log(title = "业务表单", businessType = BusinessType.UPDATE)
     @RepeatSubmit()
     @PutMapping()
-    public R<Void> edit(@Validated(EditGroup.class) @RequestBody ActBusinessFormBo bo) {
-        return toAjax(iActBusinessFormService.updateByBo(bo) ? 1 : 0);
+    public R<ActBusinessFormVo> edit(@Validated(EditGroup.class) @RequestBody ActBusinessFormBo bo) {
+        return R.ok(iActBusinessFormService.updateByBo(bo));
     }
 
     /**

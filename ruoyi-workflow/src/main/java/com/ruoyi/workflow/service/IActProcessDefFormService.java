@@ -1,6 +1,7 @@
 package com.ruoyi.workflow.service;
 
 import com.ruoyi.common.core.domain.R;
+import com.ruoyi.workflow.domain.ActProcessDefForm;
 import com.ruoyi.workflow.domain.vo.ActProcessDefFormVo;
 import com.ruoyi.workflow.domain.bo.ActProcessDefFormBo;
 import com.ruoyi.common.core.page.TableDataInfo;
@@ -57,4 +58,9 @@ public interface IActProcessDefFormService {
      * 校验并批量删除流程定义与单配置信息
      */
     Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid);
+
+    /**
+     * 按照formId查询
+     */
+    ActProcessDefForm queryByFormId(Long formId);
 }
