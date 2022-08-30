@@ -436,7 +436,7 @@ export default {
             updateLeave(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               if(flag === 'submit'){
-                this.submitFormAppply(response.data)
+                this.submitFormApply(response.data)
               }
             }).finally(() => {
               this.buttonLoading = false;
@@ -479,7 +479,7 @@ export default {
       }, `demo_${new Date().getTime()}.xlsx`)
     },
     //提交流程
-    submitFormAppply(entity){
+    submitFormApply(entity){
         let variables = {
             entity: entity
         }

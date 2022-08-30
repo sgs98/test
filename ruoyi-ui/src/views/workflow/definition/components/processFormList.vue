@@ -65,7 +65,7 @@
           <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
         </el-row>
 
-        <el-table v-loading="loading" :highlight-current-row="true" :data="processFormList" @row-click="handleChange">
+        <el-table v-loading="loading" :highlight-current-row="true" :data="dynamicFormList" @row-click="handleChange">
           <el-table-column label="主键" align="center" prop="id" v-if="false"/>
           <el-table-column label="表单key" align="center" prop="formKey" />
           <el-table-column label="表单名称" align="center" prop="formName" />
@@ -89,7 +89,7 @@
 </template>
 
 <script>
-import { listProcessEnableForm } from "@/api/workflow/processForm";
+import { listProcessEnableForm } from "@/api/workflow/dynamicForm";
 import { addProcessDefForm,checkProcessDefFormByDefId } from "@/api/workflow/processDefForm";
 export default {
   props:{
@@ -98,7 +98,7 @@ export default {
       default:()=>{}
     }
   },
-  name: "ProcessFormList",
+  name: "DynamicFormList",
   data() {
     return {
       // 显示隐藏
@@ -113,7 +113,7 @@ export default {
       // 总条数
       total: 0,
       // 流程单表格数据
-      processFormList: [],
+      dynamicFormList: [],
       // 弹出层标题
       title: "",
       // 查询参数
@@ -138,13 +138,13 @@ export default {
   },
   methods: {
     handleFormDesigner(row){
-        this.$router.push('/workflow/processFormDesigne/'+row.id)
+        this.$router.push('/workflow/dynamicFormDesigne/'+row.id)
     },
     /** 查询流程单列表 */
     getList() {
       this.loading = true;
       listProcessEnableForm(this.queryParams).then(response => {
-        this.processFormList = response.rows;
+        this.dynamicFormList = response.rows;
         this.total = response.total;
         this.loading = false;
       });

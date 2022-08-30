@@ -1,44 +1,44 @@
 import request from '@/utils/request'
 
 // 查询流程单列表
-export function listProcessForm(query) {
+export function listDynamicForm(query) {
   return request({
-    url: '/workflow/processForm/list',
+    url: '/workflow/dynamicForm/list',
     method: 'get',
     params: query
   })
 }
 
 // 查询启用流程单列表
-export function listProcessEnableForm(query) {
+export function listDynamicFormEnable(query) {
   return request({
-    url: '/workflow/processForm/enableList',
+    url: '/workflow/dynamicForm/enableList',
     method: 'get',
     params: query
   })
 }
 
 // 查询流程单详细
-export function getProcessForm(id) {
+export function getDynamicForm(id) {
   return request({
-    url: '/workflow/processForm/' + id,
+    url: '/workflow/dynamicForm/' + id,
     method: 'get'
   })
 }
 
 // 新增流程单
-export function addProcessForm(data) {
+export function addDynamicForm(data) {
   return request({
-    url: '/workflow/processForm',
+    url: '/workflow/dynamicForm',
     method: 'post',
     data: data
   })
 }
 
 // 修改流程单
-export function updateProcessForm(data) {
+export function updateDynamicForm(data) {
   return request({
-    url: '/workflow/processForm',
+    url: '/workflow/dynamicForm',
     method: 'put',
     data: data
   })
@@ -47,16 +47,16 @@ export function updateProcessForm(data) {
 // 修改流程单
 export function editForm(data) {
   return request({
-    url: '/workflow/processForm/editForm',
+    url: '/workflow/dynamicForm/editForm',
     method: 'put',
     data: data
   })
 }
 
 // 删除流程单
-export function delProcessForm(id) {
+export function delDynamicForm(id) {
   return request({
-    url: '/workflow/processForm/' + id,
+    url: '/workflow/dynamicForm/' + id,
     method: 'delete'
   })
 }

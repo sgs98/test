@@ -1,7 +1,7 @@
 package com.ruoyi.workflow.service;
 
-import com.ruoyi.workflow.domain.vo.ActProcessFormVo;
-import com.ruoyi.workflow.domain.bo.ActProcessFormBo;
+import com.ruoyi.workflow.domain.vo.ActDynamicFormVo;
+import com.ruoyi.workflow.domain.bo.ActDynamicFormBo;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.core.domain.PageQuery;
 
@@ -14,42 +14,42 @@ import java.util.List;
  * @author gssong
  * @date 2022-08-11
  */
-public interface IActProcessFormService {
+public interface IActDynamicFormService {
 
     /**
      * 查询流程单
      */
-    ActProcessFormVo queryById(Long id);
+    ActDynamicFormVo queryById(Long id);
 
     /**
      * 查询流程单列表
      */
-    TableDataInfo<ActProcessFormVo> queryPageList(ActProcessFormBo bo, PageQuery pageQuery);
+    TableDataInfo<ActDynamicFormVo> queryPageList(ActDynamicFormBo bo, PageQuery pageQuery);
 
     /**
      * 查询启用流程单列表
      */
-    TableDataInfo<ActProcessFormVo> queryPageEnableList(ActProcessFormBo bo, PageQuery pageQuery);
+    TableDataInfo<ActDynamicFormVo> queryPageEnableList(ActDynamicFormBo bo, PageQuery pageQuery);
 
     /**
      * 查询流程单列表
      */
-    List<ActProcessFormVo> queryList(ActProcessFormBo bo);
+    List<ActDynamicFormVo> queryList(ActDynamicFormBo bo);
 
     /**
      * 添加流程单
      */
-    Boolean insertByBo(ActProcessFormBo bo);
+    Boolean insertByBo(ActDynamicFormBo bo);
 
     /**
      * 修改流程单
      */
-    Boolean updateByBo(ActProcessFormBo bo);
+    Boolean updateByBo(ActDynamicFormBo bo);
 
     /**
      * 修改流程单
      */
-    Boolean editForm(ActProcessFormBo bo);
+    Boolean editForm(ActDynamicFormBo bo);
 
     /**
      * 校验并批量删除流程单信息

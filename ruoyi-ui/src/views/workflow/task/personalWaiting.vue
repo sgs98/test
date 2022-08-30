@@ -86,7 +86,7 @@
   import api from '@/api/workflow/task'
   import verify from "@/components/Process/Verify";
   import history from "@/components/Process/History";
-  import  approvalForm from "@/views/components/approvalForm";
+  import approvalForm from "@/views/components/approvalForm";
 
   export default {
     components: {

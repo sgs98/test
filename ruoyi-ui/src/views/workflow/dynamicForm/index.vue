@@ -31,7 +31,7 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          v-hasPermi="['workflow:processForm:add']"
+          v-hasPermi="['workflow:dynamicForm:add']"
         >新增</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -42,7 +42,7 @@
           size="mini"
           :disabled="single"
           @click="handleUpdate"
-          v-hasPermi="['workflow:processForm:edit']"
+          v-hasPermi="['workflow:dynamicForm:edit']"
         >修改</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -53,7 +53,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['workflow:processForm:remove']"
+          v-hasPermi="['workflow:dynamicForm:remove']"
         >删除</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -63,13 +63,13 @@
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['workflow:processForm:export']"
+          v-hasPermi="['workflow:dynamicForm:export']"
         >导出</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="processFormList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="dynamicFormList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="主键" align="center" prop="id" v-if="false"/>
       <el-table-column label="表单key" align="center" prop="formKey" />
@@ -82,21 +82,21 @@
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
-            v-hasPermi="['workflow:processForm:edit']"
+            v-hasPermi="['workflow:dynamicForm:edit']"
           >修改</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-thumb"
             @click="handleFormDesigner(scope.row)"
-            v-hasPermi="['workflow:processForm:edit']"
+            v-hasPermi="['workflow:dynamicForm:edit']"
           >表单设计</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['workflow:processForm:remove']"
+            v-hasPermi="['workflow:dynamicForm:remove']"
           >删除</el-button>
         </template>
       </el-table-column>
@@ -135,10 +135,10 @@
 </template>
 
 <script>
-import { listProcessForm, getProcessForm, delProcessForm, addProcessForm, updateProcessForm } from "@/api/workflow/processForm";
+import { listDynamicForm, getDynamicForm, delDynamicForm, addDynamicForm, updateDynamicForm } from "@/api/workflow/dynamicForm";
 
 export default {
-  name: "ProcessForm",
+  name: "DynamicForm",
   data() {
     return {
       // 按钮loading
@@ -156,7 +156,7 @@ export default {
       // 总条数
       total: 0,
       // 流程单表格数据
-      processFormList: [],
+      dynamicFormList: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -186,13 +186,13 @@ export default {
   },
   methods: {
     handleFormDesigner(row){
-        this.$router.push('/workflow/processFormDesigne/'+row.id)
+        this.$router.push('/workflow/dynamicFormDesigner/'+row.id)
     },
     /** 查询流程单列表 */
     getList() {
       this.loading = true;
-      listProcessForm(this.queryParams).then(response => {
-        this.processFormList = response.rows;
+      listDynamicForm(this.queryParams).then(response => {
+        this.dynamicFormList = response.rows;
         this.total = response.total;
         this.loading = false;
       });
@@ -246,7 +246,7 @@ export default {
       this.loading = true;
       this.reset();
       const id = row.id || this.ids
-      getProcessForm(id).then(response => {
+      getDynamicForm(id).then(response => {
         this.loading = false;
         this.form = response.data;
         this.open = true;
@@ -259,7 +259,7 @@ export default {
         if (valid) {
           this.buttonLoading = true;
           if (this.form.id != null) {
-            updateProcessForm(this.form).then(response => {
+            updateDynamicForm(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
@@ -267,7 +267,7 @@ export default {
               this.buttonLoading = false;
             });
           } else {
-            addProcessForm(this.form).then(response => {
+            addDynamicForm(this.form).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
@@ -283,7 +283,7 @@ export default {
       const ids = row.id || this.ids;
       this.$modal.confirm('是否确认删除流程单编号为"' + ids + '"的数据项？').then(() => {
         this.loading = true;
-        return delProcessForm(ids);
+        return delDynamicForm(ids);
       }).then(() => {
         this.loading = false;
         this.getList();
@@ -294,9 +294,9 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('workflow/processForm/export', {
+      this.download('workflow/dynamicForm/export', {
         ...this.queryParams
-      }, `processForm_${new Date().getTime()}.xlsx`)
+      }, `dynamicForm_${new Date().getTime()}.xlsx`)
     }
   }
 };

@@ -163,16 +163,16 @@ export const dynamicRoutes = [
     ]
   },
   {
-    path: '/workflow/processFormDesigne',
+    path: '/workflow/dynamicFormDesigner',
     component: Layout,
     hidden: true,
-    permissions: ['workflow:processForm:edit'],
+    permissions: ['workflow:dynamicForm:edit'],
     children: [
       {
         path: ':id(\\d+)',
-        component: () => import('@/views/workflow/processForm/processFormDesigner'),
-        name: 'processFormDesigner',
-        meta: { title: '设计表单', activeMenu: '/workflow/processForm' }
+        component: () => import('@/views/workflow/dynamicForm/dynamicFormDesigner'),
+        name: 'dynamicFormDesigner',
+        meta: { title: '设计表单', activeMenu: '/workflow/dynamicForm' }
       }
     ]
   }

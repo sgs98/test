@@ -12,7 +12,7 @@ import javax.validation.constraints.*;
 import com.ruoyi.common.core.domain.BaseEntity;
 
 /**
- * 流程单业务对象 act_process_form
+ * 动态表单业务对象 act_dynamic_form
  *
  * @author gssong
  * @date 2022-08-11
@@ -20,8 +20,8 @@ import com.ruoyi.common.core.domain.BaseEntity;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ApiModel("流程单业务对象")
-public class ActProcessFormBo extends BaseEntity {
+@ApiModel("动态表单业务对象")
+public class ActDynamicFormBo extends BaseEntity {
 
     /**
      * 主键

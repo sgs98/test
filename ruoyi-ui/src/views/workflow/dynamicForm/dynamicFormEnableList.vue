@@ -26,9 +26,9 @@
     <el-row :gutter="10" class="mb8">
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
-    <div class="container-box" v-loading="loading" v-if="processFormList && processFormList.length>0">
+    <div class="container-box" v-loading="loading" v-if="dynamicFormList && dynamicFormList.length>0">
       <el-row :gutter="12" style="margin-left: 0px; margin-right: 0px;">
-        <el-col :span="4" v-for="(item,index) in processFormList" :key="index">
+        <el-col :span="4" v-for="(item,index) in dynamicFormList" :key="index">
           <el-card shadow="hover" class="card-item">
             <div slot="header" class="clearfix">
                <el-tooltip class="item" effect="dark" :content="'表单KEY:'+item.formKey" placement="top-start">
@@ -42,7 +42,7 @@
           </el-card>
         </el-col>
       </el-row>
-      <div class="pagination-box" v-show="total>0">
+      <div class="pagination-box" v-show="total>0" v-loading="loading">
         <pagination
           v-show="total>0"
           :total="total"
@@ -54,8 +54,8 @@
     </div>
     <el-empty class="el-empty-icon" v-else description="暂无数据"></el-empty>
     <!-- 动态表单编辑 -->
-    <el-dialog :visible.sync="processFormViewVisible" class="self_dialog"
-        v-if="processFormViewVisible" 
+    <el-dialog :visible.sync="dynamicFormViewVisible" class="self_dialog"
+        v-if="dynamicFormViewVisible" 
         center :close-on-click-modal="false" 
         append-to-body>
        <dynamicFormEdit ref="formViewer" 
@@ -64,17 +64,22 @@
        @submitForm="submitProcessForm"
        />
     </el-dialog>
+    <!-- 工作流 -->
+    <verify ref="verifyRef" @callSubmit="callSubmit" :taskId="taskId" :taskVariables="taskVariables" :sendMessage="sendMessage"></verify>
   </div>
 </template>
 
 <script>
-import { listProcessEnableForm } from "@/api/workflow/processForm";
+import { listDynamicFormEnable } from "@/api/workflow/dynamicForm";
 import dynamicFormEdit from '@/views/workflow/businessForm/dynamicFormEdit'
 import { addBusinessForm} from "@/api/workflow/businessForm";
+import api from '@/api/workflow/task'
+import verify from "@/components/Process/Verify";
 export default {
   name: "ProcessForm",
   components:{
-    dynamicFormEdit
+    dynamicFormEdit,
+    verify
   },
   data() {
     return {
@@ -91,7 +96,7 @@ export default {
       // 总条数
       total: 0,
       // 流程单表格数据
-      processFormList: [],
+      dynamicFormList: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -103,8 +108,16 @@ export default {
         formKey: undefined,
         formName: undefined,
       },
-      processFormViewVisible: false,
-      formData: {}
+      // 表单显示隐藏
+      dynamicFormViewVisible: false,
+      // 表单数据
+      formData: {},
+      // 任务id
+      taskId: '',
+      // 流程变量
+      taskVariables: {},
+      // 站内信
+      sendMessage: {}
     };
   },
   created() {
@@ -115,8 +128,8 @@ export default {
     /** 查询流程单列表 */
     getList() {
       this.loading = true;
-      listProcessEnableForm(this.queryParams).then(response => {
-        this.processFormList = response.rows;
+      listDynamicFormEnable(this.queryParams).then(response => {
+        this.dynamicFormList = response.rows;
         this.total = response.total;
         this.loading = false;
       });
@@ -134,7 +147,7 @@ export default {
     //打开表单
     handleApply(row){
        this.formData = row
-       this.processFormViewVisible = true
+       this.dynamicFormViewVisible = true
     },
     //暂存
     draftProcessForm(formText,formValue){
@@ -149,7 +162,7 @@ export default {
         addBusinessForm(data).then(response => {
           this.$modal.msgSuccess("保存成功");
           this.$router.push('/workflow/from/businessForm')
-          this.processFormViewVisible = false
+          this.dynamicFormViewVisible = false
           this.getList();
         }).finally(() => {
           this.buttonLoading = false;
@@ -157,8 +170,43 @@ export default {
     },
     //提交
     submitProcessForm(){
-
-    }
+      addBusinessForm(data).then(response => {
+        this.submitFormApply(response.data)
+      }).finally(() => {
+        this.buttonLoading = false;
+      });
+    },
+    //提交流程
+    submitFormApply(entity){
+        if(!entity.actProcessForm){
+          this.$modal.msgError("未绑定流程");
+          return
+        }
+        let variables = {
+            entity: entity
+        }
+        const data = {
+            //processKey: entity.actProcessForm., // key
+            businessKey: entity.id, // 业务id
+            variables: variables,
+            classFullName: entity.formKey
+        }
+        // 启动流程
+        processAip.startProcessApply(data).then(response => {
+            this.taskId = response.data.taskId;
+            // 查询下一节点的变量
+            this.taskVariables = {
+                entity: entity,  // 变量
+            }
+            this.$refs.verifyRef.visible = true
+            this.$refs.verifyRef.reset()
+        })
+    },
+    // 提交成功回调
+    callSubmit(){
+      this.dynamicFormViewVisible = false;
+      this.getList();
+    },
   }
 };
 </script>

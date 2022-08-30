@@ -9,15 +9,15 @@ import lombok.Data;
 
 
 /**
- * 流程单视图对象 act_process_form
+ * 动态表单对象 act_dynamic_form
  *
  * @author gssong
  * @date 2022-08-11
  */
 @Data
-@ApiModel("流程单视图对象")
+@ApiModel("动态表单视图对象")
 @ExcelIgnoreUnannotated
-public class ActProcessFormVo {
+public class ActDynamicFormVo {
 
     private static final long serialVersionUID = 1L;
 

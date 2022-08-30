@@ -5,16 +5,16 @@
 </template>
 
 <script>
-import { getProcessForm } from "@/api/workflow/processForm";
+import { getDynamicForm } from "@/api/workflow/dynamicForm";
 export default {
-  name: "processFormDesigner",
+  name: "dynamicFormDesigner",
   data() {
     return {
       designerForm: ''
      }
   },
   mounted() {
-    getProcessForm(this.$route.params.id).then(response => {
+    getDynamicForm(this.$route.params.id).then(response => {
       this.designerForm = response.data.formDesignerText;
     });
   },

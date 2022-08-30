@@ -1,22 +1,21 @@
 package com.ruoyi.workflow.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
-import liquibase.pro.packaged.B;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import com.ruoyi.common.core.domain.BaseEntity;
 
 /**
- * 流程单对象 act_process_form
+ * 动态表单对象 act_dynamic_form
  *
  * @author gssong
  * @date 2022-08-11
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("act_process_form")
-public class ActProcessForm extends BaseEntity {
+@TableName("act_dynamic_form")
+public class ActDynamicForm extends BaseEntity {
 
     private static final long serialVersionUID=1L;
 

@@ -39,8 +39,8 @@ public class ExpressCheckCmd implements Command<Boolean>, Serializable {
         Expression expression = processEngineConfiguration.getExpressionManager().createExpression(this.conditionExpression);
         ExecutionEntity executionEntity = (ExecutionEntity) runtimeService.createProcessInstanceQuery().processInstanceId(this.processInstanceId).includeProcessVariables().singleResult();
         executionEntity.setVariables(variableMap);
-        Object value = expression.getValue(executionEntity);
-        return value != null && "true".equals(value.toString());
+        Object result = expression.getValue(executionEntity);
+        return (Boolean) result;
     }
 
 }

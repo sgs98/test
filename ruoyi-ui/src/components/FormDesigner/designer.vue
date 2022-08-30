@@ -134,7 +134,7 @@ import 'codemirror/lib/codemirror.css';
 // 引入主题后还需要在 options 中指定主题才会生效
 import 'codemirror/theme/dracula.css';
 import 'codemirror/mode/javascript/javascript'
-import { editForm } from "@/api/workflow/processForm";
+import { editForm } from "@/api/workflow/dynamicForm";
 
 export default {
   name:"designer",
