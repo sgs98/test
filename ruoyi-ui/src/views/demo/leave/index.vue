@@ -245,7 +245,7 @@
 
 <script>
 import { listLeave, getLeave, delLeave, addLeave, updateLeave } from "@/api/demo/leave";
-import processAip from "@/api/workflow/processInst";
+import processApi from "@/api/workflow/processInst";
 import history from "@/components/Process/History";
 import verify from "@/components/Process/Verify";
 export default {
@@ -493,7 +493,7 @@ export default {
         let assigneeList = []
         assigneeList.push(1)
         assigneeList.push(2)
-        processAip.startProcessApply(data).then(response => {
+        processApi.startProcessApply(data).then(response => {
             this.taskId = response.data.taskId;
             // 查询下一节点的变量
             this.taskVariables = {
@@ -510,7 +510,7 @@ export default {
     cancelProcessApply(row){
          this.$modal.confirm('是否撤销申请').then(() => {
             this.loading = true;
-            return processAip.cancelProcessApply(row.processInstanceId);
+            return processApi.cancelProcessApply(row.processInstanceId);
          }).then(() => {
             this.getList();
             this.$modal.msgSuccess("撤回成功");

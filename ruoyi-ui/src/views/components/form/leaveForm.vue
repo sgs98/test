@@ -60,7 +60,7 @@
 
 <script>
 import { getLeave} from "@/api/demo/leave";
-import processAip from "@/api/workflow/processInst";
+import processApi from "@/api/workflow/processInst";
  import verify from "@/components/Process/Verify";
 export default {
   name: "Leave",
@@ -167,7 +167,7 @@ export default {
                 businessKey: response.data.id, // 业务id
                 variables: { entity: response.data }, // 变量
             }
-            processAip.startProcessApply(data).then(response => {
+            processApi.startProcessApply(data).then(response => {
               if(response.code===200){
                 this.$modal.msgSuccess(response.msg);
               }

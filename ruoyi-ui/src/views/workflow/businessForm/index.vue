@@ -34,16 +34,6 @@
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['workflow:businessForm:add']"
-        >新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
           type="success"
           plain
           icon="el-icon-edit"
@@ -115,22 +105,6 @@
       :limit.sync="queryParams.pageSize"
       @pagination="getList"
     />
-
-    <!-- 添加或修改业务表单对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="表单key" prop="formKey">
-          <el-input v-model="form.formKey" placeholder="请输入表单key" />
-        </el-form-item>
-        <el-form-item label="单号" prop="applyCode">
-          <el-input v-model="form.applyCode" placeholder="请输入单号" />
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button :loading="buttonLoading" type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
-      </div>
-    </el-dialog>
     <!-- 动态表单编辑 -->
     <el-dialog :visible.sync="processFormEditVisible" class="self_dialog"
         v-if="processFormEditVisible" 
@@ -153,6 +127,8 @@
        v-model="form.formValue"
        />
     </el-dialog>
+    <!-- 工作流 -->
+    <verify ref="verifyRef" @callSubmit="callSubmit" :taskId="taskId" :taskVariables="taskVariables" :sendMessage="sendMessage"></verify>
   </div>
 </template>
 
@@ -160,11 +136,14 @@
 import { listBusinessForm, getBusinessForm, delBusinessForm, addBusinessForm, updateBusinessForm } from "@/api/workflow/businessForm";
 import dynamicFormEdit from './dynamicFormEdit'
 import dynamicFormView from './dynamicFormView'
+import verify from "@/components/Process/Verify";
+import processApi from "@/api/workflow/processInst";
 export default {
   name: "BusinessForm",
   components:{
     dynamicFormEdit,
-    dynamicFormView
+    dynamicFormView,
+    verify
   },
   data() {
     return {
@@ -186,8 +165,6 @@ export default {
       businessFormList: [],
       // 弹出层标题
       title: "",
-      // 是否显示弹出层
-      open: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -204,7 +181,13 @@ export default {
       //动态表单编辑
       processFormEditVisible: false,
       //动态表单查看
-      processFormViewVisible: false
+      processFormViewVisible: false,
+      // 任务id
+      taskId: '',
+      // 流程变量
+      taskVariables: {},
+      // 站内信
+      sendMessage: {}
     };
   },
   created() {
@@ -234,15 +217,6 @@ export default {
           this.buttonLoading = false;
         });
       } 
-    },
-    //提交
-    submitProcessForm(){
-
-    },
-    // 取消按钮
-    cancel() {
-      this.open = false;
-      this.reset();
     },
     // 表单重置
     reset() {
@@ -275,12 +249,6 @@ export default {
       this.single = selection.length!==1
       this.multiple = !selection.length
     },
-    /** 新增按钮操作 */
-    handleAdd() {
-      this.reset();
-      this.open = true;
-      this.title = "添加业务表单";
-    },
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.loading = true;
@@ -304,29 +272,48 @@ export default {
       });
     },
     /** 提交按钮 */
-    submitForm() {
-      this.$refs["form"].validate(valid => {
-        if (valid) {
-          this.buttonLoading = true;
-          if (this.form.id != null) {
-            updateBusinessForm(this.form).then(response => {
-              this.$modal.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
-            }).finally(() => {
-              this.buttonLoading = false;
-            });
-          } else {
-            addBusinessForm(this.form).then(response => {
-              this.$modal.msgSuccess("新增成功");
-              this.open = false;
-              this.getList();
-            }).finally(() => {
-              this.buttonLoading = false;
-            });
-          }
+    submitProcessForm() {
+      this.buttonLoading = true;
+      if (this.form.id != null) {
+        updateBusinessForm(this.form).then(response => {
+          this.submitFormApply(response.data)
+          this.open = false;
+          this.getList();
+        }).finally(() => {
+          this.buttonLoading = false;
+        });
+      }
+    },
+     //提交流程
+     submitFormApply(entity){
+        if(!entity.actProcessDefForm){
+          this.$modal.msgError("未绑定流程");
+          return
         }
-      });
+        let variables = {
+            entity: entity.variableMap
+        }
+        const data = {
+            processKey: entity.actProcessDefForm.processDefinitionKey, // key
+            businessKey: entity.id, // 业务id
+            variables: variables,
+            classFullName: entity.formKey
+        }
+        // 启动流程
+        processApi.startProcessApply(data).then(response => {
+            this.taskId = response.data.taskId;
+            // 查询下一节点的变量
+            this.taskVariables = {
+                entity: entity,  // 变量
+            }
+            this.$refs.verifyRef.visible = true
+            this.$refs.verifyRef.reset()
+        })
+    },
+    // 提交成功回调
+    callSubmit(){
+      this.dynamicFormViewVisible = false;
+      this.getList();
     },
     /** 删除按钮操作 */
     handleDelete(row) {

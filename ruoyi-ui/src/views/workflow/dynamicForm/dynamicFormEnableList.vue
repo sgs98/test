@@ -73,8 +73,8 @@
 import { listDynamicFormEnable } from "@/api/workflow/dynamicForm";
 import dynamicFormEdit from '@/views/workflow/businessForm/dynamicFormEdit'
 import { addBusinessForm} from "@/api/workflow/businessForm";
-import api from '@/api/workflow/task'
 import verify from "@/components/Process/Verify";
+import processApi from "@/api/workflow/processInst";
 export default {
   name: "ProcessForm",
   components:{
@@ -183,7 +183,7 @@ export default {
           return
         }
         let variables = {
-            entity: entity
+            entity: entity.variableMap
         }
         const data = {
             processKey: entity.actProcessDefForm.processDefinitionKey, // key
@@ -192,7 +192,7 @@ export default {
             classFullName: entity.formKey
         }
         // 启动流程
-        processAip.startProcessApply(data).then(response => {
+        processApi.startProcessApply(data).then(response => {
             this.taskId = response.data.taskId;
             // 查询下一节点的变量
             this.taskVariables = {

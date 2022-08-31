@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Map;
 
 
 /**
@@ -77,6 +78,13 @@ public class ActBusinessFormVo {
     @ExcelProperty(value = "流程与表单关联对象")
     @ApiModelProperty("流程与表单关联对象")
     private ActProcessDefForm actProcessDefForm;
+
+    /**
+     *流程变量
+     */
+    @ExcelProperty(value = "流程变量")
+    @ApiModelProperty("流程变量")
+    private Map<String,Object> variableMap;
 
 
 }

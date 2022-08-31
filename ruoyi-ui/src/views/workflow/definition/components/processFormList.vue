@@ -30,7 +30,7 @@
       <el-row>
         <el-col class="line" :span="24">
           <el-form-item label="表单参数">
-            <el-input v-model="fromData.formVariable" type="textarea" placeholder="请输入表单参数,动态表单中参数id,多个用英文逗号隔开" />
+            <el-input type="textarea" placeholder="请输入表单参数,动态表单中参数id,多个用英文逗号隔开" v-model="fromData.formVariable" @input="change($event)"/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -137,6 +137,10 @@ export default {
   created() {
   },
   methods: {
+    change(e){
+        this.$forceUpdate(e)
+    },
+    //设计表单
     handleFormDesigner(row){
         this.$router.push('/workflow/dynamicFormDesigne/'+row.id)
     },
