@@ -108,6 +108,7 @@
     <!-- 动态表单编辑 -->
     <el-dialog :visible.sync="processFormEditVisible" class="self_dialog"
         v-if="processFormEditVisible" 
+        v-loading="dialogLoading"
         center :close-on-click-modal="false" 
         append-to-body>
        <dynamicFormEdit
@@ -120,6 +121,7 @@
     <!-- 动态表单查看 -->
     <el-dialog :visible.sync="processFormViewVisible" class="self_dialog"
         v-if="processFormViewVisible" 
+        v-loading="dialogLoading"
         center :close-on-click-modal="false" 
         append-to-body>
        <dynamicFormView
@@ -147,10 +149,9 @@ export default {
   },
   data() {
     return {
-      // 按钮loading
-      buttonLoading: false,
       // 遮罩层
       loading: true,
+      dialogLoading: false,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -207,14 +208,14 @@ export default {
     draftProcessForm(formText,formValue){
       this.form.formText = formText
       this.form.formValue = formValue
-      this.buttonLoading = true;
+      this.dialogLoading = true
       if (this.form.id != null) {
         updateBusinessForm(this.form).then(response => {
           this.$modal.msgSuccess("修改成功");
           this.processFormEditVisible = false
           this.getList();
         }).finally(() => {
-          this.buttonLoading = false;
+          this.dialogLoading = false;
         });
       } 
     },
@@ -273,15 +274,10 @@ export default {
     },
     /** 提交按钮 */
     submitProcessForm() {
-      this.buttonLoading = true;
       if (this.form.id != null) {
         updateBusinessForm(this.form).then(response => {
           this.submitFormApply(response.data)
-          this.open = false;
-          this.getList();
-        }).finally(() => {
-          this.buttonLoading = false;
-        });
+        })
       }
     },
      //提交流程
@@ -304,7 +300,7 @@ export default {
             this.taskId = response.data.taskId;
             // 查询下一节点的变量
             this.taskVariables = {
-                entity: entity,  // 变量
+                entity: entity.variableMap,  // 变量
             }
             this.$refs.verifyRef.visible = true
             this.$refs.verifyRef.reset()
@@ -312,7 +308,8 @@ export default {
     },
     // 提交成功回调
     callSubmit(){
-      this.dynamicFormViewVisible = false;
+      this.processFormEditVisible = false;
+      this.dialogLoading = false;
       this.getList();
     },
     /** 删除按钮操作 */
