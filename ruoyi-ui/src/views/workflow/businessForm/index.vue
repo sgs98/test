@@ -106,27 +106,27 @@
       @pagination="getList"
     />
     <!-- 动态表单编辑 -->
-    <el-dialog :visible.sync="processFormEditVisible" class="self_dialog"
-        v-if="processFormEditVisible" 
-        v-loading="dialogLoading"
+    <el-dialog :visible.sync="dynamicFormEditVisible" class="self_dialog"
+        v-if="dynamicFormEditVisible" 
         center :close-on-click-modal="false" 
         append-to-body>
        <dynamicFormEdit
-       :buildData="form.formText" 
-       v-model="form.formValue"
-       @draftForm="draftProcessForm"
-       @submitForm="submitProcessForm"
+        :buildData="form.formText" 
+        v-model="form.formValue"
+        @draftForm="draftProcessForm(arguments)"
+        @submitForm="submitProcessForm(arguments)"
+        ref="dynamicFormEditVisible"
        />
     </el-dialog>
     <!-- 动态表单查看 -->
-    <el-dialog :visible.sync="processFormViewVisible" class="self_dialog"
-        v-if="processFormViewVisible" 
-        v-loading="dialogLoading"
-        center :close-on-click-modal="false" 
-        append-to-body>
+    <el-dialog :visible.sync="dynamicFormViewVisible" 
+      class="self_dialog" 
+      v-if="dynamicFormViewVisible" 
+      :close-on-click-modal="false" 
+      append-to-body>
        <dynamicFormView
-       :buildData="form.formText" 
-       v-model="form.formValue"
+        :buildData="form.formText" 
+        v-model="form.formValue"
        />
     </el-dialog>
     <!-- 工作流 -->
@@ -135,7 +135,7 @@
 </template>
 
 <script>
-import { listBusinessForm, getBusinessForm, delBusinessForm, addBusinessForm, updateBusinessForm } from "@/api/workflow/businessForm";
+import { listBusinessForm, getBusinessForm, delBusinessForm, updateBusinessForm } from "@/api/workflow/businessForm";
 import dynamicFormEdit from './dynamicFormEdit'
 import dynamicFormView from './dynamicFormView'
 import verify from "@/components/Process/Verify";
@@ -151,7 +151,6 @@ export default {
     return {
       // 遮罩层
       loading: true,
-      dialogLoading: false,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -180,9 +179,9 @@ export default {
       rules: {
       },
       //动态表单编辑
-      processFormEditVisible: false,
+      dynamicFormEditVisible: false,
       //动态表单查看
-      processFormViewVisible: false,
+      dynamicFormViewVisible: false,
       // 任务id
       taskId: '',
       // 流程变量
@@ -203,36 +202,6 @@ export default {
         this.total = response.total;
         this.loading = false;
       });
-    },
-    //暂存
-    draftProcessForm(formText,formValue){
-      this.form.formText = formText
-      this.form.formValue = formValue
-      this.dialogLoading = true
-      if (this.form.id != null) {
-        updateBusinessForm(this.form).then(response => {
-          this.$modal.msgSuccess("修改成功");
-          this.processFormEditVisible = false
-          this.getList();
-        }).finally(() => {
-          this.dialogLoading = false;
-        });
-      } 
-    },
-    // 表单重置
-    reset() {
-      this.form = {
-        id: undefined,
-        formId: undefined,
-        formKey: undefined,
-        formText: undefined,
-        createTime: undefined,
-        updateTime: undefined,
-        createBy: undefined,
-        updateBy: undefined,
-        applyCode: undefined
-      };
-      this.resetForm("form");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -257,7 +226,7 @@ export default {
       getBusinessForm(id).then(response => {
         this.loading = false;
         this.form = response.data;
-        this.processFormEditVisible = true;
+        this.dynamicFormEditVisible = true;
         this.title = response.data.formName;
       });
     },
@@ -268,12 +237,31 @@ export default {
       getBusinessForm(id).then(response => {
         this.loading = false;
         this.form = response.data;
-        this.processFormViewVisible = true;
+        this.dynamicFormViewVisible = true;
         this.title = response.data.formName;
       });
     },
+    
+    //暂存
+    draftProcessForm(args){
+      console.log(args)
+      console.log(args[0])
+      console.log(args[1])
+      this.form.formText = args[0]
+      this.form.formValue = args[1]
+      console.log(this.form)
+      if (this.form.id != null) {
+        updateBusinessForm(this.form).then(response => {
+          this.$modal.msgSuccess("修改成功");
+          this.dynamicFormEditVisible = false
+          this.getList();
+        })
+      } 
+    },
     /** 提交按钮 */
-    submitProcessForm() {
+    submitProcessForm(args) {
+      this.form.formText = args[0]
+      this.form.formValue = args[1]
       if (this.form.id != null) {
         updateBusinessForm(this.form).then(response => {
           this.submitFormApply(response.data)
@@ -308,8 +296,7 @@ export default {
     },
     // 提交成功回调
     callSubmit(){
-      this.processFormEditVisible = false;
-      this.dialogLoading = false;
+      this.dynamicFormEditVisible = false;
       this.getList();
     },
     /** 删除按钮操作 */
@@ -359,10 +346,7 @@ export default {
 }
 .self_dialog /deep/ .el-dialog .el-dialog__footer {
     left: 40%;
-    bottom: 0;
+    bottom: 10px;
     position: absolute;
-}
-.el-dialog__header {
-    padding: 30px !important;
 }
 </style>

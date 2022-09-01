@@ -122,6 +122,7 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
     public ActBusinessFormVo updateByBo(ActBusinessFormBo bo) {
         ActBusinessForm update = BeanUtil.toBean(bo, ActBusinessForm.class);
         validEntityBeforeSave(update);
+        baseMapper.updateById(update);
         ActBusinessFormVo actBusinessFormVo = new ActBusinessFormVo();
         BeanCopyUtils.copy(update,actBusinessFormVo);
         ActProcessDefForm actProcessDefForm = iActProcessDefFormService.queryByFormId(update.getFormId());

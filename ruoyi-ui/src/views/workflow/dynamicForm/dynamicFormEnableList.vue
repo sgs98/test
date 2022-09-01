@@ -54,14 +54,16 @@
     </div>
     <el-empty class="el-empty-icon" v-else description="暂无数据"></el-empty>
     <!-- 动态表单编辑 -->
-    <el-dialog :visible.sync="dynamicFormViewVisible" class="self_dialog"
-        v-if="dynamicFormViewVisible" 
-        center :close-on-click-modal="false" 
-        append-to-body>
-       <dynamicFormEdit ref="formViewer" 
-       :buildData="formData.formDesignerText" 
-       @draftForm="draftProcessForm"
-       @submitForm="submitProcessForm"
+    <el-dialog :visible.sync="dynamicFormEditVisible" 
+      class="self_dialog" 
+      v-if="dynamicFormEditVisible" 
+      :close-on-click-modal="false" 
+      append-to-body>
+       <dynamicFormEdit
+        :buildData="formData.formDesignerText" 
+        @draftForm="draftProcessForm(arguments)"
+        @submitForm="submitProcessForm(arguments)"
+        ref="dynamicFormEditRef"
        />
     </el-dialog>
     <!-- 工作流 -->
@@ -83,8 +85,6 @@ export default {
   },
   data() {
     return {
-      // 按钮loading
-      buttonLoading: false,
       // 遮罩层
       loading: true,
       // 非单个禁用
@@ -99,8 +99,6 @@ export default {
       dynamicFormList: [],
       // 弹出层标题
       title: "",
-      // 是否显示弹出层
-      open: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -109,7 +107,7 @@ export default {
         formName: undefined,
       },
       // 表单显示隐藏
-      dynamicFormViewVisible: false,
+      dynamicFormEditVisible: false,
       // 表单数据
       formData: {},
       // 任务id
@@ -147,34 +145,36 @@ export default {
     //打开表单
     handleApply(row){
        this.formData = row
-       this.dynamicFormViewVisible = true
+       this.dynamicFormEditVisible = true
     },
     //暂存
-    draftProcessForm(formText,formValue){
+    draftProcessForm(args){
       let data = {
         formId: this.formData.id,
         formKey: this.formData.formKey,
         formName: this.formData.formName,
-        formText:formText,
-        formValue: formValue
+        formText: args[0],
+        formValue: args[1]
       }
-      this.buttonLoading = true;
-        addBusinessForm(data).then(response => {
-          this.$modal.msgSuccess("保存成功");
-          this.$router.push('/workflow/from/businessForm')
-          this.dynamicFormViewVisible = false
-          this.getList();
-        }).finally(() => {
-          this.buttonLoading = false;
-        });
+      addBusinessForm(data).then(response => {
+        this.$modal.msgSuccess("保存成功");
+        this.$router.push('/workflow/from/businessForm')
+        this.dynamicFormEditVisible = false
+        this.getList();
+      })
     },
     //提交
-    submitProcessForm(){
+    submitProcessForm(args){
+      let data = {
+        formId: this.formData.id,
+        formKey: this.formData.formKey,
+        formName: this.formData.formName,
+        formText: args[0],
+        formValue: args[1]
+      }
       addBusinessForm(data).then(response => {
         this.submitFormApply(response.data)
-      }).finally(() => {
-        this.buttonLoading = false;
-      });
+      })
     },
     //提交流程
     submitFormApply(entity){
@@ -204,7 +204,7 @@ export default {
     },
     // 提交成功回调
     callSubmit(){
-      this.dynamicFormViewVisible = false;
+      this.dynamicFormEditVisible = false;
       this.getList();
     },
   }

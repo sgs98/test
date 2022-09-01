@@ -148,12 +148,13 @@ export default {
     return{
       form:{},
       rules:{},
-      currentIndex:-1
+      currentIndex:-1,
+      formVal: undefined
     }
   },
   mounted() {
     this.$nextTick(()=> {
-      if(this.value !==''){
+      if(this.value !=='' && this.value !==null){
         const jsonValue = JSON.parse(this.value)
         this.handlerFillDatas(jsonValue);
       }
