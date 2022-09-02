@@ -503,11 +503,10 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 taskVo.setProcessInstanceId(task.getProcessInstanceId());
                 taskVo.setName(task.getName());
                 taskVo.setAssigneeId(String.valueOf(userId));
-                if (CollectionUtil.isNotEmpty(sysUsers) && sysUsers.size() > 0) {
-                    SysUser sysUser = sysUsers.stream().filter(u -> u.getUserId().toString().equals(userId.toString())).findFirst().orElse(null);
-                    if (ObjectUtil.isNotEmpty(sysUser)) {
-                        taskVo.setAssignee(sysUser.getNickName());
-                    }
+                if (CollectionUtil.isNotEmpty(sysUsers) && sysUsers !=null) {
+                    sysUsers.stream().filter(u -> u.getUserId().toString().equals(userId.toString())).findFirst().ifPresent(user->{
+                        taskVo.setAssignee(user.getNickName());
+                    });
                 }
                 taskListVo.add(taskVo);
             }

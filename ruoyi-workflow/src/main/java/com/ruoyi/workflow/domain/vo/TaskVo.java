@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.util.Date;
+import java.io.Serializable;
 
 /**
  * @program: ruoyi-vue-plus
@@ -14,7 +14,9 @@ import java.util.Date;
  */
 @Data
 @ApiModel("任务视图")
-public class TaskVo {
+public class TaskVo implements Serializable {
+
+    private static final long serialVersionUID=1L;
     /**
      * 流程任务id
      */

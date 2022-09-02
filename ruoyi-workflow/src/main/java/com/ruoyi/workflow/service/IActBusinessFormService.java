@@ -45,5 +45,5 @@ public interface IActBusinessFormService {
     /**
      * 校验并批量删除业务表单信息
      */
-    Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid);
+    Boolean deleteWithValidByIds(Collection<Long> ids);
 }

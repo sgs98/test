@@ -1,6 +1,5 @@
 package com.ruoyi.workflow.mapper;
 
-import com.ruoyi.common.core.domain.R;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
 

@@ -17,6 +17,7 @@ import com.ruoyi.workflow.service.IProcessInstanceService;
 import com.ruoyi.workflow.utils.WorkFlowUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -81,7 +82,6 @@ public class BsLeaveServiceImpl implements IBsLeaveService {
     @Override
     public BsLeave insertByBo(BsLeaveBo bo) {
         BsLeave add = BeanUtil.toBean(bo, BsLeave.class);
-        validEntityBeforeSave(add);
         baseMapper.insert(add);
         return add;
     }
@@ -89,32 +89,19 @@ public class BsLeaveServiceImpl implements IBsLeaveService {
     @Override
     public BsLeave updateByBo(BsLeaveBo bo) {
         BsLeave update = BeanUtil.toBean(bo, BsLeave.class);
-        validEntityBeforeSave(update);
         baseMapper.updateById(update);
         return update;
     }
 
-    /**
-     * 保存前的数据校验
-     *
-     * @param entity 实体类数据
-     */
-    private void validEntityBeforeSave(BsLeave entity){
-        //TODO 做一些数据校验,如唯一约束
-    }
-
     @Override
-    public Boolean deleteWithValidByIds(Collection<String> ids, Boolean isValid) {
-        if(isValid){
-            //TODO 做一些业务上的校验,判断是否需要校验
-        }
-        int i = baseMapper.deleteBatchIds(ids);
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean deleteWithValidByIds(Collection<String> ids) {
         for (String id : ids) {
             String processInstanceId = iProcessInstanceService.getProcessInstanceId(id);
             if(StringUtils.isNotBlank(processInstanceId)){
                 iProcessInstanceService.deleteRuntimeProcessAndHisInst(processInstanceId);
             }
         }
-        return i>0;
+        return baseMapper.deleteBatchIds(ids) > 0;
     }
 }

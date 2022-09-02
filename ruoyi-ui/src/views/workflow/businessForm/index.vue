@@ -244,12 +244,8 @@ export default {
     
     //暂存
     draftProcessForm(args){
-      console.log(args)
-      console.log(args[0])
-      console.log(args[1])
       this.form.formText = args[0]
       this.form.formValue = args[1]
-      console.log(this.form)
       if (this.form.id != null) {
         updateBusinessForm(this.form).then(response => {
           this.$modal.msgSuccess("修改成功");

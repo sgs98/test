@@ -113,6 +113,6 @@ public class BsLeaveController extends BaseController {
     public R<Void> remove(@ApiParam("主键串")
                                    @NotEmpty(message = "主键不能为空")
                                    @PathVariable String[] ids) {
-        return toAjax(iBsLeaveService.deleteWithValidByIds(Arrays.asList(ids), true) ? 1 : 0);
+        return toAjax(iBsLeaveService.deleteWithValidByIds(Arrays.asList(ids)) ? 1 : 0);
     }
 }

@@ -14,6 +14,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.ruoyi.workflow.domain.ActProcessDefForm;
 import com.ruoyi.workflow.service.IActProcessDefFormService;
+import com.ruoyi.workflow.service.IProcessInstanceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.ruoyi.workflow.domain.bo.ActBusinessFormBo;
@@ -21,6 +22,7 @@ import com.ruoyi.workflow.domain.vo.ActBusinessFormVo;
 import com.ruoyi.workflow.domain.ActBusinessForm;
 import com.ruoyi.workflow.mapper.ActBusinessFormMapper;
 import com.ruoyi.workflow.service.IActBusinessFormService;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +42,8 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
     private final ActBusinessFormMapper baseMapper;
 
     private final IActProcessDefFormService iActProcessDefFormService;
+
+    private final IProcessInstanceService iProcessInstanceService;
 
     /**
      * 查询业务表单
@@ -69,7 +73,6 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
     }
 
     private LambdaQueryWrapper<ActBusinessForm> buildQueryWrapper(ActBusinessFormBo bo) {
-        Map<String, Object> params = bo.getParams();
         LambdaQueryWrapper<ActBusinessForm> lqw = Wrappers.lambdaQuery();
         lqw.eq(StringUtils.isNotBlank(bo.getFormKey()), ActBusinessForm::getFormKey, bo.getFormKey());
         lqw.like(StringUtils.isNotBlank(bo.getApplyCode()), ActBusinessForm::getApplyCode, bo.getApplyCode());
@@ -84,10 +87,8 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
     public ActBusinessFormVo insertByBo(ActBusinessFormBo bo) {
         ActBusinessForm add = BeanUtil.toBean(bo, ActBusinessForm.class);
         String date = DateUtils.dateTime();
-        //TODO 可自行设计
         Long count = baseMapper.selectCount(new LambdaQueryWrapper<>());
         add.setApplyCode("ACT"+date+(count+1));
-        validEntityBeforeSave(add);
         boolean flag = baseMapper.insert(add) > 0;
         if (flag) {
             bo.setId(add.getId());
@@ -121,7 +122,6 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
     @Override
     public ActBusinessFormVo updateByBo(ActBusinessFormBo bo) {
         ActBusinessForm update = BeanUtil.toBean(bo, ActBusinessForm.class);
-        validEntityBeforeSave(update);
         baseMapper.updateById(update);
         ActBusinessFormVo actBusinessFormVo = new ActBusinessFormVo();
         BeanCopyUtils.copy(update,actBusinessFormVo);
@@ -145,19 +145,16 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
     }
 
     /**
-     * 保存前的数据校验
-     */
-    private void validEntityBeforeSave(ActBusinessForm entity){
-        //TODO 做一些数据校验,如唯一约束
-    }
-
-    /**
      * 批量删除业务表单
      */
     @Override
-    public Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid) {
-        if(isValid){
-            //TODO 做一些业务上的校验,判断是否需要校验
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean deleteWithValidByIds(Collection<Long> ids) {
+        for (Long id : ids) {
+            String processInstanceId = iProcessInstanceService.getProcessInstanceId(id.toString());
+            if(StringUtils.isNotBlank(processInstanceId)){
+                iProcessInstanceService.deleteRuntimeProcessAndHisInst(processInstanceId);
+            }
         }
         return baseMapper.deleteBatchIds(ids) > 0;
     }

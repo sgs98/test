@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class TestBean implements  FlowBeforeHandler{
-    private static Logger logger = LoggerFactory.getLogger(TestBean.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestBean.class);
 
     @Override
     public void handleProcess(String processInstanceId, String taskId) {

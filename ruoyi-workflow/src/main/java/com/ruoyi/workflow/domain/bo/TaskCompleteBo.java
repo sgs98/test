@@ -56,7 +56,7 @@ public class TaskCompleteBo {
      */
     public List<Long> getAssignees(String key) {
         if(assigneeMap == null) {
-            return null;
+            return Collections.emptyList();
         }
         if(StringUtils.isNotBlank(assigneeMap.get(key))){
             List<Long> userIds = new ArrayList<>();
@@ -66,6 +66,6 @@ public class TaskCompleteBo {
             }
             return userIds;
         }
-        return null;
+        return Collections.emptyList();
     }
 }

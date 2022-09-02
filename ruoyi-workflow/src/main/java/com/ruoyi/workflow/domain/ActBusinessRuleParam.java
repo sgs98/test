@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.*;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * 方法参数对象 act_business_rule_param
  *
@@ -13,7 +15,7 @@ import lombok.Data;
 @Data
 @TableName("act_business_rule_param")
 @ApiModel("方法参数对象")
-public class ActBusinessRuleParam{
+public class ActBusinessRuleParam implements Serializable {
 
     private static final long serialVersionUID=1L;
 

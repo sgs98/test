@@ -109,6 +109,6 @@ public class ActBusinessFormController extends BaseController {
     public R<Void> remove(@ApiParam("主键串")
                                        @NotEmpty(message = "主键不能为空")
                                        @PathVariable Long[] ids) {
-        return toAjax(iActBusinessFormService.deleteWithValidByIds(Arrays.asList(ids), true) ? 1 : 0);
+        return toAjax(Boolean.TRUE.equals(iActBusinessFormService.deleteWithValidByIds(Arrays.asList(ids))) ? 1 : 0);
     }
 }
