@@ -9,7 +9,7 @@ import com.ruoyi.common.core.validate.AddGroup;
 import com.ruoyi.common.core.validate.EditGroup;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.workflow.domain.bo.ModeBo;
-import com.ruoyi.workflow.domain.bo.ModelREQ;
+import com.ruoyi.workflow.domain.bo.ModelBo;
 import com.ruoyi.workflow.service.IModelService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import java.util.Map;
-
+/**
+ * @program: ruoyi-vue-plus
+ * @description: 模型控制器
+ * @author: gssong
+ * @created: 2022-02-26
+ */
 @Validated
 @Api(value = "模型控制器", tags = {"模型管理"})
 @RequiredArgsConstructor
@@ -67,15 +72,15 @@ public class ModelController extends BaseController {
 
     /**
      * @Description: 查询模型列表
-     * @param: modelReq 请求参数
+     * @param: modelBo 请求参数
      * @return: com.ruoyi.common.core.page.TableDataInfo<org.flowable.engine.repository.Model>
      * @Author: gssong
      * @Date: 2021/10/3
      */
     @ApiOperation("查询模型列表")
     @GetMapping("/list")
-    public TableDataInfo<Model> getByPage(ModelREQ modelReq) {
-        return iModelService.getByPage(modelReq);
+    public TableDataInfo<Model> getByPage(ModelBo modelBo) {
+        return iModelService.getByPage(modelBo);
     }
 
     /**

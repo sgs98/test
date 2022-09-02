@@ -73,7 +73,7 @@ public class DeleteSequenceMultiInstanceCmd implements Command<Void> {
                 loopCounterIndex = i;
             }
         }
-        Map<String, Object> variables = new HashMap<>();
+        Map<String, Object> variables = new HashMap<>(16);
         variables.put(NUMBER_OF_INSTANCES, userIdList.size());
         variables.put(assigneeList, userIdList);
         variables.put(LOOP_COUNTER, loopCounterIndex);

@@ -8,7 +8,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.domain.ActNodeAssignee;
-import com.ruoyi.workflow.domain.bo.DefREQ;
+import com.ruoyi.workflow.domain.bo.DefinitionBo;
 import com.ruoyi.workflow.domain.vo.ActProcessNodeVo;
 import com.ruoyi.workflow.domain.vo.ProcessDefinitionVo;
 import com.ruoyi.workflow.flowable.factory.WorkflowService;
@@ -60,23 +60,23 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
 
     /**
      * @Description: 查询流程定义列表
-     * @param: defReq
+     * @param: definitionBo
      * @return: com.ruoyi.common.core.page.TableDataInfo<com.ruoyi.workflow.domain.vo.ProcessDefinitionVo>
      * @author: gssong
      * @Date: 2021/10/7
      */
     @Override
-    public TableDataInfo<ProcessDefinitionVo> getByPage(DefREQ defReq) {
+    public TableDataInfo<ProcessDefinitionVo> getByPage(DefinitionBo definitionBo) {
         ProcessDefinitionQuery query = repositoryService.createProcessDefinitionQuery();
-        if (StringUtils.isNotEmpty(defReq.getKey())) {
-            query.processDefinitionKeyLike("%" + defReq.getKey() + "%");
+        if (StringUtils.isNotEmpty(definitionBo.getKey())) {
+            query.processDefinitionKeyLike("%" + definitionBo.getKey() + "%");
         }
-        if (StringUtils.isNotEmpty(defReq.getName())) {
-            query.processDefinitionNameLike("%" + defReq.getName() + "%");
+        if (StringUtils.isNotEmpty(definitionBo.getName())) {
+            query.processDefinitionNameLike("%" + definitionBo.getName() + "%");
         }
         // 分页查询
         List<ProcessDefinitionVo> processDefinitionVoList = new ArrayList<>();
-        List<ProcessDefinition> definitionList = query.latestVersion().listPage(defReq.getFirstResult(), defReq.getPageSize());
+        List<ProcessDefinition> definitionList = query.latestVersion().listPage(definitionBo.getFirstResult(), definitionBo.getPageSize());
         List<String> deploymentIds = definitionList.stream().map(ProcessDefinition::getDeploymentId).collect(Collectors.toList());
         List<Deployment> deploymentList = repositoryService.createDeploymentQuery()
             .deploymentIds(deploymentIds).list();
@@ -97,23 +97,23 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
 
     /**
      * @Description: 查询历史流程定义列表
-     * @param: defReq
+     * @param: definitionBo
      * @return: java.util.List<com.ruoyi.workflow.domain.vo.ProcessDefinitionVo>
      * @author: gssong
      * @Date: 2021/10/7
      */
     @Override
-    public List<ProcessDefinitionVo> getHisByPage(DefREQ defReq) {
+    public List<ProcessDefinitionVo> getHisByPage(DefinitionBo definitionBo) {
         ProcessDefinitionQuery query = repositoryService.createProcessDefinitionQuery();
-        if (StringUtils.isNotBlank(defReq.getKey())) {
-            query.processDefinitionKey(defReq.getKey());
+        if (StringUtils.isNotBlank(definitionBo.getKey())) {
+            query.processDefinitionKey(definitionBo.getKey());
         }
 
         // 分页查询
         List<ProcessDefinitionVo> processDefinitionVoList = new ArrayList<>();
         List<ProcessDefinition> definitionList = query.list();
         for (ProcessDefinition processDefinition : definitionList) {
-            if (!processDefinition.getId().equals(defReq.getId())) {
+            if (!processDefinition.getId().equals(definitionBo.getId())) {
                 // 部署时间
                 Deployment deployment = repositoryService.createDeploymentQuery()
                     .deploymentId(processDefinition.getDeploymentId()).singleResult();

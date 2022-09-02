@@ -241,13 +241,11 @@ export default {
     background: #fff;
 }
 .btn .btn-content{
-    position: fixed;
     z-index: 10;
-    width: 1084px;
     height: 50px;
     background: #fff;
 }
 .btn .btn-content span{
-  float: right;
+    float: right;
 }
 </style>

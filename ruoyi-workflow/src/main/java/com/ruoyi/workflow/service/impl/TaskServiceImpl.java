@@ -86,11 +86,12 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
      * @Date: 2021/10/17
      */
     @Override
-    public TableDataInfo<TaskWaitingVo> getTaskWaitByPage(TaskREQ req) {
+    public TableDataInfo<TaskWaitingVo> getTaskWaitByPage(TaskBo req) {
         //当前登录人
         String currentUserId = LoginHelper.getLoginUser().getUserId().toString();
         TaskQuery query = taskService.createTaskQuery()
-            .taskCandidateOrAssigned(currentUserId) // 候选人或者办理人
+            // 候选人或者办理人
+            .taskCandidateOrAssigned(currentUserId)
             .orderByTaskCreateTime().asc();
         if (StringUtils.isNotEmpty(req.getTaskName())) {
             query.taskNameLikeIgnoreCase("%" + req.getTaskName() + "%");
@@ -171,7 +172,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean completeTask(TaskCompleteREQ req) {
+    public Boolean completeTask(TaskCompleteBo req) {
         try {
             // 1.查询任务
             Task task = taskService.createTaskQuery().taskId(req.getTaskId()).taskAssignee(getUserId().toString()).singleResult();
@@ -334,7 +335,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
      * @Date: 2021/10/23
      */
     @Override
-    public TableDataInfo<TaskFinishVo> getTaskFinishByPage(TaskREQ req) {
+    public TableDataInfo<TaskFinishVo> getTaskFinishByPage(TaskBo req) {
         //当前登录人
         String username = LoginHelper.getUserId().toString();
         HistoricTaskInstanceQuery query = historyService.createHistoricTaskInstanceQuery()
@@ -384,8 +385,8 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
      * @Date: 2021/10/23
      */
     @Override
-    public Map<String, Object> getNextNodeInfo(NextNodeREQ req) {
-        Map<String, Object> map = new HashMap<>();
+    public Map<String, Object> getNextNodeInfo(NextNodeBo req) {
+        Map<String, Object> map = new HashMap<>(16);
         TaskEntity task = (TaskEntity) taskService.createTaskQuery().taskId(req.getTaskId()).singleResult();
         if (task.isSuspended()) {
             throw new ServiceException("当前任务已被挂起");
@@ -623,7 +624,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
      * @Date: 2021/10/23
      */
     @Override
-    public TableDataInfo<TaskFinishVo> getAllTaskFinishByPage(TaskREQ req) {
+    public TableDataInfo<TaskFinishVo> getAllTaskFinishByPage(TaskBo req) {
         HistoricTaskInstanceQuery query = historyService.createHistoricTaskInstanceQuery()
             .finished().orderByHistoricTaskInstanceStartTime().asc();
         if (StringUtils.isNotBlank(req.getTaskName())) {
@@ -670,7 +671,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
      * @Date: 2021/10/17
      */
     @Override
-    public TableDataInfo<TaskWaitingVo> getAllTaskWaitByPage(TaskREQ req) {
+    public TableDataInfo<TaskWaitingVo> getAllTaskWaitByPage(TaskBo req) {
         TaskQuery query = taskService.createTaskQuery()
             .orderByTaskCreateTime().asc();
         if (StringUtils.isNotEmpty(req.getTaskName())) {
@@ -832,10 +833,13 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 for (Task runTask : runTaskList) {
                     //取之前的历史办理人
                     List<HistoricTaskInstance> oldTargerTaskList = historyService.createHistoricTaskInstanceQuery()
-                        .taskDefinitionKey(runTask.getTaskDefinitionKey()) // 节点id
+                        // 节点id
+                        .taskDefinitionKey(runTask.getTaskDefinitionKey())
                         .processInstanceId(processInstanceId)
-                        .finished() //已经完成才是历史
-                        .orderByTaskCreateTime().desc() //最新办理的在最前面
+                        //已经完成才是历史
+                        .finished()
+                        //最新办理的在最前面
+                        .orderByTaskCreateTime().desc()
                         .list();
                     if (CollectionUtil.isNotEmpty(oldTargerTaskList)) {
                         HistoricTaskInstance oldTargerTask = oldTargerTaskList.get(0);
@@ -933,20 +937,20 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean delegateTask(DelegateREQ delegateREQ) {
-        if (StringUtils.isBlank(delegateREQ.getDelegateUserId())) {
+    public Boolean delegateTask(DelegateBo delegateBo) {
+        if (StringUtils.isBlank(delegateBo.getDelegateUserId())) {
             throw new ServiceException("请选择委托人");
         }
-        TaskEntity task = (TaskEntity) taskService.createTaskQuery().taskId(delegateREQ.getTaskId())
+        TaskEntity task = (TaskEntity) taskService.createTaskQuery().taskId(delegateBo.getTaskId())
             .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
         if (ObjectUtil.isEmpty(task)) {
             throw new ServiceException("当前任务不存在或你不是任务办理人");
         }
         try {
             TaskEntity newTask = WorkFlowUtils.createNewTask(task, new Date());
-            taskService.addComment(newTask.getId(), task.getProcessInstanceId(), "【" + LoginHelper.getUsername() + "】委派给【" + delegateREQ.getDelegateUserName() + "】");
+            taskService.addComment(newTask.getId(), task.getProcessInstanceId(), "【" + LoginHelper.getUsername() + "】委派给【" + delegateBo.getDelegateUserName() + "】");
             //委托任务
-            taskService.delegateTask(delegateREQ.getTaskId(), delegateREQ.getDelegateUserId());
+            taskService.delegateTask(delegateBo.getTaskId(), delegateBo.getDelegateUserId());
             //办理生成的任务记录
             taskService.complete(newTask.getId());
             ActHiTaskInst actHiTaskInst = new ActHiTaskInst();
@@ -954,7 +958,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             actHiTaskInst.setStartTime(new Date());
             iActHiTaskInstService.updateById(actHiTaskInst);
             //发送站内信
-            WorkFlowUtils.sendMessage(delegateREQ.getSendMessage(), task.getProcessInstanceId());
+            WorkFlowUtils.sendMessage(delegateBo.getSendMessage(), task.getProcessInstanceId());
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -964,15 +968,15 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
     /**
      * @Description: 转办任务
-     * @param: transmitREQ
+     * @param: transmitBo
      * @return: com.ruoyi.common.core.domain.R<java.lang.Boolean>
      * @author: gssong
      * @Date: 2022/3/13 13:18
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R<Boolean> transmitTask(TransmitREQ transmitREQ) {
-        Task task = taskService.createTaskQuery().taskId(transmitREQ.getTaskId())
+    public R<Boolean> transmitTask(TransmitBo transmitBo) {
+        Task task = taskService.createTaskQuery().taskId(transmitBo.getTaskId())
             .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
         if (ObjectUtil.isEmpty(task)) {
             return R.fail("当前任务不存在或你不是任务办理人");
@@ -980,11 +984,11 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         try {
             TaskEntity newTask = WorkFlowUtils.createNewTask(task, new Date());
             taskService.addComment(newTask.getId(), task.getProcessInstanceId(),
-                StringUtils.isNotBlank(transmitREQ.getComment()) ? transmitREQ.getComment() : LoginHelper.getUsername() + "转办了任务");
+                StringUtils.isNotBlank(transmitBo.getComment()) ? transmitBo.getComment() : LoginHelper.getUsername() + "转办了任务");
             taskService.complete(newTask.getId());
-            taskService.setAssignee(task.getId(), transmitREQ.getTransmitUserId());
+            taskService.setAssignee(task.getId(), transmitBo.getTransmitUserId());
             //发送站内信
-            WorkFlowUtils.sendMessage(transmitREQ.getSendMessage(), task.getProcessInstanceId());
+            WorkFlowUtils.sendMessage(transmitBo.getSendMessage(), task.getProcessInstanceId());
             return R.ok();
         } catch (Exception e) {
             e.printStackTrace();
@@ -994,19 +998,19 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
     /**
      * @Description: 会签任务加签
-     * @param: addMultiREQ
+     * @param: addMultiBo
      * @return: com.ruoyi.common.core.domain.R<java.lang.Boolean>
      * @author: gssong
      * @Date: 2022/4/15 13:06
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R<Boolean> addMultiInstanceExecution(AddMultiREQ addMultiREQ) {
+    public R<Boolean> addMultiInstanceExecution(AddMultiBo addMultiBo) {
         Task task;
         if (LoginHelper.isAdmin()) {
-            task = taskService.createTaskQuery().taskId(addMultiREQ.getTaskId()).singleResult();
+            task = taskService.createTaskQuery().taskId(addMultiBo.getTaskId()).singleResult();
         } else {
-            task = taskService.createTaskQuery().taskId(addMultiREQ.getTaskId())
+            task = taskService.createTaskQuery().taskId(addMultiBo.getTaskId())
                 .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
         }
         if (ObjectUtil.isEmpty(task) && !LoginHelper.isAdmin()) {
@@ -1024,14 +1028,14 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         }
         try {
             if (multiVo.getType() instanceof ParallelMultiInstanceBehavior) {
-                for (Long assignee : addMultiREQ.getAssignees()) {
+                for (Long assignee : addMultiBo.getAssignees()) {
                     runtimeService.addMultiInstanceExecution(taskDefinitionKey, processInstanceId, Collections.singletonMap(multiVo.getAssignee(), assignee));
                 }
             } else if (multiVo.getType() instanceof SequentialMultiInstanceBehavior) {
-                AddSequenceMultiInstanceCmd addSequenceMultiInstanceCmd = new AddSequenceMultiInstanceCmd(task.getExecutionId(), multiVo.getAssigneeList(), addMultiREQ.getAssignees());
+                AddSequenceMultiInstanceCmd addSequenceMultiInstanceCmd = new AddSequenceMultiInstanceCmd(task.getExecutionId(), multiVo.getAssigneeList(), addMultiBo.getAssignees());
                 managementService.executeCommand(addSequenceMultiInstanceCmd);
             }
-            List<String> assigneeNames = addMultiREQ.getAssigneeNames();
+            List<String> assigneeNames = addMultiBo.getAssigneeNames();
             String username = LoginHelper.getUsername();
             TaskEntity newTask = WorkFlowUtils.createNewTask(task, new Date());
             taskService.addComment(newTask.getId(), processInstanceId, username + "加签【" + String.join(",", assigneeNames) + "】");
@@ -1045,19 +1049,19 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
     /**
      * @Description: 会签任务减签
-     * @param: deleteMultiREQ
+     * @param: deleteMultiBo
      * @return: com.ruoyi.common.core.domain.R<java.lang.Boolean>
      * @author: gssong
      * @Date: 2022/4/16 10:59
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R<Boolean> deleteMultiInstanceExecution(DeleteMultiREQ deleteMultiREQ) {
+    public R<Boolean> deleteMultiInstanceExecution(DeleteMultiBo deleteMultiBo) {
         Task task;
         if (LoginHelper.isAdmin()) {
-            task = taskService.createTaskQuery().taskId(deleteMultiREQ.getTaskId()).singleResult();
+            task = taskService.createTaskQuery().taskId(deleteMultiBo.getTaskId()).singleResult();
         } else {
-            task = taskService.createTaskQuery().taskId(deleteMultiREQ.getTaskId())
+            task = taskService.createTaskQuery().taskId(deleteMultiBo.getTaskId())
                 .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
         }
         if (ObjectUtil.isEmpty(task) && !LoginHelper.isAdmin()) {
@@ -1075,17 +1079,17 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         }
         try {
             if (multiVo.getType() instanceof ParallelMultiInstanceBehavior) {
-                for (String executionId : deleteMultiREQ.getExecutionIds()) {
+                for (String executionId : deleteMultiBo.getExecutionIds()) {
                     runtimeService.deleteMultiInstanceExecution(executionId, false);
                 }
-                for (String taskId : deleteMultiREQ.getTaskIds()) {
+                for (String taskId : deleteMultiBo.getTaskIds()) {
                     historyService.deleteHistoricTaskInstance(taskId);
                 }
             } else if (multiVo.getType() instanceof SequentialMultiInstanceBehavior) {
-                DeleteSequenceMultiInstanceCmd deleteSequenceMultiInstanceCmd = new DeleteSequenceMultiInstanceCmd(task.getAssignee(), task.getExecutionId(), multiVo.getAssigneeList(), deleteMultiREQ.getAssigneeIds());
+                DeleteSequenceMultiInstanceCmd deleteSequenceMultiInstanceCmd = new DeleteSequenceMultiInstanceCmd(task.getAssignee(), task.getExecutionId(), multiVo.getAssigneeList(), deleteMultiBo.getAssigneeIds());
                 managementService.executeCommand(deleteSequenceMultiInstanceCmd);
             }
-            List<String> assigneeNames = deleteMultiREQ.getAssigneeNames();
+            List<String> assigneeNames = deleteMultiBo.getAssigneeNames();
             String username = LoginHelper.getUsername();
             TaskEntity newTask = WorkFlowUtils.createNewTask(task, new Date());
             taskService.addComment(newTask.getId(), processInstanceId, username + "减签【" + String.join(",", assigneeNames) + "】");
@@ -1112,7 +1116,9 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             return R.fail("办理失败，任务不存在");
         }
         try {
-            for (Task task : list) taskService.setAssignee(task.getId(), updateAssigneeBo.getUserId());
+            for (Task task : list) {
+                taskService.setAssignee(task.getId(), updateAssigneeBo.getUserId());
+            }
             return R.ok();
         } catch (Exception e) {
             throw new ServiceException(e.getMessage());

@@ -6,14 +6,14 @@ import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.helper.LoginHelper;
+import com.ruoyi.workflow.domain.bo.StartProcessBo;
 import com.ruoyi.workflow.flowable.config.CustomDefaultProcessDiagramGenerator;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
 import com.ruoyi.workflow.domain.ActBusinessStatus;
 import com.ruoyi.workflow.domain.ActTaskNode;
-import com.ruoyi.workflow.domain.bo.ProcessInstFinishREQ;
-import com.ruoyi.workflow.domain.bo.ProcessInstRunningREQ;
-import com.ruoyi.workflow.domain.bo.StartREQ;
+import com.ruoyi.workflow.domain.bo.ProcessInstFinishBo;
+import com.ruoyi.workflow.domain.bo.ProcessInstRunningBo;
 import com.ruoyi.workflow.domain.vo.ActHistoryInfoVo;
 import com.ruoyi.workflow.domain.vo.ProcessInstFinishVo;
 import com.ruoyi.workflow.domain.vo.ProcessInstRunningVo;
@@ -63,25 +63,25 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
 
     /**
      * @Description: 提交申请，启动流程实例
-     * @param: startReq
+     * @param: startProcessBo
      * @return: java.util.Map<java.lang.String, java.lang.Object>
      * @author: gssong
      * @Date: 2021/10/10
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Map<String, Object> startWorkFlow(StartREQ startReq) {
-        Map<String, Object> map = new HashMap<>();
-        if (StringUtils.isBlank(startReq.getBusinessKey())) {
+    public Map<String, Object> startWorkFlow(StartProcessBo startProcessBo) {
+        Map<String, Object> map = new HashMap<>(16);
+        if (StringUtils.isBlank(startProcessBo.getBusinessKey())) {
             throw new ServiceException("启动工作流时必须包含业务ID");
         }
         // 判断当前业务是否启动过流程
         List<HistoricProcessInstance> instanceList = historyService.createHistoricProcessInstanceQuery()
-            .processInstanceBusinessKey(startReq.getBusinessKey()).list();
+            .processInstanceBusinessKey(startProcessBo.getBusinessKey()).list();
         TaskQuery taskQuery = taskService.createTaskQuery();
-        List<Task> taskResult = taskQuery.processInstanceBusinessKey(startReq.getBusinessKey()).list();
+        List<Task> taskResult = taskQuery.processInstanceBusinessKey(startProcessBo.getBusinessKey()).list();
         if (CollectionUtil.isNotEmpty(instanceList)) {
-            ActBusinessStatus info = iActBusinessStatusService.getInfoByBusinessKey(startReq.getBusinessKey());
+            ActBusinessStatus info = iActBusinessStatusService.getInfoByBusinessKey(startProcessBo.getBusinessKey());
             if (ObjectUtil.isNotEmpty(info)) {
                 BusinessStatusEnum.checkStatus(info.getStatus());
             }
@@ -92,8 +92,8 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
         // 设置启动人
         Authentication.setAuthenticatedUserId(LoginHelper.getUserId().toString());
         // 启动流程实例（提交申请）
-        Map<String, Object> variables = startReq.getVariables();
-        ProcessInstance pi = runtimeService.startProcessInstanceByKey(startReq.getProcessKey(), startReq.getBusinessKey(), variables);
+        Map<String, Object> variables = startProcessBo.getVariables();
+        ProcessInstance pi = runtimeService.startProcessInstanceByKey(startProcessBo.getProcessKey(), startProcessBo.getBusinessKey(), variables);
         // 将流程定义名称 作为 流程实例名称
         runtimeService.setProcessInstanceName(pi.getProcessInstanceId(), pi.getProcessDefinitionName());
         // 申请人执行流程
@@ -104,7 +104,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
         taskService.setAssignee(taskList.get(0).getId(), LoginHelper.getUserId().toString());
         taskService.setVariable(taskList.get(0).getId(),"processInstanceId", pi.getProcessInstanceId());
         // 更新业务状态
-        iActBusinessStatusService.updateState(startReq.getBusinessKey(), BusinessStatusEnum.DRAFT, taskList.get(0).getProcessInstanceId(), startReq.getClassFullName());
+        iActBusinessStatusService.updateState(startProcessBo.getBusinessKey(), BusinessStatusEnum.DRAFT, taskList.get(0).getProcessInstanceId(), startProcessBo.getClassFullName());
 
         map.put("processInstanceId", pi.getProcessInstanceId());
         map.put("taskId", taskList.get(0).getId());
@@ -229,7 +229,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
             List<String> redNodeCollect = highLightedNodes.stream().filter(e -> e.contains(Color.RED.toString())).collect(Collectors.toList());
             //排除与运行中相同的节点
             for (String nodeId : highLightedNodes) {
-                if (!nodeId.contains(Color.RED.toString()) && !redNodeCollect.contains(Color.RED.toString() + nodeId)) {
+                if (!nodeId.contains(Color.RED.toString()) && !redNodeCollect.contains(Color.RED + nodeId)) {
                     highLightedNodeList.add(nodeId);
                 }
             }
@@ -268,7 +268,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
      * @Date: 2021/10/16
      */
     @Override
-    public TableDataInfo<ProcessInstRunningVo> getProcessInstRunningByPage(ProcessInstRunningREQ req) {
+    public TableDataInfo<ProcessInstRunningVo> getProcessInstRunningByPage(ProcessInstRunningBo req) {
         ProcessInstanceQuery query = runtimeService.createProcessInstanceQuery();
         if (StringUtils.isNotBlank(req.getName())) {
             query.processInstanceNameLikeIgnoreCase(req.getName());
@@ -290,9 +290,9 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
             // 查询当前实例的当前任务
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(pi.getProcessInstanceId()).list();
             //办理人
-            String currTaskInfo = "";
+            StringBuilder currTaskInfo = new StringBuilder();
             //办理人id
-            String currTaskInfoId = "";
+            StringBuilder currTaskInfoId = new StringBuilder();
             //办理人集合
             List<String> nickNameList = null;
             for (Task task : taskList.stream().filter(e -> StringUtils.isBlank(e.getParentTaskId())).collect(Collectors.toList())) {
@@ -310,11 +310,11 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
                 }
 
 
-                currTaskInfo += "任务名【" + task.getName() + "】，办理人【" + StringUtils.join(nickNameList, ",") + "】";
-                currTaskInfoId += task.getAssignee();
+                currTaskInfo.append("任务名【").append(task.getName()).append("】，办理人【").append(StringUtils.join(nickNameList, ",")).append("】");
+                currTaskInfoId.append(task.getAssignee());
             }
-            processInstRunningVo.setCurrTaskInfo(currTaskInfo);
-            processInstRunningVo.setCurrTaskInfoId(currTaskInfoId);
+            processInstRunningVo.setCurrTaskInfo(currTaskInfo.toString());
+            processInstRunningVo.setCurrTaskInfoId(currTaskInfoId.toString());
             processInstRunningVoList.add(processInstRunningVo);
         }
         List<ProcessInstRunningVo> list = null;
@@ -459,11 +459,10 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
      * @Date: 2021/10/23
      */
     @Override
-    public TableDataInfo<ProcessInstFinishVo> getProcessInstFinishByPage(ProcessInstFinishREQ req) {
+    public TableDataInfo<ProcessInstFinishVo> getProcessInstFinishByPage(ProcessInstFinishBo req) {
         HistoricProcessInstanceQuery query = historyService.createHistoricProcessInstanceQuery()
             .finished() // 已结束的
             .orderByProcessInstanceEndTime().desc();
-        ;
         if (StringUtils.isNotEmpty(req.getName())) {
             query.processInstanceNameLikeIgnoreCase(req.getName());
         }

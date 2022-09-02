@@ -22,7 +22,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ApiModel("减签参数请求")
-public class DeleteMultiREQ implements Serializable {
+public class DeleteMultiBo implements Serializable {
 
     private static final long serialVersionUID=1L;
 

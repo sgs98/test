@@ -13,6 +13,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
+/**
+ * @program: ruoyi-vue-plus
+ * @description: 工作流用户信息控制器
+ * @author: gssong
+ * @created: 2022-03-25
+ */
 @Validated
 @Api(value = "工作流用户信息控制器", tags = {"工作流用户信息管理"})
 @RequiredArgsConstructor

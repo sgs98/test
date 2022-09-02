@@ -7,9 +7,15 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
+/**
+ * @program: ruoyi-vue-plus
+ * @description: 完成任务请求对象
+ * @author: gssong
+ * @created: 2022-02-26
+ */
 @Data
-@ApiModel("完成任务请求类")
-public class TaskCompleteREQ {
+@ApiModel("完成任务请求对象")
+public class TaskCompleteBo {
 
     @ApiModelProperty(value = "任务ID",required = true)
     private String taskId;
@@ -40,7 +46,7 @@ public class TaskCompleteREQ {
     private Map<String, Object> variables;
 
     public Map<String, Object> getVariables() {
-        return variables == null ? new HashMap<>() : variables;
+        return variables == null ? new HashMap<>(16) : variables;
     }
 
     /**

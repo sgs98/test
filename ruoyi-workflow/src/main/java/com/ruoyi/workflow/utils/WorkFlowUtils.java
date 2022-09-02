@@ -18,7 +18,7 @@ import com.ruoyi.system.mapper.SysUserMapper;
 import com.ruoyi.system.mapper.SysUserRoleMapper;
 import com.ruoyi.workflow.domain.*;
 import com.ruoyi.workflow.domain.bo.SendMessage;
-import com.ruoyi.workflow.domain.bo.TaskCompleteREQ;
+import com.ruoyi.workflow.domain.bo.TaskCompleteBo;
 import com.ruoyi.workflow.domain.vo.MultiVo;
 import com.ruoyi.workflow.flowable.cmd.DeleteExecutionCmd;
 import com.ruoyi.workflow.flowable.cmd.DeleteTaskCmd;
@@ -125,11 +125,14 @@ public class WorkFlowUtils {
             FlowElement outFlowElement = sequenceFlow.getTargetFlowElement();
             if (outFlowElement instanceof UserTask) {
                 nextNodeBuild(executionEntity, nextNodes, tempNodes, taskId, gateway, sequenceFlow, processNode, tempNode, outFlowElement);
-            } else if (outFlowElement instanceof ExclusiveGateway) { // 排他网关
+                // 排他网关
+            } else if (outFlowElement instanceof ExclusiveGateway) {
                 getNextNodeList(flowElements, outFlowElement, executionEntity, nextNodes, tempNodes, taskId, ActConstant.EXCLUSIVE_GATEWAY);
-            } else if (outFlowElement instanceof ParallelGateway) { //并行网关
+                //并行网关
+            } else if (outFlowElement instanceof ParallelGateway) {
                 getNextNodeList(flowElements, outFlowElement, executionEntity, nextNodes, tempNodes, taskId, ActConstant.PARALLEL_GATEWAY);
-            } else if (outFlowElement instanceof InclusiveGateway) { //包含网关
+                //包含网关
+            } else if (outFlowElement instanceof InclusiveGateway) {
                 getNextNodeList(flowElements, outFlowElement, executionEntity, nextNodes, tempNodes, taskId, ActConstant.INCLUSIVE_GATEWAY);
             } else if (outFlowElement instanceof EndEvent) {
                 FlowElement subProcess = getSubProcess(flowElements, outFlowElement);
@@ -316,6 +319,8 @@ public class WorkFlowUtils {
                             case ActConstant.PARAM_BOOLEAN:
                                 paramClass[i] = Boolean.valueOf(variable).getClass();
                                 params.add(Boolean.valueOf(variable));
+                                break;
+                            default:
                                 break;
                         }
                     }
@@ -685,7 +690,7 @@ public class WorkFlowUtils {
      * @author: gssong
      * @Date: 2022/7/12 21:27
      */
-    public static Boolean autoComplete(String processInstanceId, String businessKey, List<ActNodeAssignee> actNodeAssignees, TaskCompleteREQ req) {
+    public static Boolean autoComplete(String processInstanceId, String businessKey, List<ActNodeAssignee> actNodeAssignees, TaskCompleteBo req) {
 
         List<Task> taskList = processEngine.getTaskService().createTaskQuery().processInstanceId(processInstanceId).list();
         if (CollectionUtil.isEmpty(taskList)) {

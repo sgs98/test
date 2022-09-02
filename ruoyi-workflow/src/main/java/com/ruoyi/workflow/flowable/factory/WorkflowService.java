@@ -5,7 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
- * 统一管理flowable提供的服务接口
+ * @program: ruoyi-vue-plus
+ * @description: 统一管理flowable提供的服务接口
+ * @author: gssong
+ * @created: 2022-04-12
  */
 public class WorkflowService {
 

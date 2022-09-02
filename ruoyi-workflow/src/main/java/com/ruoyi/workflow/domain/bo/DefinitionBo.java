@@ -9,22 +9,33 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
+/**
+ * @program: ruoyi-vue-plus
+ * @description: 流程定义查询
+ * @author: gssong
+ * @created: 2021/10/07 11:15
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ApiModel("流程模型查询")
-public class ModelREQ extends PageEntity implements Serializable {
+@ApiModel("流程定义查询")
+public class DefinitionBo extends PageEntity implements Serializable {
 
     private static final long serialVersionUID=1L;
     /**
-     * 模型名称
+     * 流程定义id
      */
-    @ApiModelProperty("模型名称")
+    @ApiModelProperty("流程定义id")
+    private String id;
+    /**
+     * 流程定义名称
+     */
+    @ApiModelProperty("流程定义名称")
     private String name;
 
     /**
      * 模型标识key
      */
-    @ApiModelProperty("模型标识key")
+    @ApiModelProperty("流程定义标识key")
     private String key;
 }

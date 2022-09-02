@@ -19,7 +19,7 @@ import java.io.Serializable;
 @Data
 @Validated
 @ApiModel("转办请求")
-public class TransmitREQ implements Serializable {
+public class TransmitBo implements Serializable {
 
     private static final long serialVersionUID=1L;
 

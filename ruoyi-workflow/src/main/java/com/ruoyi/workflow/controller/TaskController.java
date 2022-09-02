@@ -1,5 +1,6 @@
 package com.ruoyi.workflow.controller;
 
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.R;
@@ -10,10 +11,9 @@ import com.ruoyi.common.helper.LoginHelper;
 import com.ruoyi.workflow.domain.ActTaskNode;
 import com.ruoyi.workflow.domain.bo.*;
 import com.ruoyi.workflow.domain.bo.BackProcessBo;
-import com.ruoyi.workflow.domain.vo.TaskFinishVo;
-import com.ruoyi.workflow.domain.vo.TaskWaitingVo;
-import com.ruoyi.workflow.domain.vo.VariableVo;
+import com.ruoyi.workflow.domain.vo.*;
 import com.ruoyi.workflow.service.ITaskService;
+import com.ruoyi.workflow.utils.ProcessRunningPathUtils;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.flowable.engine.TaskService;
@@ -49,7 +49,7 @@ public class TaskController extends BaseController {
      */
     @ApiOperation("查询当前用户的待办任务")
     @GetMapping("/getTaskWaitByPage")
-    public TableDataInfo<TaskWaitingVo> getTaskWaitByPage(TaskREQ req) {
+    public TableDataInfo<TaskWaitingVo> getTaskWaitByPage(TaskBo req) {
         return iTaskService.getTaskWaitByPage(req);
     }
 
@@ -63,7 +63,7 @@ public class TaskController extends BaseController {
      */
     @ApiOperation("查询当前用户的已办任务")
     @GetMapping("/getTaskFinishByPage")
-    public TableDataInfo<TaskFinishVo> getTaskFinishByPage(TaskREQ req) {
+    public TableDataInfo<TaskFinishVo> getTaskFinishByPage(TaskBo req) {
         return iTaskService.getTaskFinishByPage(req);
     }
 
@@ -76,7 +76,7 @@ public class TaskController extends BaseController {
      */
     @ApiOperation("查询所有用户的已办任务")
     @GetMapping("/getAllTaskFinishByPage")
-    public TableDataInfo<TaskFinishVo> getAllTaskFinishByPage(TaskREQ req) {
+    public TableDataInfo<TaskFinishVo> getAllTaskFinishByPage(TaskBo req) {
         return iTaskService.getAllTaskFinishByPage(req);
     }
 
@@ -90,7 +90,7 @@ public class TaskController extends BaseController {
      */
     @ApiOperation("查询所有用户的待办任务")
     @GetMapping("/getAllTaskWaitByPage")
-    public TableDataInfo<TaskWaitingVo> getAllTaskWaitByPage(TaskREQ req) {
+    public TableDataInfo<TaskWaitingVo> getAllTaskWaitByPage(TaskBo req) {
         return iTaskService.getAllTaskWaitByPage(req);
     }
 
@@ -104,7 +104,7 @@ public class TaskController extends BaseController {
     @ApiOperation("完成任务")
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
     @PostMapping("/completeTask")
-    public R<Void> completeTask(@RequestBody TaskCompleteREQ req) {
+    public R<Void> completeTask(@RequestBody TaskCompleteBo req) {
         Boolean task = iTaskService.completeTask(req);
         if (!task) {
             return R.fail();
@@ -121,7 +121,7 @@ public class TaskController extends BaseController {
      */
     @ApiOperation("获取目标节点（下一个节点）")
     @PostMapping("/getNextNodeInfo")
-    public R<Map<String,Object>> getNextNodeInfo(@RequestBody NextNodeREQ req) {
+    public R<Map<String,Object>> getNextNodeInfo(@RequestBody NextNodeBo req) {
         return R.ok(iTaskService.getNextNodeInfo(req));
     }
 
@@ -203,7 +203,7 @@ public class TaskController extends BaseController {
 
     /**
      * @Description: 委派任务
-     * @param: delegateREQ
+     * @param: delegateBo
      * @return: com.ruoyi.common.core.domain.R<java.lang.Void>
      * @author: gssong
      * @Date: 2022/3/4 13:18
@@ -211,13 +211,13 @@ public class TaskController extends BaseController {
     @ApiOperation("委派任务")
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
     @PostMapping("/delegateTask")
-    public R<Void> delegateTask(@Validated({AddGroup.class}) @RequestBody  DelegateREQ delegateREQ) {
-        return toAjax(iTaskService.delegateTask(delegateREQ));
+    public R<Void> delegateTask(@Validated({AddGroup.class}) @RequestBody DelegateBo delegateBo) {
+        return toAjax(iTaskService.delegateTask(delegateBo));
     }
 
     /**
      * @Description: 转办任务
-     * @param: transmitREQ
+     * @param: transmitBo
      * @return: com.ruoyi.common.core.domain.R<java.lang.Boolean>
      * @author: gssong
      * @Date: 2022/3/13 13:18
@@ -225,13 +225,13 @@ public class TaskController extends BaseController {
     @ApiOperation("转办任务")
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
     @PostMapping("/transmitTask")
-    public R<Boolean> transmit(@Validated({AddGroup.class}) @RequestBody TransmitREQ transmitREQ) {
-        return iTaskService.transmitTask(transmitREQ);
+    public R<Boolean> transmit(@Validated({AddGroup.class}) @RequestBody TransmitBo transmitBo) {
+        return iTaskService.transmitTask(transmitBo);
     }
 
     /**
      * @Description: 会签任务加签
-     * @param: addMultiREQ
+     * @param: addMultiBo
      * @return: com.ruoyi.common.core.domain.R<java.lang.Boolean>
      * @author: gssong
      * @Date: 2022/4/15 13:06
@@ -239,13 +239,13 @@ public class TaskController extends BaseController {
     @ApiOperation("会签任务加签")
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
     @PostMapping("/addMultiInstanceExecution")
-    public R<Boolean> addMultiInstanceExecution(@Validated({AddGroup.class}) @RequestBody AddMultiREQ addMultiREQ) {
-        return iTaskService.addMultiInstanceExecution(addMultiREQ);
+    public R<Boolean> addMultiInstanceExecution(@Validated({AddGroup.class}) @RequestBody AddMultiBo addMultiBo) {
+        return iTaskService.addMultiInstanceExecution(addMultiBo);
     }
 
     /**
      * @Description: 会签任务减签
-     * @param: deleteMultiREQ
+     * @param: deleteMultiBo
      * @return: com.ruoyi.common.core.domain.R<java.lang.Boolean>
      * @author: gssong
      * @Date: 2022/4/16 10:59
@@ -253,8 +253,8 @@ public class TaskController extends BaseController {
     @ApiOperation("会签任务减签")
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
     @PostMapping("/deleteMultiInstanceExecution")
-    public R<Boolean> deleteMultiInstanceExecution(@Validated({AddGroup.class}) @RequestBody DeleteMultiREQ deleteMultiREQ) {
-        return iTaskService.deleteMultiInstanceExecution(deleteMultiREQ);
+    public R<Boolean> deleteMultiInstanceExecution(@Validated({AddGroup.class}) @RequestBody DeleteMultiBo deleteMultiBo) {
+        return iTaskService.deleteMultiInstanceExecution(deleteMultiBo);
     }
 
     /**
@@ -296,6 +296,11 @@ public class TaskController extends BaseController {
     @PutMapping("/editComment/{commentId}/{comment}")
     public R<Void> editComment(@PathVariable String commentId,@PathVariable String comment) {
         return iTaskService.editComment(commentId,comment);
+    }
+    @GetMapping("/approveNodePathUtils/{id}")
+    @Anonymous
+    public List<ProcessNodePath> approveNodePathUtils(@PathVariable String id) {
+        return ProcessRunningPathUtils.getProcessNodeList(id);
     }
 
 }

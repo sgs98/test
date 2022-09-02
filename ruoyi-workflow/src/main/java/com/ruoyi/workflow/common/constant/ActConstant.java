@@ -1,6 +1,11 @@
 package com.ruoyi.workflow.common.constant;
 
-
+/**
+ * @program: ruoyi-vue-plus
+ * @description: 工作流常量
+ * @author: gssong
+ * @created: 2022-02-26
+ */
 public interface ActConstant {
 
      String PNG = "png";

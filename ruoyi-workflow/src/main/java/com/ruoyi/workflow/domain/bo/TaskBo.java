@@ -19,7 +19,7 @@ import java.io.Serializable;
 @Validated
 @EqualsAndHashCode(callSuper = true)
 @ApiModel("任务请求")
-public class TaskREQ extends PageEntity implements Serializable {
+public class TaskBo extends PageEntity implements Serializable {
 
     private static final long serialVersionUID=1L;
 

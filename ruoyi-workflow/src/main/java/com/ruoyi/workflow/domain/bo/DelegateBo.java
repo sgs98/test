@@ -8,10 +8,16 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotBlank;
 
+/**
+ * @program: ruoyi-vue-plus
+ * @description: 委托请求对象
+ * @author: gssong
+ * @created: 2022-06-18
+ */
 @Data
 @Validated
 @ApiModel("委托请求")
-public class DelegateREQ {
+public class DelegateBo {
 
     @ApiModelProperty(value = "任务id",required = true)
     @NotBlank(message = "任务id不能为空",groups = AddGroup.class)

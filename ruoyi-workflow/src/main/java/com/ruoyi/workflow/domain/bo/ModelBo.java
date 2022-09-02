@@ -11,31 +11,26 @@ import java.io.Serializable;
 
 /**
  * @program: ruoyi-vue-plus
- * @description: 流程定义查询
+ * @description: 模型请求对象
  * @author: gssong
- * @created: 2021/10/07 11:15
+ * @created: 2022-02-26
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ApiModel("流程定义查询")
-public class DefREQ extends PageEntity implements Serializable {
+@ApiModel("流程模型请求对象")
+public class ModelBo extends PageEntity implements Serializable {
 
     private static final long serialVersionUID=1L;
     /**
-     * 流程定义id
+     * 模型名称
      */
-    @ApiModelProperty("流程定义id")
-    private String id;
-    /**
-     * 流程定义名称
-     */
-    @ApiModelProperty("流程定义名称")
+    @ApiModelProperty("模型名称")
     private String name;
 
     /**
      * 模型标识key
      */
-    @ApiModelProperty("流程定义标识key")
+    @ApiModelProperty("模型标识key")
     private String key;
 }

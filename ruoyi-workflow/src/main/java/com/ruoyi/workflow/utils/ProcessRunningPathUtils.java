@@ -99,11 +99,14 @@ public class ProcessRunningPathUtils{
             FlowElement currentFlowElement = outgoingFlow.getTargetFlowElement();
             if (currentFlowElement instanceof UserTask) {
                 nextNodeBuild(processNodePathList, flowElements, currentFlowElement, outgoingFlow, variables, processInstanceId, gateway);
-            } else if (currentFlowElement instanceof ExclusiveGateway) { // 排他网关
+                // 排他网关
+            } else if (currentFlowElement instanceof ExclusiveGateway) {
                 getNextNodeList(processNodePathList, flowElements, outgoingFlow, variables, processInstanceId, ActConstant.EXCLUSIVE_GATEWAY);
-            } else if (currentFlowElement instanceof ParallelGateway) { //并行网关
+                //并行网关
+            } else if (currentFlowElement instanceof ParallelGateway) {
                 getNextNodeList(processNodePathList, flowElements, outgoingFlow, variables, processInstanceId, ActConstant.PARALLEL_GATEWAY);
-            } else if (currentFlowElement instanceof InclusiveGateway) { //包含网关
+                //包含网关
+            } else if (currentFlowElement instanceof InclusiveGateway) {
                 getNextNodeList(processNodePathList, flowElements, outgoingFlow, variables, processInstanceId, ActConstant.INCLUSIVE_GATEWAY);
             } else if (currentFlowElement instanceof EndEvent) {
                 FlowElement subProcess = WorkFlowUtils.getSubProcess(flowElements, currentFlowElement);
@@ -132,9 +135,11 @@ public class ProcessRunningPathUtils{
         String conditionExpression = sequenceFlow.getConditionExpression();
         ProcessNodePath processNodePath = new ProcessNodePath();
         FlowElement sourceFlowElement = sequenceFlow.getSourceFlowElement();
-        if (ActConstant.EXCLUSIVE_GATEWAY.equals(gateway)) {//排他网关
+        //排他网关
+        if (ActConstant.EXCLUSIVE_GATEWAY.equals(gateway)) {
             buildData(processNodePath, conditionExpression, processInstanceId, variableMap, currentFlowElement, sourceFlowElement, ActConstant.EXCLUSIVE_GATEWAY, processNodePathList);
-        } else if (ActConstant.INCLUSIVE_GATEWAY.equals(gateway)) {//包含网关
+        //包含网关
+        } else if (ActConstant.INCLUSIVE_GATEWAY.equals(gateway)) {
             buildData(processNodePath, conditionExpression, processInstanceId, variableMap, currentFlowElement, sourceFlowElement, ActConstant.INCLUSIVE_GATEWAY, processNodePathList);
         } else {
             buildData(processNodePath, conditionExpression, processInstanceId, variableMap, currentFlowElement, sourceFlowElement, ActConstant.USER_TASK, processNodePathList);

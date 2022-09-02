@@ -6,7 +6,7 @@ import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.workflow.domain.bo.DefREQ;
+import com.ruoyi.workflow.domain.bo.DefinitionBo;
 import com.ruoyi.workflow.domain.vo.ActProcessNodeVo;
 import com.ruoyi.workflow.domain.vo.ProcessDefinitionVo;
 import com.ruoyi.workflow.service.IProcessDefinitionService;
@@ -47,21 +47,21 @@ public class ProcessDefinitionController extends BaseController {
      */
     @ApiOperation("查询流程定义列表")
     @GetMapping("/list")
-    public TableDataInfo<ProcessDefinitionVo> getByPage(DefREQ defReq) {
+    public TableDataInfo<ProcessDefinitionVo> getByPage(DefinitionBo defReq) {
         return iProcessDefinitionService.getByPage(defReq);
     }
 
     /**
      * @Description: 查询历史流程定义列表
-     * @param: defReq
+     * @param: definitionBo
      * @return: com.ruoyi.common.core.domain.R<java.util.List < com.ruoyi.workflow.domain.vo.ProcessDefinitionVo>>
      * @Author: gssong
      * @Date: 2021/10/7
      */
     @ApiOperation("查询历史流程定义列表")
     @GetMapping("/hisList")
-    public R<List<ProcessDefinitionVo>> getHisByPage(DefREQ defReq) {
-        List<ProcessDefinitionVo> definitionVoList = iProcessDefinitionService.getHisByPage(defReq);
+    public R<List<ProcessDefinitionVo>> getHisByPage(DefinitionBo definitionBo) {
+        List<ProcessDefinitionVo> definitionVoList = iProcessDefinitionService.getHisByPage(definitionBo);
         return R.ok(definitionVoList);
     }
 

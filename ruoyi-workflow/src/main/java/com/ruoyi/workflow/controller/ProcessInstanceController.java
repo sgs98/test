@@ -6,9 +6,9 @@ import com.ruoyi.common.annotation.RepeatSubmit;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.workflow.domain.bo.ProcessInstFinishREQ;
-import com.ruoyi.workflow.domain.bo.ProcessInstRunningREQ;
-import com.ruoyi.workflow.domain.bo.StartREQ;
+import com.ruoyi.workflow.domain.bo.ProcessInstFinishBo;
+import com.ruoyi.workflow.domain.bo.ProcessInstRunningBo;
+import com.ruoyi.workflow.domain.bo.StartProcessBo;
 import com.ruoyi.workflow.domain.vo.ActHistoryInfoVo;
 import com.ruoyi.workflow.domain.vo.ProcessInstFinishVo;
 import com.ruoyi.workflow.domain.vo.ProcessInstRunningVo;
@@ -39,7 +39,7 @@ public class ProcessInstanceController {
 
     /**
      * @Description: 提交申请，启动流程实例
-     * @param: startReq
+     * @param: startProcessBo
      * @return: com.ruoyi.common.core.domain.R<java.util.Map<java.lang.String,java.lang.Object>>
      * @author: gssong
      * @Date: 2021/10/10
@@ -48,8 +48,8 @@ public class ProcessInstanceController {
     @Log(title = "流程实例管理", businessType = BusinessType.INSERT)
     @RepeatSubmit()
     @PostMapping("/startWorkFlow")
-    public R<Map<String,Object>> startWorkFlow(@RequestBody StartREQ startReq){
-        Map<String,Object> map = processInstanceService.startWorkFlow(startReq);
+    public R<Map<String,Object>> startWorkFlow(@RequestBody StartProcessBo startProcessBo){
+        Map<String,Object> map = processInstanceService.startWorkFlow(startProcessBo);
         return R.ok("提交成功",map);
     }
 
@@ -100,7 +100,7 @@ public class ProcessInstanceController {
      */
     @ApiOperation("查询正在运行的流程实例")
     @GetMapping("/getProcessInstRunningByPage")
-    public TableDataInfo<ProcessInstRunningVo> getProcessInstRunningByPage(ProcessInstRunningREQ req){
+    public TableDataInfo<ProcessInstRunningVo> getProcessInstRunningByPage(ProcessInstRunningBo req){
         return processInstanceService.getProcessInstRunningByPage(req);
     }
 
@@ -221,7 +221,7 @@ public class ProcessInstanceController {
      */
     @ApiOperation("查询已结束的流程实例")
     @GetMapping("/getProcessInstFinishByPage")
-    public TableDataInfo<ProcessInstFinishVo> getProcessInstFinishByPage(ProcessInstFinishREQ req) {
+    public TableDataInfo<ProcessInstFinishVo> getProcessInstFinishByPage(ProcessInstFinishBo req) {
         return processInstanceService.getProcessInstFinishByPage(req);
     }
 

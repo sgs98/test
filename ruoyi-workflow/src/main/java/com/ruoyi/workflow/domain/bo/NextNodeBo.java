@@ -1,6 +1,5 @@
 package com.ruoyi.workflow.domain.bo;
 
-import com.ruoyi.workflow.common.PageEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -21,7 +20,7 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @ApiModel("流程定义查询")
-public class NextNodeREQ implements Serializable {
+public class NextNodeBo implements Serializable {
 
     private static final long serialVersionUID=1L;
     /**
@@ -37,6 +36,6 @@ public class NextNodeREQ implements Serializable {
     private Map<String, Object> variables;
 
     public Map<String, Object> getVariables() {
-        return variables == null ? new HashMap<>() : variables;
+        return variables == null ? new HashMap<>(16) : variables;
     }
 }

@@ -51,7 +51,7 @@ public class AddSequenceMultiInstanceCmd implements Command<Void> {
         // 设置流程变量
         List<Long> userIds = (List) entity.getVariable(assigneeList);
         userIds.addAll(assignees);
-        Map<String, Object> variables = new HashMap<>();
+        Map<String, Object> variables = new HashMap<>(16);
         variables.put(assigneeList, userIds);
         entity.setVariables(variables);
         return null;

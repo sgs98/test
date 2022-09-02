@@ -22,7 +22,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ApiModel("加签参数请求")
-public class AddMultiREQ implements Serializable {
+public class AddMultiBo implements Serializable {
 
     private static final long serialVersionUID=1L;
 

@@ -5,6 +5,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+/**
+ * @program: ruoyi-vue-plus
+ * @description: 分页参数
+ * @author: gssong
+ * @created: 2022-02-26
+ */
 @Data
 @NoArgsConstructor
 @Accessors(chain = true)

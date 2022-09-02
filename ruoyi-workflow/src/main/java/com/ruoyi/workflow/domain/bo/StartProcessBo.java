@@ -17,7 +17,7 @@ import java.util.Map;
  */
 @Data
 @ApiModel("启动流程实例请求类（提交申请)")
-public class StartREQ implements Serializable {
+public class StartProcessBo implements Serializable {
     private static final long serialVersionUID=1L;
 
     @ApiModelProperty("业务唯一值id")
@@ -36,6 +36,6 @@ public class StartREQ implements Serializable {
     private Map<String, Object> variables;
 
     public Map<String, Object> getVariables() {
-        return variables == null ? new HashMap<>() : variables;
+        return variables == null ? new HashMap<>(16) : variables;
     }
 }

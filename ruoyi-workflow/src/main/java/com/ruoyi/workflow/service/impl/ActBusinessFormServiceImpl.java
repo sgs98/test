@@ -96,7 +96,7 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
         BeanCopyUtils.copy(add,actBusinessFormVo);
         ActProcessDefForm actProcessDefForm = iActProcessDefFormService.queryByFormId(add.getFormId());
         actBusinessFormVo.setActProcessDefForm(actProcessDefForm);
-        Map<String, Object> variableMap = new HashMap<>();
+        Map<String, Object> variableMap = new HashMap<>(16);
         if(ObjectUtil.isNotEmpty(actProcessDefForm) && StringUtils.isNotBlank(actProcessDefForm.getFormVariable())){
             String formValue = actBusinessFormVo.getFormValue();
             JSONObject jsonObject = JSONUtil.parseObj(formValue);
@@ -127,7 +127,7 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
         BeanCopyUtils.copy(update,actBusinessFormVo);
         ActProcessDefForm actProcessDefForm = iActProcessDefFormService.queryByFormId(update.getFormId());
         actBusinessFormVo.setActProcessDefForm(actProcessDefForm);
-        Map<String, Object> variableMap = new HashMap<>();
+        Map<String, Object> variableMap = new HashMap<>(16);
         if(ObjectUtil.isNotEmpty(actProcessDefForm) && StringUtils.isNotBlank(actProcessDefForm.getFormVariable())){
             String formValue = actBusinessFormVo.getFormValue();
             JSONObject jsonObject = JSONUtil.parseObj(formValue);
