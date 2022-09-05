@@ -343,8 +343,11 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
         actNodeAssignee.setIsBack(true);
         actNodeAssignee.setMultiple(false);
         actNodeAssignee.setIndex(0);
-        iActNodeAssigneeService.delByDefinitionIdAndNodeId(actProcessNodeVo.getProcessDefinitionId(), actProcessNodeVo.getNodeId());
-        iActNodeAssigneeService.add(actNodeAssignee);
+        ActNodeAssignee info = iActNodeAssigneeService.getInfo(actProcessNodeVo.getProcessDefinitionId(), actProcessNodeVo.getNodeId());
+        if(ObjectUtil.isEmpty(info)){
+            iActNodeAssigneeService.delByDefinitionIdAndNodeId(actProcessNodeVo.getProcessDefinitionId(), actProcessNodeVo.getNodeId());
+            iActNodeAssigneeService.add(actNodeAssignee);
+        }
         return R.ok(processNodeVoList);
     }
 
