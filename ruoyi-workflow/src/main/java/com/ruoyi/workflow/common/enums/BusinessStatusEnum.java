@@ -20,7 +20,7 @@ public enum BusinessStatusEnum {
     private final String desc;
 
     /**
-     * @Description: 获取资产状态
+     * @Description: 获取业务状态
      * @param: status 状态
      * @return: void
      * @author: gssong

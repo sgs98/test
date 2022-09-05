@@ -10,6 +10,7 @@ import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.helper.LoginHelper;
 import com.ruoyi.common.utils.JsonUtils;
 import com.ruoyi.workflow.common.constant.ActConstant;
+import com.ruoyi.workflow.common.constant.MessageConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
 import com.ruoyi.workflow.domain.*;
 import com.ruoyi.workflow.domain.bo.*;
@@ -173,17 +174,17 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean completeTask(TaskCompleteBo req) {
+        // 1.查询任务
+        Task task = taskService.createTaskQuery().taskId(req.getTaskId()).taskAssignee(getUserId().toString()).singleResult();
+
+        if (ObjectUtil.isNull(task)) {
+            throw new ServiceException("任务不存在或您不是当前审批人");
+        }
+
+        if (task.isSuspended()) {
+            throw new ServiceException(MessageConstant.MESSAGE_SUSPENDED);
+        }
         try {
-            // 1.查询任务
-            Task task = taskService.createTaskQuery().taskId(req.getTaskId()).taskAssignee(getUserId().toString()).singleResult();
-
-            if (ObjectUtil.isNull(task)) {
-                throw new ServiceException("任务不存在或您不是当前审批人");
-            }
-
-            if (task.isSuspended()) {
-                throw new ServiceException("当前任务已被挂起");
-            }
             //办理委托任务
             if (ObjectUtil.isNotEmpty(task.getDelegationState()) && ActConstant.PENDING.equals(task.getDelegationState().name())) {
                 taskService.resolveTask(req.getTaskId());
@@ -273,7 +274,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             }
             // 自动办理
             Boolean autoComplete = WorkFlowUtils.autoComplete(processInstance.getProcessInstanceId(), processInstance.getBusinessKey(), actNodeAssignees, req);
-            if(autoComplete){
+            if (autoComplete) {
                 List<Task> nextTaskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
                 if (!CollectionUtil.isEmpty(nextTaskList)) {
                     for (Task t : nextTaskList) {
@@ -283,7 +284,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                         }
                         WorkFlowUtils.settingAssignee(t, nodeAssignee, nodeAssignee.getMultiple());
                     }
-                }else{
+                } else {
                     // 更新业务状态已完成 办结流程
                     return iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.FINISH);
                 }
@@ -309,7 +310,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 } else if (nodeAssignee.getIsShow() && StringUtils.isBlank(t.getAssignee()) && !nodeAssignee.getMultiple()) {
                     // 弹窗选人 根据当前任务节点id获取办理人
                     List<Long> assignees = req.getAssignees(t.getTaskDefinitionKey());
-                    if(CollectionUtil.isEmpty(assignees)){
+                    if (CollectionUtil.isEmpty(assignees)) {
                         throw new ServiceException("【" + t.getName() + "】任务环节未配置审批人");
                     }
                     // 设置选人
@@ -389,7 +390,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         Map<String, Object> map = new HashMap<>(16);
         TaskEntity task = (TaskEntity) taskService.createTaskQuery().taskId(req.getTaskId()).singleResult();
         if (task.isSuspended()) {
-            throw new ServiceException("当前任务已被挂起");
+            throw new ServiceException(MessageConstant.MESSAGE_SUSPENDED);
         }
         ActNodeAssignee nodeAssignee = iActNodeAssigneeService.getInfo(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
         //可驳回的节点
@@ -503,10 +504,8 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 taskVo.setProcessInstanceId(task.getProcessInstanceId());
                 taskVo.setName(task.getName());
                 taskVo.setAssigneeId(String.valueOf(userId));
-                if (CollectionUtil.isNotEmpty(sysUsers) && sysUsers !=null) {
-                    sysUsers.stream().filter(u -> u.getUserId().toString().equals(userId.toString())).findFirst().ifPresent(user->{
-                        taskVo.setAssignee(user.getNickName());
-                    });
+                if (CollectionUtil.isNotEmpty(sysUsers) && sysUsers != null) {
+                    sysUsers.stream().filter(u -> u.getUserId().toString().equals(userId.toString())).findFirst().ifPresent(user -> taskVo.setAssignee(user.getNickName()));
                 }
                 taskListVo.add(taskVo);
             }
@@ -767,10 +766,10 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         Task task = taskService.createTaskQuery().taskId(backProcessBo.getTaskId()).taskAssignee(getUserId().toString()).singleResult();
         String processInstanceId = task.getProcessInstanceId();
         if (task.isSuspended()) {
-            throw new ServiceException("当前任务已被挂起");
+            throw new ServiceException(MessageConstant.MESSAGE_SUSPENDED);
         }
         if (ObjectUtil.isNull(task)) {
-            throw new ServiceException("当前任务不存在或你不是任务办理人");
+            throw new ServiceException(MessageConstant.MESSAGE_CURRENT_TASK_IS_NULL);
         }
         try {
             //判断是否有多个任务
@@ -943,7 +942,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         TaskEntity task = (TaskEntity) taskService.createTaskQuery().taskId(delegateBo.getTaskId())
             .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
         if (ObjectUtil.isEmpty(task)) {
-            throw new ServiceException("当前任务不存在或你不是任务办理人");
+            throw new ServiceException(MessageConstant.MESSAGE_CURRENT_TASK_IS_NULL);
         }
         try {
             TaskEntity newTask = WorkFlowUtils.createNewTask(task, new Date());
@@ -978,7 +977,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         Task task = taskService.createTaskQuery().taskId(transmitBo.getTaskId())
             .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
         if (ObjectUtil.isEmpty(task)) {
-            return R.fail("当前任务不存在或你不是任务办理人");
+            return R.fail(MessageConstant.MESSAGE_CURRENT_TASK_IS_NULL);
         }
         try {
             TaskEntity newTask = WorkFlowUtils.createNewTask(task, new Date());
@@ -1013,10 +1012,10 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
         }
         if (ObjectUtil.isEmpty(task) && !LoginHelper.isAdmin()) {
-            throw new ServiceException("当前任务不存在或你不是任务办理人");
+            throw new ServiceException(MessageConstant.MESSAGE_CURRENT_TASK_IS_NULL);
         }
         if (task.isSuspended()) {
-            throw new ServiceException("当前任务已被挂起");
+            throw new ServiceException(MessageConstant.MESSAGE_SUSPENDED);
         }
         String taskDefinitionKey = task.getTaskDefinitionKey();
         String processInstanceId = task.getProcessInstanceId();
@@ -1064,10 +1063,10 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).singleResult();
         }
         if (ObjectUtil.isEmpty(task) && !LoginHelper.isAdmin()) {
-            return R.fail("当前任务不存在或你不是任务办理人");
+            return R.fail(MessageConstant.MESSAGE_CURRENT_TASK_IS_NULL);
         }
         if (task.isSuspended()) {
-            return R.fail("当前任务已被挂起");
+            return R.fail(MessageConstant.MESSAGE_SUSPENDED);
         }
         String taskDefinitionKey = task.getTaskDefinitionKey();
         String processInstanceId = task.getProcessInstanceId();
