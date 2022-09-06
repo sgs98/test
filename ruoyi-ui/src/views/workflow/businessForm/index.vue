@@ -76,6 +76,7 @@
         <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
             <template slot-scope="scope">
             <el-button
+                v-if="scope.row.actBusinessStatus.status==='draft'||scope.row.actBusinessStatus.status==='back'||scope.row.actBusinessStatus.status==='cancel'"
                 size="mini"
                 type="text"
                 icon="el-icon-edit"
@@ -89,6 +90,7 @@
                 @click="handleView(scope.row)"
             >查看</el-button>
             <el-button
+                v-if="scope.row.actBusinessStatus.status==='draft'||scope.row.actBusinessStatus.status==='back'||scope.row.actBusinessStatus.status==='cancel'"
                 size="mini"
                 type="text"
                 icon="el-icon-delete"
@@ -107,29 +109,70 @@
         @pagination="getList"
         />
     </div>
-    <div>
-        <!-- 动态表单编辑 -->
-        <div v-if="dynamicFormEditVisible">
-            <div class="container-header"><i class="el-dialog__close el-icon el-icon-close" @click="closeDynamicEdit"></i></div>
-            <dynamicFormEdit
-                :buildData="form.formText" 
-                v-model="form.formValue"
-                @draftForm="draftProcessForm(arguments)"
-                @submitForm="submitProcessForm(arguments)"
-                ref="dynamicFormEditVisible"
-            />
-        </div>
-        <!-- 动态表单查看 -->
-        <div v-if="dynamicFormViewVisible">
-            <div class="container-header"><i class="el-dialog__close el-icon el-icon-close" @click="closeDynamicView"></i></div>
-            <dynamicFormView
-                :buildData="form.formText" 
-                v-model="form.formValue"
-            />
-        </div>
-        <!-- 工作流 -->
-        <verify ref="verifyRef" @callSubmit="callSubmit" :taskId="taskId" :taskVariables="taskVariables" :sendMessage="sendMessage"/>
+    <div class="from-container" v-if="dynamicFormEditVisible">
+      <div class="container-header"><i class="el-dialog__close el-icon el-icon-close" @click="closeDynamicEdit"></i></div>
+      <!-- 动态表单编辑开始 -->
+      <el-tabs type="border-card" class="container-tab">
+        <el-tab-pane label="业务单据">
+          <dynamicFormEdit
+              :buildData="form.formText" 
+              v-model="form.formValue"
+              @draftForm="draftProcessForm(arguments)"
+              @submitForm="submitProcessForm(arguments)"
+              ref="dynamicFormEditVisible"
+          />
+        </el-tab-pane>
+        <el-tab-pane label="审批意见" v-if="processInstanceId">
+            <el-table :data="historyList" border stripe style="width: 100%" max-height="570">
+              <el-table-column label="流程审批历史记录" align="center">
+                <el-table-column type="index" label="序号" align="center" width="50"></el-table-column>
+                <el-table-column prop="name" label="任务名称" align="center" ></el-table-column>
+                <el-table-column prop="nickName" label="办理人" align="center" ></el-table-column>
+                <el-table-column prop="status" label="状态" align="center" ></el-table-column>
+                <el-table-column prop="comment" label="审批意见" align="center" ></el-table-column>
+                <el-table-column prop="startTime" label="开始时间" align="center" ></el-table-column>
+                <el-table-column prop="endTime" label="结束时间" align="center" ></el-table-column>
+              </el-table-column>
+            </el-table>
+        </el-tab-pane>
+        <el-tab-pane label="流程进度" v-if="processInstanceId">
+           <el-image :src="url" style="font-size: 20px; margin: 50px;">
+              <div slot="placeholder"><i class="el-icon-loading"></i> 流程审批历史图加载中……</div>
+           </el-image>
+        </el-tab-pane>
+      </el-tabs>
+      <!-- 动态表单编辑结束 -->
     </div>
+    <div class="from-container" v-if="dynamicFormViewVisible" >
+      <div class="container-header"><i class="el-dialog__close el-icon el-icon-close" @click="closeDynamicView"></i></div>
+      <!-- 动态表单查看开始 -->
+      <el-tabs type="border-card" class="container-tab">
+        <el-tab-pane label="业务单据">
+          <dynamicFormView :buildData="form.formText" v-model="form.formValue"/>
+        </el-tab-pane>
+        <el-tab-pane label="审批意见" v-if="processInstanceId">
+            <el-table :data="historyList" border stripe style="width: 100%" max-height="570">
+              <el-table-column label="流程审批历史记录" align="center">
+                <el-table-column type="index" label="序号" align="center" width="50"></el-table-column>
+                <el-table-column prop="name" label="任务名称" align="center" ></el-table-column>
+                <el-table-column prop="nickName" label="办理人" align="center" ></el-table-column>
+                <el-table-column prop="status" label="状态" align="center" ></el-table-column>
+                <el-table-column prop="comment" label="审批意见" align="center" ></el-table-column>
+                <el-table-column prop="startTime" label="开始时间" align="center" ></el-table-column>
+                <el-table-column prop="endTime" label="结束时间" align="center" ></el-table-column>
+              </el-table-column>
+            </el-table>
+        </el-tab-pane>
+        <el-tab-pane label="流程进度" v-if="processInstanceId">
+           <el-image :src="url" style="font-size: 20px; margin: 50px;">
+              <div slot="placeholder"><i class="el-icon-loading"></i> 流程审批历史图加载中……</div>
+           </el-image>
+        </el-tab-pane>
+      </el-tabs>
+      <!-- 动态表单查看结束-->
+    </div>
+    <!-- 工作流 -->
+    <verify ref="verifyRef" @callSubmit="callSubmit" :taskId="taskId" :taskVariables="taskVariables" :sendMessage="sendMessage"/>
   </div>
 </template>
 
@@ -184,11 +227,15 @@ export default {
       //动态表单查看
       dynamicFormViewVisible: false,
       // 任务id
-      taskId: '',
+      taskId: undefined,
       // 流程变量
       taskVariables: {},
       // 站内信
-      sendMessage: {}
+      sendMessage: {},
+      // 审批记录
+      historyList: [],
+      // 流程实例id
+      processInstanceId: undefined
     };
   },
   created() {
@@ -203,6 +250,15 @@ export default {
         this.total = response.total;
         this.loading = false;
       });
+    },
+    // 查询审批历史记录
+    async getHistoryInfoList() {
+        const { data } = await processApi.getHistoryInfoList(this.processInstanceId)
+        this.historyList = data
+    },
+    // 通过流程实例id获取历史流程图
+    getHistoryImage(){
+      this.url = process.env.VUE_APP_BASE_API+'/workflow/processInstance/getHistoryProcessImage?processInstanceId='+this.processInstanceId
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -227,6 +283,11 @@ export default {
       getBusinessForm(id).then(response => {
         this.loading = false;
         this.form = response.data;
+        this.processInstanceId = response.data.processInstanceId
+        if(this.processInstanceId){
+          this.getHistoryInfoList()
+          this.getHistoryImage()
+        }
         this.dynamicFormEditVisible = true;
         this.dataViewVisible = false
         this.title = response.data.formName;
@@ -239,6 +300,11 @@ export default {
       getBusinessForm(id).then(response => {
         this.loading = false;
         this.form = response.data;
+        this.processInstanceId = response.data.processInstanceId
+        if(this.processInstanceId){
+          this.getHistoryInfoList()
+          this.getHistoryImage()
+        }
         this.dynamicFormViewVisible = true;
         this.dataViewVisible = false
         this.title = response.data.formName;
@@ -264,6 +330,7 @@ export default {
         updateBusinessForm(this.form).then(response => {
           this.$modal.msgSuccess("修改成功");
           this.dynamicFormEditVisible = false
+          this.dataViewVisible = true
           this.getList();
         })
       } 
@@ -340,5 +407,16 @@ export default {
     .el-icon-close{
         float: right;
         cursor: pointer;
+    }
+    .container-tab{
+        height: calc(100vh - 155px);
+        overflow-y: auto;
+    }
+    /* 修改滚动条样式 */
+    .container-tab::-webkit-scrollbar {
+      width: 4px;
+    }
+    .container-tab::-webkit-scrollbar-thumb {
+      border-radius: 10px;
     }
 </style>

@@ -54,6 +54,7 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
     @Override
     public ActBusinessFormVo queryById(Long id){
         ActBusinessFormVo vo = baseMapper.selectVoById(id);
+        WorkFlowUtils.setProcessInstIdFileValue(vo,String.valueOf(vo.getId()));
         WorkFlowUtils.setStatusFileValue(vo,String.valueOf(vo.getId()));
         return vo;
     }
