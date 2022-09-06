@@ -14,9 +14,43 @@ import org.apache.commons.lang3.StringUtils;
 @Getter
 @AllArgsConstructor
 public enum BusinessStatusEnum {
-    CANCEL("cancel", "已撤回"), DRAFT("draft", "草稿"), WAITING("waiting", "处理中"),
-    FINISH("finish", "已完成"), INVALID("invalid", "已作废"), DELETE("delete", "已删除"), BACK("back", "已退回");
+    /**
+     * 已撤回
+     */
+    CANCEL("cancel", "已撤回"),
+    /**
+     * 草稿
+     */
+    DRAFT("draft", "草稿"),
+    /**
+     * 处理中
+     */
+    WAITING("waiting", "处理中"),
+    /**
+     * 已完成
+     */
+    FINISH("finish", "已完成"),
+    /**
+     * 已作废
+     */
+    INVALID("invalid", "已作废"),
+    /**
+     * 已删除
+     */
+    DELETE("delete", "已删除"),
+    /**
+     * 已退回
+     */
+    BACK("back", "已退回");
+
+    /**
+     * 状态
+     */
     private final String status;
+
+    /**
+     * 描述
+     */
     private final String desc;
 
     /**

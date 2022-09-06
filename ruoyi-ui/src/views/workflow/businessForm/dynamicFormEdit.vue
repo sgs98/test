@@ -246,6 +246,6 @@ export default {
     background: #fff;
 }
 .btn .btn-content span{
-    float: right;
+    float: left;
 }
 </style>

@@ -344,78 +344,164 @@ public class WorkFlowUtils {
 
     /**
      * @Description: 设置业务流程参数
-     * @param: o 对象
-     * @param: idList 主键集合
+     * @param: obj 对象
      * @param: id 主键id
      * @Author: gssong
      * @Date: 2022/1/16
      */
-    public static void setStatusFileValue(Object o, List<String> idList, String id) {
-        Class<?> aClass = o.getClass();
+    public static void setStatusFileValue(Object obj, String id) {
+        Class<?> claszz = obj.getClass();
+        ActBusinessStatus actBusinessStatus = iActBusinessStatusService.getInfoByBusinessKey(id);
         Field businessStatus;
         try {
-            businessStatus = aClass.getDeclaredField(ACT_BUSINESS_STATUS);
+            businessStatus = claszz.getDeclaredField(ACT_BUSINESS_STATUS);
+            businessStatus.setAccessible(true);
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
-            throw new ServiceException("未找到" + ACT_BUSINESS_STATUS + "属性");
+            throw new ServiceException("未找到" + ACT_BUSINESS_STATUS + "属性：" + e.getMessage());
         }
-        businessStatus.setAccessible(true);
-        List<ActBusinessStatus> infoByBusinessKey = iActBusinessStatusService.getListInfoByBusinessKey(idList);
         try {
-            if (CollectionUtil.isNotEmpty(infoByBusinessKey)) {
-                ActBusinessStatus actBusinessStatus = infoByBusinessKey.stream().filter(e -> e.getBusinessKey().equals(id)).findFirst().orElse(null);
-                if (ObjectUtil.isNotEmpty(actBusinessStatus)) {
-                    businessStatus.set(o, actBusinessStatus);
-                } else {
-                    ActBusinessStatus status = new ActBusinessStatus();
-                    status.setStatus(BusinessStatusEnum.DRAFT.getStatus());
-                    businessStatus.set(o, status);
-                }
+            if (ObjectUtil.isNotEmpty(actBusinessStatus)) {
+                businessStatus.set(obj, actBusinessStatus);
             } else {
                 ActBusinessStatus status = new ActBusinessStatus();
                 status.setStatus(BusinessStatusEnum.DRAFT.getStatus());
-                businessStatus.set(o, status);
+                businessStatus.set(obj, status);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ServiceException("设置流程状态失败");
+            throw new ServiceException("设置流程状态失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * @Description: 设置业务流程参数
+     * @param: obj 对象
+     * @param: idList 主键集合
+     * @param: fieldName 主键属性名称
+     * @return: void
+     * @author: gssong
+     * @Date: 2022/9/6
+     */
+    public static void setStatusListFileValue(Object obj, List<String> idList, String fieldName) {
+        List<ActBusinessStatus> actBusinessStatusList = iActBusinessStatusService.getListInfoByBusinessKey(idList);
+        if (obj instanceof Collection) {
+            Collection<?> collection = (Collection<?>) obj;
+            for (Object o : collection) {
+                if (o != null) {
+                    Class<?> claszz = o.getClass();
+                    Field businessStatus;
+                    Field fieldInfo;
+                    String fieldValue = null;
+                    try {
+                        businessStatus = claszz.getDeclaredField(ACT_BUSINESS_STATUS);
+                        businessStatus.setAccessible(true);
+                    } catch (NoSuchFieldException e) {
+                        e.printStackTrace();
+                        throw new ServiceException("未找到" + ACT_BUSINESS_STATUS + "属性：" + e.getMessage());
+                    }
+                    try {
+                        fieldInfo = claszz.getDeclaredField(fieldName);
+                        fieldInfo.setAccessible(true);
+                        fieldValue = fieldInfo.get(o).toString();
+                    } catch (NoSuchFieldException | IllegalAccessException e) {
+                        e.printStackTrace();
+                        throw new ServiceException("未找到" + fieldName + "属性：" + e.getMessage());
+                    }
+                    try {
+                        String finalFieldValue = fieldValue;
+                        ActBusinessStatus actBusinessStatus = actBusinessStatusList.stream().filter(e -> e.getBusinessKey().equals(finalFieldValue)).findFirst().orElse(null);
+                        if (ObjectUtil.isNotEmpty(actBusinessStatus)) {
+                            businessStatus.set(o, actBusinessStatus);
+                        } else {
+                            ActBusinessStatus status = new ActBusinessStatus();
+                            status.setStatus(BusinessStatusEnum.DRAFT.getStatus());
+                            businessStatus.set(o, status);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        throw new ServiceException("设置流程状态失败：" + e.getMessage());
+                    }
+                }
+            }
         }
     }
 
     /**
      * @Description: 设置流程实例id
-     * @param: o 对象
-     * @param: idList 主键集合
+     * @param: obj 对象
      * @param: id 主键id
      * @return: void
      * @Author: gssong
      * @Date: 2022/1/16
      */
-    public static void setProcessInstIdFileValue(Object o, List<String> idList, String id) {
-        Class<?> aClass = o.getClass();
+    public static void setProcessInstIdFileValue(Object obj, String id) {
+        Class<?> claszz = obj.getClass();
+        ActBusinessStatus actBusinessStatus = iActBusinessStatusService.getInfoByBusinessKey(id);
         Field processInstanceId;
         try {
-            processInstanceId = aClass.getDeclaredField(PROCESS_INSTANCE_ID);
+            processInstanceId = claszz.getDeclaredField(PROCESS_INSTANCE_ID);
+            processInstanceId.setAccessible(true);
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
-            throw new ServiceException("未找到" + PROCESS_INSTANCE_ID + "属性");
+            throw new ServiceException("未找到" + PROCESS_INSTANCE_ID + "属性：" + e.getMessage());
         }
-        processInstanceId.setAccessible(true);
-        List<ActBusinessStatus> infoByBusinessKey = iActBusinessStatusService.getListInfoByBusinessKey(idList);
         try {
-            if (CollectionUtil.isNotEmpty(infoByBusinessKey)) {
-                ActBusinessStatus actBusinessStatus = infoByBusinessKey.stream().filter(e -> e.getBusinessKey().equals(id)).findFirst().orElse(null);
-                if (ObjectUtil.isNotEmpty(actBusinessStatus) && StringUtils.isNotBlank(actBusinessStatus.getProcessInstanceId())) {
-                    processInstanceId.set(o, actBusinessStatus.getProcessInstanceId());
-                } else {
-                    processInstanceId.set(o, "");
-                }
+            if (ObjectUtil.isNotEmpty(actBusinessStatus) && StringUtils.isNotBlank(actBusinessStatus.getProcessInstanceId())) {
+                processInstanceId.set(obj, actBusinessStatus.getProcessInstanceId());
             } else {
-                processInstanceId.set(o, "");
+                processInstanceId.set(obj, "");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ServiceException("设置流程状态失败");
+            throw new ServiceException("设置流程实例ID失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * @Description: 设置流程实例id
+     * @param: obj 对象
+     * @param: idList 主键集合
+     * @param: fieldName 主键属性名称
+     * @return: void
+     * @author: gssong
+     * @Date: 2022/9/6
+     */
+    public static void setProcessInstIdListFileValue(Object obj, List<String> idList, String fieldName) {
+        List<ActBusinessStatus> actBusinessStatusList = iActBusinessStatusService.getListInfoByBusinessKey(idList);
+        if (obj instanceof Collection) {
+            Collection<?> collection = (Collection<?>) obj;
+            for (Object o : collection) {
+                Class<?> claszz = o.getClass();
+                Field processInstanceId;
+                Field fieldInfo;
+                String fieldValue = null;
+                try {
+                    processInstanceId = claszz.getDeclaredField(PROCESS_INSTANCE_ID);
+                    processInstanceId.setAccessible(true);
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
+                    throw new ServiceException("未找到" + PROCESS_INSTANCE_ID + "属性：" + e.getMessage());
+                }
+                try {
+                    fieldInfo = claszz.getDeclaredField(fieldName);
+                    fieldInfo.setAccessible(true);
+                    fieldValue = fieldInfo.get(o).toString();
+                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    e.printStackTrace();
+                    throw new ServiceException("未找到" + fieldName + "属性：" + e.getMessage());
+                }
+                try {
+                    String finalFieldValue = fieldValue;
+                    ActBusinessStatus actBusinessStatus = actBusinessStatusList.stream().filter(e -> e.getBusinessKey().equals(finalFieldValue)).findFirst().orElse(null);
+                    if (actBusinessStatus != null) {
+                        processInstanceId.set(obj, actBusinessStatus.getProcessInstanceId());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new ServiceException("设置流程实例ID失败：" + e.getMessage());
+                }
+            }
         }
     }
 
@@ -718,7 +804,7 @@ public class WorkFlowUtils {
         }
         List<Task> list = processEngine.getTaskService().createTaskQuery().processInstanceId(processInstanceId)
             .taskCandidateOrAssigned(LoginHelper.getUserId().toString()).list();
-        if(CollectionUtil.isEmpty(list)){
+        if (CollectionUtil.isEmpty(list)) {
             return false;
         }
         for (Task task : list) {

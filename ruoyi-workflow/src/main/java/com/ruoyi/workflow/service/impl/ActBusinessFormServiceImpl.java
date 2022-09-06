@@ -13,8 +13,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.ruoyi.workflow.domain.ActProcessDefForm;
+import com.ruoyi.workflow.service.IActBusinessStatusService;
 import com.ruoyi.workflow.service.IActProcessDefFormService;
 import com.ruoyi.workflow.service.IProcessInstanceService;
+import com.ruoyi.workflow.utils.WorkFlowUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.ruoyi.workflow.domain.bo.ActBusinessFormBo;
@@ -45,6 +47,8 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
 
     private final IProcessInstanceService iProcessInstanceService;
 
+    private final IActBusinessStatusService iActBusinessStatusService;
+
     /**
      * 查询业务表单
      */
@@ -60,6 +64,7 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
     public TableDataInfo<ActBusinessFormVo> queryPageList(ActBusinessFormBo bo, PageQuery pageQuery) {
         LambdaQueryWrapper<ActBusinessForm> lqw = buildQueryWrapper(bo);
         Page<ActBusinessFormVo> result = baseMapper.selectVoPage(pageQuery.build(), lqw);
+        //WorkFlowUtils.setStatusFileValue(result);
         return TableDataInfo.build(result);
     }
 

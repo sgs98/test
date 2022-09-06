@@ -1,136 +1,135 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="表单key" prop="formKey">
-        <el-input
-          v-model="queryParams.formKey"
-          placeholder="请输入表单key"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="表单名称" prop="formName">
-        <el-input
-          v-model="queryParams.formName"
-          placeholder="请输入表单名称"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="单号" prop="applyCode">
-        <el-input
-          v-model="queryParams.applyCode"
-          placeholder="请输入单号"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+    <div v-if="dataViewVisible">
+        <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
+        <el-form-item label="表单key" prop="formKey">
+            <el-input
+            v-model="queryParams.formKey"
+            placeholder="请输入表单key"
+            clearable
+            @keyup.enter.native="handleQuery"
+            />
+        </el-form-item>
+        <el-form-item label="表单名称" prop="formName">
+            <el-input
+            v-model="queryParams.formName"
+            placeholder="请输入表单名称"
+            clearable
+            @keyup.enter.native="handleQuery"
+            />
+        </el-form-item>
+        <el-form-item label="单号" prop="applyCode">
+            <el-input
+            v-model="queryParams.applyCode"
+            placeholder="请输入单号"
+            clearable
+            @keyup.enter.native="handleQuery"
+            />
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        </el-form-item>
+        </el-form>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['workflow:businessForm:edit']"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['workflow:businessForm:remove']"
-        >删除</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          @click="handleExport"
-          v-hasPermi="['workflow:businessForm:export']"
-        >导出</el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
-    </el-row>
-
-    <el-table v-loading="loading" :data="businessFormList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="单号" align="center" prop="applyCode" />
-      <el-table-column label="表单key" align="center" prop="formKey" />
-      <el-table-column label="表单名称" align="center" prop="formName" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
+        <el-row :gutter="10" class="mb8">
+        <el-col :span="1.5">
+            <el-button
+            type="success"
+            plain
             icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
+            size="mini"
+            :disabled="single"
+            @click="handleUpdate"
             v-hasPermi="['workflow:businessForm:edit']"
-          >修改</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-view"
-            @click="handleView(scope.row)"
-          >查看</el-button>
-          <el-button
-            size="mini"
-            type="text"
+            >修改</el-button>
+        </el-col>
+        <el-col :span="1.5">
+            <el-button
+            type="danger"
+            plain
             icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
+            size="mini"
+            :disabled="multiple"
+            @click="handleDelete"
             v-hasPermi="['workflow:businessForm:remove']"
-          >删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+            >删除</el-button>
+        </el-col>
+        <el-col :span="1.5">
+            <el-button
+            type="warning"
+            plain
+            icon="el-icon-download"
+            size="mini"
+            @click="handleExport"
+            v-hasPermi="['workflow:businessForm:export']"
+            >导出</el-button>
+        </el-col>
+        <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+        </el-row>
 
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
-      @pagination="getList"
-    />
-    <!-- 动态表单编辑 -->
-    <el-dialog :visible.sync="dynamicFormEditVisible" class="self_dialog"
-        v-if="dynamicFormEditVisible" 
-        center :close-on-click-modal="false" 
-        append-to-body>
-       <dynamicFormEdit
-        :buildData="form.formText" 
-        v-model="form.formValue"
-        @draftForm="draftProcessForm(arguments)"
-        @submitForm="submitProcessForm(arguments)"
-        ref="dynamicFormEditVisible"
-       />
-    </el-dialog>
-    <!-- 动态表单查看 -->
-    <el-dialog :visible.sync="dynamicFormViewVisible" 
-      class="self_dialog" 
-      v-if="dynamicFormViewVisible" 
-      :close-on-click-modal="false" 
-      append-to-body>
-       <dynamicFormView
-        :buildData="form.formText" 
-        v-model="form.formValue"
-       />
-    </el-dialog>
-    <!-- 工作流 -->
-    <verify ref="verifyRef" @callSubmit="callSubmit" :taskId="taskId" :taskVariables="taskVariables" :sendMessage="sendMessage"></verify>
+        <el-table v-loading="loading" :data="businessFormList" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="55" align="center" />
+        <el-table-column label="单号" align="center" prop="applyCode" />
+        <el-table-column label="表单key" align="center" prop="formKey" />
+        <el-table-column label="表单名称" align="center" prop="formName" />
+        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+            <template slot-scope="scope">
+            <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-edit"
+                @click="handleUpdate(scope.row)"
+                v-hasPermi="['workflow:businessForm:edit']"
+            >修改</el-button>
+            <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-view"
+                @click="handleView(scope.row)"
+            >查看</el-button>
+            <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-delete"
+                @click="handleDelete(scope.row)"
+                v-hasPermi="['workflow:businessForm:remove']"
+            >删除</el-button>
+            </template>
+        </el-table-column>
+        </el-table>
+
+        <pagination
+        v-show="total>0"
+        :total="total"
+        :page.sync="queryParams.pageNum"
+        :limit.sync="queryParams.pageSize"
+        @pagination="getList"
+        />
+    </div>
+    <div>
+        <!-- 动态表单编辑 -->
+        <div v-if="dynamicFormEditVisible">
+            <div class="container-header"><i class="el-dialog__close el-icon el-icon-close" @click="closeDynamicEdit"></i></div>
+            <dynamicFormEdit
+                :buildData="form.formText" 
+                v-model="form.formValue"
+                @draftForm="draftProcessForm(arguments)"
+                @submitForm="submitProcessForm(arguments)"
+                ref="dynamicFormEditVisible"
+            />
+        </div>
+        <!-- 动态表单查看 -->
+        <div v-if="dynamicFormViewVisible">
+            <div class="container-header"><i class="el-dialog__close el-icon el-icon-close" @click="closeDynamicView"></i></div>
+            <dynamicFormView
+                :buildData="form.formText" 
+                v-model="form.formValue"
+            />
+        </div>
+        <!-- 工作流 -->
+        <verify ref="verifyRef" @callSubmit="callSubmit" :taskId="taskId" :taskVariables="taskVariables" :sendMessage="sendMessage"/>
+    </div>
   </div>
 </template>
 
@@ -178,6 +177,8 @@ export default {
       // 表单校验
       rules: {
       },
+      //页面列表展示
+      dataViewVisible: true,
       //动态表单编辑
       dynamicFormEditVisible: false,
       //动态表单查看
@@ -227,6 +228,7 @@ export default {
         this.loading = false;
         this.form = response.data;
         this.dynamicFormEditVisible = true;
+        this.dataViewVisible = false
         this.title = response.data.formName;
       });
     },
@@ -238,10 +240,22 @@ export default {
         this.loading = false;
         this.form = response.data;
         this.dynamicFormViewVisible = true;
+        this.dataViewVisible = false
         this.title = response.data.formName;
       });
     },
-    
+    //关闭编辑
+    closeDynamicEdit(){
+        this.dynamicFormEditVisible = false;
+        this.dataViewVisible = true
+        this.getList()
+    },
+    //关闭编辑
+    closeDynamicView(){
+        this.dynamicFormViewVisible = false;
+        this.dataViewVisible = true
+        this.getList()
+    },
     //暂存
     draftProcessForm(args){
       this.form.formText = args[0]
@@ -319,30 +333,12 @@ export default {
 };
 </script>
 <style scoped>
-.self_dialog {
-    display: flex;
-    justify-content: center;
-    align-items: Center;
-    overflow: hidden;
-}
-.self_dialog /deep/ .el-dialog {
-    margin: 0 auto !important;
-    height: 90%;
-    width: 70%;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    padding-left: 15px;
-}
-.self_dialog /deep/ .el-dialog .el-dialog__body {
-    padding-top: 15px !important;
-    overflow: hidden;
-    overflow-y: auto;
-    margin-bottom: 40px;
-}
-.self_dialog /deep/ .el-dialog .el-dialog__footer {
-    left: 40%;
-    bottom: 10px;
-    position: absolute;
-}
+    .container-header{
+        height: 30px;
+        padding-bottom: 10px;
+    }
+    .el-icon-close{
+        float: right;
+        cursor: pointer;
+    }
 </style>

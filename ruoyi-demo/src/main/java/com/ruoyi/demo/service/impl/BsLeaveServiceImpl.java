@@ -19,10 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -42,7 +39,7 @@ public class BsLeaveServiceImpl implements IBsLeaveService {
     public BsLeaveVo queryById(String id){
         BsLeaveVo vo = baseMapper.selectVoById(id);
         vo.setProcessInstanceId(iProcessInstanceService.getProcessInstanceId(id));
-        WorkFlowUtils.setStatusFileValue(vo, Arrays.asList(vo.getId()),vo.getId());
+        WorkFlowUtils.setStatusFileValue(vo,vo.getId());
         return vo;
     }
 
@@ -53,10 +50,8 @@ public class BsLeaveServiceImpl implements IBsLeaveService {
         List<BsLeaveVo> records = result.getRecords();
         if(CollectionUtil.isNotEmpty(records)){
             List<String> collectIds = records.stream().map(BsLeaveVo::getId).collect(Collectors.toList());
-            for (BsLeaveVo record : records) {
-                WorkFlowUtils.setStatusFileValue(record,collectIds,record.getId());
-                WorkFlowUtils.setProcessInstIdFileValue(record,collectIds,record.getId());
-            }
+            WorkFlowUtils.setProcessInstIdListFileValue(records,collectIds,"id");
+            WorkFlowUtils.setStatusListFileValue(records,collectIds,"id");
         }
         result.setRecords(records);
         return TableDataInfo.build(result);

@@ -1,73 +1,72 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="表单key" prop="formKey">
-        <el-input
-          v-model="queryParams.formKey"
-          placeholder="请输入表单key"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="表单名称" prop="formName">
-        <el-input
-          v-model="queryParams.formName"
-          placeholder="请输入表单名称"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+    <div v-if="dataViewVisible">
+        <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
+        <el-form-item label="表单key" prop="formKey">
+            <el-input
+            v-model="queryParams.formKey"
+            placeholder="请输入表单key"
+            clearable
+            @keyup.enter.native="handleQuery"
+            />
+        </el-form-item>
+        <el-form-item label="表单名称" prop="formName">
+            <el-input
+            v-model="queryParams.formName"
+            placeholder="请输入表单名称"
+            clearable
+            @keyup.enter.native="handleQuery"
+            />
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        </el-form-item>
+        </el-form>
 
-    <el-row :gutter="10" class="mb8">
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
-    </el-row>
-    <div class="container-box" v-loading="loading" v-if="dynamicFormList && dynamicFormList.length>0">
-      <el-row :gutter="12" style="margin-left: 0px; margin-right: 0px;">
-        <el-col :span="4" v-for="(item,index) in dynamicFormList" :key="index">
-          <el-card shadow="hover" class="card-item">
-            <div slot="header" class="clearfix">
-               <el-tooltip class="item" effect="dark" :content="'表单KEY:'+item.formKey" placement="top-start">
-                 <span>{{item.formName}}</span>
-              </el-tooltip>
-              <span style="float: right;" @click="handleApply(item)"><el-link type="primary">提交申请</el-link></span>
+        <el-row :gutter="10" class="mb8">
+         <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+        </el-row>
+        <div class="container-box" v-loading="loading" v-if="dynamicFormList && dynamicFormList.length>0">
+            <el-row :gutter="12" style="margin-left: 0px; margin-right: 0px;">
+                <el-col :span="4" v-for="(item,index) in dynamicFormList" :key="index">
+                <el-card shadow="hover" class="card-item">
+                    <div slot="header" class="clearfix">
+                    <el-tooltip class="item" effect="dark" :content="'表单KEY:'+item.formKey" placement="top-start">
+                        <span>{{item.formName}}</span>
+                    </el-tooltip>
+                    <span style="float: right;" @click="handleApply(item)"><el-link type="primary">提交申请</el-link></span>
+                    </div>
+                    <div>
+                    {{item.formRemark}}
+                    </div>
+                </el-card>
+                </el-col>
+            </el-row>
+            <div class="pagination-box" v-show="total>0" v-loading="loading">
+                <pagination
+                v-show="total>0"
+                :total="total"
+                :page.sync="queryParams.pageNum"
+                :limit.sync="queryParams.pageSize"
+                @pagination="getList"
+                />
             </div>
-            <div>
-              {{item.formRemark}}
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
-      <div class="pagination-box" v-show="total>0" v-loading="loading">
-        <pagination
-          v-show="total>0"
-          :total="total"
-          :page.sync="queryParams.pageNum"
-          :limit.sync="queryParams.pageSize"
-          @pagination="getList"
-        />
-      </div>
+        </div>
+        <el-empty class="el-empty-icon" v-else description="暂无数据"></el-empty>
     </div>
-    <el-empty class="el-empty-icon" v-else description="暂无数据"></el-empty>
     <!-- 动态表单编辑 -->
-    <el-dialog :visible.sync="dynamicFormEditVisible" 
-      class="self_dialog" 
-      v-if="dynamicFormEditVisible" 
-      :close-on-click-modal="false" 
-      append-to-body>
+    <div v-if="dynamicFormEditVisible">
+       <div class="container-header"><i class="el-dialog__close el-icon el-icon-close" @click="closeDynamicEdit"></i></div>
        <dynamicFormEdit
         :buildData="formData.formDesignerText" 
         @draftForm="draftProcessForm(arguments)"
         @submitForm="submitProcessForm(arguments)"
         ref="dynamicFormEditRef"
        />
-    </el-dialog>
-    <!-- 工作流 -->
-    <verify ref="verifyRef" @callSubmit="callSubmit" :taskId="taskId" :taskVariables="taskVariables" :sendMessage="sendMessage"></verify>
+       <!-- 工作流 -->
+       <verify ref="verifyRef" @callSubmit="callSubmit" :taskId="taskId" :taskVariables="taskVariables" :sendMessage="sendMessage"/>
+    </div>
   </div>
 </template>
 
@@ -106,6 +105,8 @@ export default {
         formKey: undefined,
         formName: undefined,
       },
+      //页面列表展示
+      dataViewVisible: true,
       // 表单显示隐藏
       dynamicFormEditVisible: false,
       // 表单数据
@@ -146,6 +147,13 @@ export default {
     handleApply(row){
        this.formData = row
        this.dynamicFormEditVisible = true
+       this.dataViewVisible = false
+    },
+    //关闭编辑
+    closeDynamicEdit(){
+        this.dynamicFormEditVisible = false;
+        this.dataViewVisible = true
+        this.getList()
     },
     //暂存
     draftProcessForm(args){
@@ -232,30 +240,12 @@ export default {
   .el-col{
     padding: 10px;
   }
-  .self_dialog {
-      display: flex;
-      justify-content: center;
-      align-items: Center;
-      overflow: hidden;
+  .container-header{
+    height: 30px;
+    padding-bottom: 10px;
   }
-  .self_dialog /deep/ .el-dialog {
-      margin: 0 auto !important;
-      height: 90%;
-      width: 70%;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      padding-left: 15px;
-  }
-  .self_dialog /deep/ .el-dialog .el-dialog__body {
-      padding-top: 5px !important;
-      overflow: hidden;
-      overflow-y: auto;
-      margin-bottom: 40px;
-  }
-  .self_dialog /deep/ .el-dialog .el-dialog__footer {
-      left: 40%;
-      bottom: 0;
-      position: absolute;
+  .el-icon-close{
+    float: right;
+    cursor: pointer;
   }
 </style>
