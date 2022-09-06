@@ -336,7 +336,7 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
         }
         ActProcessNodeVo actProcessNodeVo = processNodeVoList.get(0);
         ActNodeAssignee actNodeAssignee = new ActNodeAssignee();
-        actNodeAssignee.setProcessDefinitionId(actProcessNodeVo.getProcessDefinitionId());
+        actNodeAssignee.setProcessDefinitionId(processDefinitionId);
         actNodeAssignee.setNodeId(actProcessNodeVo.getNodeId());
         actNodeAssignee.setNodeName(actProcessNodeVo.getNodeName());
         actNodeAssignee.setIsShow(false);
