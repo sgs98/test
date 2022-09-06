@@ -38,7 +38,7 @@ public class BsLeaveServiceImpl implements IBsLeaveService {
     @Override
     public BsLeaveVo queryById(String id){
         BsLeaveVo vo = baseMapper.selectVoById(id);
-        vo.setProcessInstanceId(iProcessInstanceService.getProcessInstanceId(id));
+        WorkFlowUtils.setProcessInstIdFileValue(vo,id);
         WorkFlowUtils.setStatusFileValue(vo,vo.getId());
         return vo;
     }
@@ -63,7 +63,6 @@ public class BsLeaveServiceImpl implements IBsLeaveService {
     }
 
     private LambdaQueryWrapper<BsLeave> buildQueryWrapper(BsLeaveBo bo) {
-        Map<String, Object> params = bo.getParams();
         LambdaQueryWrapper<BsLeave> lqw = Wrappers.lambdaQuery();
         lqw.like(StringUtils.isNotBlank(bo.getUsername()), BsLeave::getUsername, bo.getUsername());
         lqw.eq(bo.getDuration() != null, BsLeave::getDuration, bo.getDuration());

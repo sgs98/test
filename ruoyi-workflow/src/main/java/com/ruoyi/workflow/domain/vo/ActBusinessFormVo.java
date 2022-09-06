@@ -88,6 +88,12 @@ public class ActBusinessFormVo {
     private Map<String,Object> variableMap;
 
     /**
+     * 流程实例id
+     */
+    @ApiModelProperty("流程实例id")
+    private String processInstanceId;
+
+    /**
      * 流程状态
      */
     @ExcelProperty(value = "流程状态")

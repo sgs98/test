@@ -495,7 +495,7 @@ public class WorkFlowUtils {
                     String finalFieldValue = fieldValue;
                     ActBusinessStatus actBusinessStatus = actBusinessStatusList.stream().filter(e -> e.getBusinessKey().equals(finalFieldValue)).findFirst().orElse(null);
                     if (actBusinessStatus != null) {
-                        processInstanceId.set(obj, actBusinessStatus.getProcessInstanceId());
+                        processInstanceId.set(o, actBusinessStatus.getProcessInstanceId());
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

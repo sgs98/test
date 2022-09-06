@@ -1,6 +1,7 @@
 package com.ruoyi.workflow.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -13,7 +14,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.ruoyi.workflow.domain.ActProcessDefForm;
-import com.ruoyi.workflow.service.IActBusinessStatusService;
 import com.ruoyi.workflow.service.IActProcessDefFormService;
 import com.ruoyi.workflow.service.IProcessInstanceService;
 import com.ruoyi.workflow.utils.WorkFlowUtils;
@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * 业务表单Service业务层处理
@@ -47,14 +48,14 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
 
     private final IProcessInstanceService iProcessInstanceService;
 
-    private final IActBusinessStatusService iActBusinessStatusService;
-
     /**
      * 查询业务表单
      */
     @Override
     public ActBusinessFormVo queryById(Long id){
-        return baseMapper.selectVoById(id);
+        ActBusinessFormVo vo = baseMapper.selectVoById(id);
+        WorkFlowUtils.setStatusFileValue(vo,String.valueOf(vo.getId()));
+        return vo;
     }
 
     /**
@@ -64,7 +65,12 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
     public TableDataInfo<ActBusinessFormVo> queryPageList(ActBusinessFormBo bo, PageQuery pageQuery) {
         LambdaQueryWrapper<ActBusinessForm> lqw = buildQueryWrapper(bo);
         Page<ActBusinessFormVo> result = baseMapper.selectVoPage(pageQuery.build(), lqw);
-        //WorkFlowUtils.setStatusFileValue(result);
+        List<ActBusinessFormVo> records = result.getRecords();
+        if(CollectionUtil.isNotEmpty(records)){
+            List<String> collectIds = records.stream().map(e -> String.valueOf(e.getId())).collect(Collectors.toList());
+            WorkFlowUtils.setProcessInstIdListFileValue(records,collectIds,"id");
+            WorkFlowUtils.setStatusListFileValue(records,collectIds,"id");
+        }
         return TableDataInfo.build(result);
     }
 
