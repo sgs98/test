@@ -149,4 +149,14 @@ public interface ActConstant {
 
     String MESSAGE_CURRENT_TASK_IS_NULL = "当前任务不存在或你不是任务办理人";
 
+    /**
+     * 过期时间60分钟
+     */
+    Integer CACHE_EXPIRATION = 60;
+
+    /**
+     * 流程业务状态管理 cache key
+     */
+    String CACHE_ACT_BUSINESS_STATUS_KEY = "act_business_status:";
+
 }
