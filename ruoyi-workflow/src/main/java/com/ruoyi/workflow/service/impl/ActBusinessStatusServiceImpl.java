@@ -88,8 +88,14 @@ public class ActBusinessStatusServiceImpl extends ServiceImpl<ActBusinessStatusM
     }
 
     @Override
-    public boolean deleteState(String businessKey) {
+    public boolean deleteStateByBusinessKey(String businessKey) {
         int delete = baseMapper.delete(new LambdaQueryWrapper<ActBusinessStatus>().eq(ActBusinessStatus::getBusinessKey, businessKey));
+        return delete == 1;
+    }
+
+    @Override
+    public boolean deleteStateByProcessInstId(String processInstanceId) {
+        int delete = baseMapper.delete(new LambdaQueryWrapper<ActBusinessStatus>().eq(ActBusinessStatus::getProcessInstanceId, processInstanceId));
         return delete == 1;
     }
 
