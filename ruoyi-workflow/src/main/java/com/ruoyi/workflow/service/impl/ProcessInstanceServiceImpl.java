@@ -375,18 +375,15 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteRuntimeProcessInst(String processInstId) {
         try {
-            //1.查询流程实例
-            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
-                .processInstanceId(processInstId).singleResult();
-            //2.删除流程实例
+            //1.删除流程实例
             List<Task> list = taskService.createTaskQuery().processInstanceId(processInstId).list();
             List<Task> subTasks = list.stream().filter(e -> StringUtils.isNotBlank(e.getParentTaskId())).collect(Collectors.toList());
             if (CollectionUtil.isNotEmpty(subTasks)) {
                 subTasks.forEach(e -> taskService.deleteTask(e.getId()));
             }
             runtimeService.deleteProcessInstance(processInstId, LoginHelper.getUserId() + "作废了当前流程申请");
-            //3. 更新业务状态
-            return iActBusinessStatusService.updateState(processInstance.getBusinessKey(), BusinessStatusEnum.INVALID);
+            //2. 更新业务状态
+            return iActBusinessStatusService.updateState(processInstId, BusinessStatusEnum.INVALID);
         } catch (Exception e) {
             throw new ServiceException(e.getMessage());
         }
@@ -403,24 +400,21 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteRuntimeProcessAndHisInst(String processInstId) {
         try {
-            //1.查询流程实例
-            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
-                .processInstanceId(processInstId).singleResult();
-            //2.删除流程实例
+            //1.删除运行中流程实例
             List<Task> list = taskService.createTaskQuery().processInstanceId(processInstId).list();
             List<Task> subTasks = list.stream().filter(e -> StringUtils.isNotBlank(e.getParentTaskId())).collect(Collectors.toList());
             if (CollectionUtil.isNotEmpty(subTasks)) {
                 subTasks.forEach(e -> taskService.deleteTask(e.getId()));
             }
             runtimeService.deleteProcessInstance(processInstId, LoginHelper.getUserId() + "删除了当前流程申请");
-            //3.删除历史记录
+            //2.删除历史记录
             HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstId).singleResult();
             if (ObjectUtil.isNotEmpty(historicProcessInstance)) {
                 historyService.deleteHistoricProcessInstance(processInstId);
             }
-            //4.删除业务状态
-            iActBusinessStatusService.deleteState(processInstId);
-            //5.删除保存的任务节点
+            //3.删除业务状态
+            iActBusinessStatusService.deleteStateByProcessInstId(processInstId);
+            //4.删除保存的任务节点
             return iActTaskNodeService.deleteByInstanceId(processInstId);
         } catch (Exception e) {
             throw new ServiceException(e.getMessage());
@@ -435,16 +429,14 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
      * @Date: 2021/10/16
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteFinishProcessAndHisInst(String processInstId) {
         try {
-            //1.查询流程实例
-            HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery()
-                .processInstanceId(processInstId).singleResult();
-            //2.删除历史记录
+            //1.删除历史记录
             historyService.deleteHistoricProcessInstance(processInstId);
-            //3.删除业务状态
-            iActBusinessStatusService.deleteState(processInstId);
-            //4.删除保存的任务节点
+            //2.删除业务状态
+            iActBusinessStatusService.deleteStateByProcessInstId(processInstId);
+            //3.删除保存的任务节点
             return iActTaskNodeService.deleteByInstanceId(processInstId);
         } catch (Exception e) {
             throw new ServiceException(e.getMessage());

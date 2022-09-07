@@ -10,7 +10,6 @@ import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.helper.LoginHelper;
 import com.ruoyi.common.utils.JsonUtils;
 import com.ruoyi.workflow.common.constant.ActConstant;
-import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
 import com.ruoyi.workflow.domain.*;
 import com.ruoyi.workflow.domain.bo.*;
@@ -394,7 +393,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         }
         ActNodeAssignee nodeAssignee = iActNodeAssigneeService.getInfo(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
         //可驳回的节点
-        List<ActTaskNode> taskNodeList = iActTaskNodeService.getListByInstanceId(task.getProcessInstanceId()).stream().filter(e -> e.getIsBack()).collect(Collectors.toList());
+        List<ActTaskNode> taskNodeList = iActTaskNodeService.getListByInstanceId(task.getProcessInstanceId()).stream().filter(ActTaskNode::getIsBack).collect(Collectors.toList());
         map.put("backNodeList", taskNodeList);
         //当前流程实例状态
         ActBusinessStatus actBusinessStatus = iActBusinessStatusService.getInfoByProcessInstId(task.getProcessInstanceId());
@@ -809,7 +808,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
             if (taskList.size() > 1) {
                 otherTasks = taskList.stream().filter(e -> !e.getId().equals(backProcessBo.getTaskId())).collect(Collectors.toList());
             }
-            if (CollectionUtil.isNotEmpty(otherTasks) && otherTasks.size() > 0) {
+            if (CollectionUtil.isNotEmpty(otherTasks)) {
                 otherTasks.forEach(e -> historyService.deleteHistoricTaskInstance(e.getId()));
             }
             //判断是否会签
@@ -830,7 +829,7 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                 List<Task> runTaskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
                 for (Task runTask : runTaskList) {
                     //取之前的历史办理人
-                    List<HistoricTaskInstance> oldTargerTaskList = historyService.createHistoricTaskInstanceQuery()
+                    List<HistoricTaskInstance> oldTargetTaskList = historyService.createHistoricTaskInstanceQuery()
                         // 节点id
                         .taskDefinitionKey(runTask.getTaskDefinitionKey())
                         .processInstanceId(processInstanceId)
@@ -839,9 +838,9 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
                         //最新办理的在最前面
                         .orderByTaskCreateTime().desc()
                         .list();
-                    if (CollectionUtil.isNotEmpty(oldTargerTaskList)) {
-                        HistoricTaskInstance oldTargerTask = oldTargerTaskList.get(0);
-                        taskService.setAssignee(runTask.getId(), oldTargerTask.getAssignee());
+                    if (CollectionUtil.isNotEmpty(oldTargetTaskList)) {
+                        HistoricTaskInstance oldTargetTask = oldTargetTaskList.get(0);
+                        taskService.setAssignee(runTask.getId(), oldTargetTask.getAssignee());
                     }
 
                 }

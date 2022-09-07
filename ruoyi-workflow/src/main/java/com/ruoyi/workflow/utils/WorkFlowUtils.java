@@ -393,7 +393,7 @@ public class WorkFlowUtils {
                     Class<?> claszz = o.getClass();
                     Field businessStatus;
                     Field fieldInfo;
-                    String fieldValue = null;
+                    String fieldValue;
                     try {
                         businessStatus = claszz.getDeclaredField(ACT_BUSINESS_STATUS);
                         businessStatus.setAccessible(true);
@@ -410,8 +410,7 @@ public class WorkFlowUtils {
                         throw new ServiceException("未找到" + fieldName + "属性：" + e.getMessage());
                     }
                     try {
-                        String finalFieldValue = fieldValue;
-                        ActBusinessStatus actBusinessStatus = actBusinessStatusList.stream().filter(e -> e.getBusinessKey().equals(finalFieldValue)).findFirst().orElse(null);
+                        ActBusinessStatus actBusinessStatus = actBusinessStatusList.stream().filter(e -> e.getBusinessKey().equals(fieldValue)).findFirst().orElse(null);
                         if (ObjectUtil.isNotEmpty(actBusinessStatus)) {
                             businessStatus.set(o, actBusinessStatus);
                         } else {
@@ -476,7 +475,7 @@ public class WorkFlowUtils {
                 Class<?> claszz = o.getClass();
                 Field processInstanceId;
                 Field fieldInfo;
-                String fieldValue = null;
+                String fieldValue;
                 try {
                     processInstanceId = claszz.getDeclaredField(PROCESS_INSTANCE_ID);
                     processInstanceId.setAccessible(true);
@@ -493,8 +492,7 @@ public class WorkFlowUtils {
                     throw new ServiceException("未找到" + fieldName + "属性：" + e.getMessage());
                 }
                 try {
-                    String finalFieldValue = fieldValue;
-                    ActBusinessStatus actBusinessStatus = actBusinessStatusList.stream().filter(e -> e.getBusinessKey().equals(finalFieldValue)).findFirst().orElse(null);
+                    ActBusinessStatus actBusinessStatus = actBusinessStatusList.stream().filter(e -> e.getBusinessKey().equals(fieldValue)).findFirst().orElse(null);
                     if (actBusinessStatus != null) {
                         processInstanceId.set(o, actBusinessStatus.getProcessInstanceId());
                     }

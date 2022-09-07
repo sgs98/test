@@ -213,6 +213,7 @@ export default {
     // 提交成功回调
     callSubmit(){
       this.dynamicFormEditVisible = false;
+      this.dataViewVisible = true
       this.getList();
     },
   }
