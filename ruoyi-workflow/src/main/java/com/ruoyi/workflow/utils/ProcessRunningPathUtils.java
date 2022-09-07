@@ -5,6 +5,7 @@ import com.ruoyi.common.utils.spring.SpringUtils;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.domain.vo.ProcessNodePath;
 import com.ruoyi.workflow.flowable.cmd.ExpressCheckCmd;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.*;
@@ -21,13 +22,13 @@ import java.util.stream.Collectors;
  * @author: gssong
  * @created: 2022/8/22 18:40
  */
-@RequiredArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProcessRunningPathUtils{
 
     /**
      * 流程引擎
      */
-    private static final ProcessEngine processEngine = SpringUtils.getBean(ProcessEngine.class);
+    private static final ProcessEngine PROCESS_ENGINE = SpringUtils.getBean(ProcessEngine.class);
 
     /**
      * @Description: 获取流程审批路线
@@ -38,12 +39,12 @@ public class ProcessRunningPathUtils{
      */
     public static List<ProcessNodePath> getProcessNodeList(String processInstanceId) {
 
-        ProcessInstance processInstance = processEngine.getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-        BpmnModel bpmnModel = processEngine.getRepositoryService().getBpmnModel(processInstance.getProcessDefinitionId());
+        ProcessInstance processInstance = PROCESS_ENGINE.getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+        BpmnModel bpmnModel = PROCESS_ENGINE.getRepositoryService().getBpmnModel(processInstance.getProcessDefinitionId());
         Collection<FlowElement> flowElements = bpmnModel.getMainProcess().getFlowElements();
-        List<Task> list = processEngine.getTaskService().createTaskQuery().processInstanceId(processInstanceId).list();
+        List<Task> list = PROCESS_ENGINE.getTaskService().createTaskQuery().processInstanceId(processInstanceId).list();
         List<ProcessNodePath> processNodePathList = new ArrayList<>();
-        Map<String, Object> variables = processEngine.getRuntimeService().getVariables(list.get(0).getExecutionId());
+        Map<String, Object> variables = PROCESS_ENGINE.getRuntimeService().getVariables(list.get(0).getExecutionId());
         FlowElement startElement = flowElements.stream().filter(f -> f instanceof StartEvent).findFirst().orElse(null);
         assert startElement != null;
         List<SequenceFlow> outgoingFlows = ((StartEvent) startElement).getOutgoingFlows();
@@ -171,7 +172,7 @@ public class ProcessRunningPathUtils{
             processNodePath.setExpressionStr(false);
             if (StringUtils.isNotBlank(conditionExpression)) {
                 ExpressCheckCmd expressCheckCmd = new ExpressCheckCmd(processInstanceId, conditionExpression, variableMap);
-                condition = processEngine.getManagementService().executeCommand(expressCheckCmd);
+                condition = PROCESS_ENGINE.getManagementService().executeCommand(expressCheckCmd);
                 processNodePath.setExpressionStr(true);
             }
             processNodePath.setExpression(condition);

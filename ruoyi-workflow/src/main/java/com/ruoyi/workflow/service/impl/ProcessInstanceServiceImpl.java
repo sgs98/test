@@ -419,7 +419,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
                 historyService.deleteHistoricProcessInstance(processInstId);
             }
             //4.删除业务状态
-            iActBusinessStatusService.deleteState(processInstance.getBusinessKey());
+            iActBusinessStatusService.deleteState(processInstId);
             //5.删除保存的任务节点
             return iActTaskNodeService.deleteByInstanceId(processInstId);
         } catch (Exception e) {
@@ -443,7 +443,7 @@ public class ProcessInstanceServiceImpl extends WorkflowService implements IProc
             //2.删除历史记录
             historyService.deleteHistoricProcessInstance(processInstId);
             //3.删除业务状态
-            iActBusinessStatusService.deleteState(historicProcessInstance.getBusinessKey());
+            iActBusinessStatusService.deleteState(processInstId);
             //4.删除保存的任务节点
             return iActTaskNodeService.deleteByInstanceId(processInstId);
         } catch (Exception e) {
