@@ -3,7 +3,7 @@ package com.ruoyi.workflow.domain.vo;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.ruoyi.workflow.domain.ActBusinessStatus;
-import com.ruoyi.workflow.domain.ActProcessDefForm;
+import com.ruoyi.workflow.domain.ActProcessDefSetting;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -78,7 +78,7 @@ public class ActBusinessFormVo {
      */
     @ExcelProperty(value = "流程与表单关联对象")
     @ApiModelProperty("流程与表单关联对象")
-    private ActProcessDefForm actProcessDefForm;
+    private ActProcessDefSetting actProcessDefSetting;
 
     /**
      *流程变量

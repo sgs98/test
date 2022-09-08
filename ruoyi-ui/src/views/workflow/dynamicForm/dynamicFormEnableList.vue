@@ -59,7 +59,7 @@
     <div v-if="dynamicFormEditVisible">
        <div class="container-header"><i class="el-dialog__close el-icon el-icon-close" @click="closeDynamicEdit"></i></div>
        <dynamicFormEdit
-        :buildData="formData.formDesignerText" 
+        :buildData="formData.formDesignerText"
         @draftForm="draftProcessForm(arguments)"
         @submitForm="submitProcessForm(arguments)"
         ref="dynamicFormEditRef"
@@ -123,7 +123,7 @@ export default {
     this.getList();
   },
   methods: {
-    
+
     /** 查询流程单列表 */
     getList() {
       this.loading = true;
@@ -186,7 +186,7 @@ export default {
     },
     //提交流程
     submitFormApply(entity){
-        if(!entity.actProcessDefForm){
+        if(!entity.actProcessDefSetting){
           this.$modal.msgError("未绑定流程");
           return
         }
@@ -194,7 +194,7 @@ export default {
             entity: entity.variableMap
         }
         const data = {
-            processKey: entity.actProcessDefForm.processDefinitionKey, // key
+            processKey: entity.actProcessDefSetting.processDefinitionKey, // key
             businessKey: entity.id, // 业务id
             variables: variables,
             classFullName: entity.formKey

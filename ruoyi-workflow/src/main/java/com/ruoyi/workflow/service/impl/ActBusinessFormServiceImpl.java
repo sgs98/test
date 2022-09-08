@@ -13,8 +13,8 @@ import com.ruoyi.common.core.domain.PageQuery;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.ruoyi.workflow.domain.ActProcessDefForm;
-import com.ruoyi.workflow.service.IActProcessDefFormService;
+import com.ruoyi.workflow.domain.ActProcessDefSetting;
+import com.ruoyi.workflow.service.IActProcessDefSetting;
 import com.ruoyi.workflow.service.IProcessInstanceService;
 import com.ruoyi.workflow.utils.WorkFlowUtils;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,7 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
 
     private final ActBusinessFormMapper baseMapper;
 
-    private final IActProcessDefFormService iActProcessDefFormService;
+    private final IActProcessDefSetting iActProcessDefSetting;
 
     private final IProcessInstanceService iProcessInstanceService;
 
@@ -107,13 +107,13 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
         }
         ActBusinessFormVo actBusinessFormVo = new ActBusinessFormVo();
         BeanCopyUtils.copy(add,actBusinessFormVo);
-        ActProcessDefForm actProcessDefForm = iActProcessDefFormService.queryByFormId(add.getFormId());
-        actBusinessFormVo.setActProcessDefForm(actProcessDefForm);
+        ActProcessDefSetting actProcessDefSetting = iActProcessDefSetting.queryByFormId(add.getFormId());
+        actBusinessFormVo.setActProcessDefSetting(actProcessDefSetting);
         Map<String, Object> variableMap = new HashMap<>(16);
-        if(ObjectUtil.isNotEmpty(actProcessDefForm) && StringUtils.isNotBlank(actProcessDefForm.getFormVariable())){
+        if(ObjectUtil.isNotEmpty(actProcessDefSetting) && StringUtils.isNotBlank(actProcessDefSetting.getFormVariable())){
             String formValue = actBusinessFormVo.getFormValue();
             JSONObject jsonObject = JSONUtil.parseObj(formValue);
-            String[] split = actProcessDefForm.getFormVariable().split(",");
+            String[] split = actProcessDefSetting.getFormVariable().split(",");
             for (String variableKey : split) {
                 if(jsonObject.containsKey(variableKey)){
                     Object value = jsonObject.get(variableKey);
@@ -137,13 +137,13 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
         baseMapper.updateById(update);
         ActBusinessFormVo actBusinessFormVo = new ActBusinessFormVo();
         BeanCopyUtils.copy(update,actBusinessFormVo);
-        ActProcessDefForm actProcessDefForm = iActProcessDefFormService.queryByFormId(update.getFormId());
-        actBusinessFormVo.setActProcessDefForm(actProcessDefForm);
+        ActProcessDefSetting actProcessDefSetting = iActProcessDefSetting.queryByFormId(update.getFormId());
+        actBusinessFormVo.setActProcessDefSetting(actProcessDefSetting);
         Map<String, Object> variableMap = new HashMap<>(16);
-        if(ObjectUtil.isNotEmpty(actProcessDefForm) && StringUtils.isNotBlank(actProcessDefForm.getFormVariable())){
+        if(ObjectUtil.isNotEmpty(actProcessDefSetting) && StringUtils.isNotBlank(actProcessDefSetting.getFormVariable())){
             String formValue = actBusinessFormVo.getFormValue();
             JSONObject jsonObject = JSONUtil.parseObj(formValue);
-            String[] split = actProcessDefForm.getFormVariable().split(",");
+            String[] split = actProcessDefSetting.getFormVariable().split(",");
             for (String variableKey : split) {
                 if(jsonObject.containsKey(variableKey)){
                     Object value = jsonObject.get(variableKey);

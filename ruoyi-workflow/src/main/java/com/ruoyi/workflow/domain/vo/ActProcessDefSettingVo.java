@@ -9,15 +9,15 @@ import lombok.Data;
 
 
 /**
- * 流程定义与单配置视图对象 act_process_def_form
+ *流程定义设置视图对象 act_process_def_form
  *
  * @author gssong
  * @date 2022-08-28
  */
 @Data
-@ApiModel("流程定义与单配置视图对象")
+@ApiModel("流程定义设置视图对象")
 @ExcelIgnoreUnannotated
-public class ActProcessDefFormVo {
+public class ActProcessDefSettingVo {
 
     private static final long serialVersionUID = 1L;
 

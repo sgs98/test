@@ -12,7 +12,7 @@ import javax.validation.constraints.*;
 import com.ruoyi.common.core.domain.BaseEntity;
 
 /**
- * 流程定义与单配置业务对象 act_process_def_form
+ * 流程定义设置业务对象 act_process_def_form
  *
  * @author gssong
  * @date 2022-08-28
@@ -20,8 +20,8 @@ import com.ruoyi.common.core.domain.BaseEntity;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ApiModel("流程定义与单配置业务对象")
-public class ActProcessDefFormBo extends BaseEntity {
+@ApiModel("流程定义设置对象")
+public class ActProcessDefSettingBo extends BaseEntity {
 
     /**
      * 主键

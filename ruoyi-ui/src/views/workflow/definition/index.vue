@@ -162,7 +162,7 @@
 </template>
 <script>
 import {list,del,updateProcDefState,getXml} from "@/api/workflow/definition";
-import { getProcessDefFormByDefId } from "@/api/workflow/processDefForm";
+import { getProcessDefSettingByDefId } from "@/api/workflow/processDefSetting";
 import {convertToModel} from "@/api/workflow/model";
 import processDeploy from './components/processDeploy'
 import processPreview from './components/processPreview'
@@ -349,7 +349,7 @@ export default {
       //打开表单
       handleForm(row){
         this.loading = true
-        getProcessDefFormByDefId(row.id).then(response => {
+        getProcessDefSettingByDefId(row.id).then(response => {
           this.fromData = {
             processDefinitionId: row.id,
             processDefinitionKey: row.key,

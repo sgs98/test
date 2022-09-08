@@ -34,7 +34,7 @@
           </el-form-item>
         </el-col>
       </el-row>
-      
+
     </el-form>
     <el-dialog title="表单" :visible.sync="formVisible" v-if="visible" width="70%" :close-on-click-modal="false" append-to-body>
       <div class="app-container">
@@ -90,7 +90,7 @@
 
 <script>
 import { listDynamicFormEnable } from "@/api/workflow/dynamicForm";
-import { addProcessDefForm,checkProcessDefFormByDefId } from "@/api/workflow/processDefForm";
+import { addProcessDefSetting,checkProcessDefSettingByDefId } from "@/api/workflow/processDefSetting";
 export default {
   props:{
     fromData: {
@@ -153,7 +153,7 @@ export default {
         this.loading = false;
       });
     },
-    
+
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1;
@@ -179,10 +179,10 @@ export default {
     // 确认
     submitForm(){
       this.loading = true;
-      checkProcessDefFormByDefId(this.fromData.processDefinitionId,this.fromData.formId).then(response => {
+      checkProcessDefSettingByDefId(this.fromData.processDefinitionId,this.fromData.formId).then(response => {
         if(response.msg){
           this.$modal.confirm(response.msg).then(() => {
-            addProcessDefForm(this.fromData).then(response => {
+            addProcessDefSetting(this.fromData).then(response => {
               this.$modal.msgSuccess("保存成功");
               this.loading = false;
               this.visible = false;
@@ -191,7 +191,7 @@ export default {
             this.loading = false;
           });
         }else{
-          addProcessDefForm(this.fromData).then(response => {
+          addProcessDefSetting(this.fromData).then(response => {
             this.$modal.msgSuccess("保存成功");
             this.loading = false;
             this.visible = false;

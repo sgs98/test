@@ -7,15 +7,15 @@ import lombok.EqualsAndHashCode;
 import com.ruoyi.common.core.domain.BaseEntity;
 
 /**
- * 流程定义与单配置对象 act_process_def_form
+ * 流程定义设置 act_process_def_setting
  *
  * @author gssong
  * @date 2022-08-28
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("act_process_def_form")
-public class ActProcessDefForm extends BaseEntity {
+@TableName("act_process_def_setting")
+public class ActProcessDefSetting extends BaseEntity {
 
     private static final long serialVersionUID=1L;
 

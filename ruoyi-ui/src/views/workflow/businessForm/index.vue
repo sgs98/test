@@ -115,7 +115,7 @@
       <el-tabs type="border-card" class="container-tab">
         <el-tab-pane label="业务单据">
           <dynamicFormEdit
-              :buildData="form.formText" 
+              :buildData="form.formText"
               v-model="form.formValue"
               @draftForm="draftProcessForm(arguments)"
               @submitForm="submitProcessForm(arguments)"
@@ -333,7 +333,7 @@ export default {
           this.dataViewVisible = true
           this.getList();
         })
-      } 
+      }
     },
     /** 提交按钮 */
     submitProcessForm(args) {
@@ -347,7 +347,7 @@ export default {
     },
      //提交流程
      submitFormApply(entity){
-        if(!entity.actProcessDefForm){
+        if(!entity.actProcessDefSetting){
           this.$modal.msgError("未绑定流程");
           return
         }
@@ -355,7 +355,7 @@ export default {
             entity: entity.variableMap
         }
         const data = {
-            processKey: entity.actProcessDefForm.processDefinitionKey, // key
+            processKey: entity.actProcessDefSetting.processDefinitionKey, // key
             businessKey: entity.id, // 业务id
             variables: variables,
             classFullName: entity.formKey
