@@ -155,8 +155,13 @@ public interface ActConstant {
     Integer CACHE_EXPIRATION = 60;
 
     /**
+     * 缓存名称
+     */
+    String CACHE_NAMES = "workflowCache:";
+
+    /**
      * 流程业务状态管理 cache key
      */
-    String CACHE_ACT_BUSINESS_STATUS_KEY = "act_business_status:";
+    String CACHE_ACT_BUSINESS_STATUS_KEY = CACHE_NAMES + "act_business_status:";
 
 }
