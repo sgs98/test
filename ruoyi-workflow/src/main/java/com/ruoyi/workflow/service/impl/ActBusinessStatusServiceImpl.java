@@ -93,11 +93,13 @@ public class ActBusinessStatusServiceImpl extends ServiceImpl<ActBusinessStatusM
 
     @Override
     public ActBusinessStatus getInfoByBusinessKey(String businessKey) {
-        ActBusinessStatus actBusinessStatus = RedisUtils.getCacheObject(ActConstant.CACHE_ACT_BUSINESS_STATUS_KEY + businessKey);
-        if (actBusinessStatus != null) {
-            return actBusinessStatus;
+        ActBusinessStatus cacheBusinessStatus = RedisUtils.getCacheObject(ActConstant.CACHE_ACT_BUSINESS_STATUS_KEY + businessKey);
+        if (cacheBusinessStatus != null) {
+            return cacheBusinessStatus;
         }
-        return baseMapper.selectOne(new LambdaQueryWrapper<ActBusinessStatus>().eq(ActBusinessStatus::getBusinessKey, businessKey));
+        ActBusinessStatus actBusinessStatus = baseMapper.selectOne(new LambdaQueryWrapper<ActBusinessStatus>().eq(ActBusinessStatus::getBusinessKey, businessKey));
+        RedisUtils.setCacheObject(ActConstant.CACHE_ACT_BUSINESS_STATUS_KEY + businessKey, actBusinessStatus, Duration.ofMinutes(ActConstant.CACHE_EXPIRATION));
+        return actBusinessStatus;
     }
 
     @Override
@@ -121,11 +123,13 @@ public class ActBusinessStatusServiceImpl extends ServiceImpl<ActBusinessStatusM
 
     @Override
     public ActBusinessStatus getInfoByProcessInstId(String processInstanceId) {
-        ActBusinessStatus actBusinessStatus = RedisUtils.getCacheObject(ActConstant.CACHE_ACT_BUSINESS_STATUS_KEY + processInstanceId);
-        if (actBusinessStatus != null) {
-            return actBusinessStatus;
+        ActBusinessStatus cacheBusinessStatus = RedisUtils.getCacheObject(ActConstant.CACHE_ACT_BUSINESS_STATUS_KEY + processInstanceId);
+        if (cacheBusinessStatus != null) {
+            return cacheBusinessStatus;
         }
-        return baseMapper.selectOne(new LambdaQueryWrapper<ActBusinessStatus>().eq(ActBusinessStatus::getProcessInstanceId, processInstanceId));
+        ActBusinessStatus actBusinessStatus = baseMapper.selectOne(new LambdaQueryWrapper<ActBusinessStatus>().eq(ActBusinessStatus::getProcessInstanceId, processInstanceId));
+        RedisUtils.setCacheObject(ActConstant.CACHE_ACT_BUSINESS_STATUS_KEY + processInstanceId, actBusinessStatus, Duration.ofMinutes(ActConstant.CACHE_EXPIRATION));
+        return actBusinessStatus;
     }
 
     @Override
