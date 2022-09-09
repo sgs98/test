@@ -109,8 +109,8 @@
         @pagination="getList"
         />
     </div>
-    <div class="from-container" v-if="dynamicFormEditVisible">
-      <div class="container-header"><i class="el-dialog__close el-icon el-icon-close" @click="closeDynamicEdit"></i></div>
+    <div class="form-container" v-if="dynamicFormEditVisible">
+      <div class="form-container-header"><i class="el-dialog__close el-icon el-icon-close" @click="closeDynamicEdit"></i></div>
       <!-- 动态表单编辑开始 -->
       <el-tabs type="border-card" class="container-tab">
         <el-tab-pane label="业务单据">
@@ -143,8 +143,8 @@
       </el-tabs>
       <!-- 动态表单编辑结束 -->
     </div>
-    <div class="from-container" v-if="dynamicFormViewVisible" >
-      <div class="container-header"><i class="el-dialog__close el-icon el-icon-close" @click="closeDynamicView"></i></div>
+    <div class="form-container" v-if="dynamicFormViewVisible" >
+      <div class="form-container-header"><i class="el-dialog__close el-icon el-icon-close" @click="closeDynamicView"></i></div>
       <!-- 动态表单查看开始 -->
       <el-tabs type="border-card" class="container-tab">
         <el-tab-pane label="业务单据">
@@ -316,7 +316,7 @@ export default {
         this.dataViewVisible = true
         this.getList()
     },
-    //关闭编辑
+    //关闭查看
     closeDynamicView(){
         this.dynamicFormViewVisible = false;
         this.dataViewVisible = true
@@ -401,7 +401,7 @@ export default {
 };
 </script>
 <style scoped>
-    .container-header{
+    .form-container-header{
         height: 30px;
         padding-bottom: 10px;
     }

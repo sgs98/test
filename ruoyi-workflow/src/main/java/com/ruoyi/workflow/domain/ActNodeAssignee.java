@@ -15,7 +15,7 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
- * 流程定义设置对象 act_node_assignee
+ * 流程节点人员设置对象 act_node_assignee
  *
  * @author gssong
  * @date 2021-11-21
@@ -23,7 +23,7 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName("act_node_assignee")
-@ApiModel("流程定义设置对象")
+@ApiModel("流程节点人员设置对象")
 public class ActNodeAssignee extends BaseEntity{
 
     private static final long serialVersionUID=1L;
