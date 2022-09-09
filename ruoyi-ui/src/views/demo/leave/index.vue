@@ -239,7 +239,7 @@
       </el-tabs>
     </el-dialog>
     <!-- 提交 -->
-    <verify ref="verifyRef" @callSubmit="callSubmit" :taskId="taskId" :taskVariables="taskVariables" :sendMessage="sendMessage"></verify>
+    <verify ref="verifyRef" @submitCallback="submitCallback" :taskId="taskId" :taskVariables="taskVariables" :sendMessage="sendMessage"></verify>
   </div>
 </template>
 
@@ -454,7 +454,7 @@ export default {
       });
     },
     // 提交成功回调
-    callSubmit(){
+    submitCallback(){
       this.open = false;
       this.getList();
     },

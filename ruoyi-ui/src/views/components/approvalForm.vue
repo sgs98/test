@@ -1,13 +1,14 @@
 <template>
-    <el-tabs  type="border-card" >
+    <el-tabs type="border-card" class="container-tab">
     <el-tab-pane label="业务单据" v-loading="loading">
         <component :is="currProcessForm" 
             :businessKey="businessKey" 
             :parentTaskId="parentTaskId" 
             @closeForm="closeForm" 
             :taskId="taskId" 
-            :buildData="formData.formText"
-             v-model="formData.formValue"
+            :buildData="dynamicFormData.formText"
+             v-model="dynamicFormData.formValue"
+             :dynamicFormData="dynamicFormData"
          ></component>
     </el-tab-pane>
     <el-tab-pane label="审批意见" v-loading="loading">
@@ -36,16 +37,14 @@ import api from '@/api/workflow/processInst'
 import leaveForm from "@/views/components/form/leaveForm";
 import dynamicFormEdit from '@/views/workflow/businessForm/dynamicFormEdit'
 export default {
-
     props: {
       processInstanceId: String, // 流程实例id
       businessKey: String, // 业务唯一标识
       taskId: String, // 任务id
       parentTaskId: String, // 父级任务id
       currProcessForm: String, // 当前流程表单组件
-      formData: {}
+      dynamicFormData: {} //动态表单数据
     },
-
     components: {
       leaveForm,
       dynamicFormEdit
@@ -73,9 +72,22 @@ export default {
         // 关闭弹窗
         closeForm(){
           this.visible = false
-          this.$emit("refresh")
+          this.$emit("closeForm")
         }
     }
 
 }
 </script>
+<style scoped>
+.container-tab{
+    height: calc(100vh - 155px);
+    overflow-y: auto;
+}
+/* 修改滚动条样式 */
+.container-tab::-webkit-scrollbar {
+    width: 4px;
+}
+.container-tab::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+}
+</style>

@@ -172,7 +172,7 @@
       <!-- 动态表单查看结束-->
     </div>
     <!-- 工作流 -->
-    <verify ref="verifyRef" @callSubmit="callSubmit" :taskId="taskId" :taskVariables="taskVariables" :sendMessage="sendMessage"/>
+    <verify ref="verifyRef" @submitCallback="submitCallback" :taskId="taskId" :taskVariables="taskVariables" :sendMessage="sendMessage"/>
   </div>
 </template>
 
@@ -372,7 +372,7 @@ export default {
         })
     },
     // 提交成功回调
-    callSubmit(){
+    submitCallback(){
       this.dynamicFormEditVisible = false;
       this.dataViewVisible = true
       this.getList();

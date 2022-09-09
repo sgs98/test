@@ -54,12 +54,6 @@
                             size="mini"
                             icon="el-icon-s-check"
                         >办理</el-button>
-                        <el-button
-                            type="text"
-                            @click="clickHistPop(scope.row)"
-                            size="mini"
-                            icon="el-icon-tickets"
-                        >审批记录</el-button>
                         </el-col>
                     </el-row>
                     </template>
@@ -76,34 +70,21 @@
         <div class="form-container" v-if="dynamicFormEditVisible">
             <div class="form-container-header form-container-header"><i class="el-dialog__close el-icon el-icon-close" @click="closeDynamicEdit"></i></div>
             <approvalForm ref="approvalForm" :businessKey = 'businessKey' :taskId = 'taskId' :parentTaskId = 'parentTaskId'
-            @refresh = 'refresh' :currProcessForm = 'currProcessForm' :processInstanceId = 'processInstanceId' :formData = 'formData'/>
+            @closeForm = 'closeDynamicEdit' :currProcessForm = 'currProcessForm' :processInstanceId = 'processInstanceId' :dynamicFormData = 'dynamicFormData'/>
         </div>
         <!-- 单据信息结束 -->
-         
-        <!-- 通过 -->
-        <verify ref="verifyRef" :taskId="taskId" :taskVariables="taskVariables"/>
-
-        <!-- 审批记录开始 -->
-        <el-dialog title="审批记录" :visible.sync="visible" v-if="visible" width="60%" :close-on-click-modal="false">
-           <history :processInstanceId="processInstanceId"></history>
-        </el-dialog>
-         <!-- 审批记录结束 -->
     </div>
 </template>
 
 <script>
   import api from '@/api/workflow/task'
-  import verify from "@/components/Process/Verify";
   import history from "@/components/Process/History";
   import approvalForm from "@/views/components/approvalForm";
-  import dynamicFormEdit from '@/views/workflow/businessForm/dynamicFormEdit'
   import { getBusinessForm } from "@/api/workflow/businessForm";
   export default {
     components: {
-      verify,
       history,
-      approvalForm,
-      dynamicFormEdit
+      approvalForm
     },
     data () {
       return {
@@ -141,9 +122,8 @@
         processInstanceId: undefined,
         parentTaskId: undefined,
         businessKey: undefined, // 业务唯一标识
-        visible: false,
         currProcessForm: '', //表单组件名称
-        formData: {}
+        dynamicFormData: '' //表单组件名称
       }
     },
     created() {
@@ -187,20 +167,18 @@
           this.taskId = row.id
           this.parentTaskId = row.parentTaskId
           if(row.actBusinessStatus && row.actBusinessStatus.classFullName){
-            if(row.actBusinessStatus.classFullName === 'com.ruoyi.demo.leave'){
+            if(row.actBusinessStatus.classFullName === 'com.ruoyi.demo.domain.BsLeave'){
                 this.currProcessForm = 'leaveForm'
                 this.dynamicFormEditVisible = true    
                 this.dataViewVisible = false  
             }
             if(row.actBusinessStatus.classFullName.indexOf(".") === -1){
                 getBusinessForm(this.businessKey).then(response => {
-                    this.formData = response.data;
+                    this.dynamicFormData = response.data;
                     this.dynamicFormEditVisible = true;
                     this.dataViewVisible = false
                     this.currProcessForm = 'dynamicFormEdit'
                 });
-                this.dynamicFormEditVisible = true    
-                this.dataViewVisible = false  
             }
           }else{
               this.$modal.msgError("业务不存在");
@@ -212,11 +190,6 @@
          this.dataViewVisible = true
          this.getList()
        },
-      //审批记录
-      clickHistPop(row){
-         this.processInstanceId = row.processInstanceId
-         this.visible = true
-      },
       //签收
       clickClaim(row){
          this.$modal.confirm('是否确认签收此任务？').then(() => {

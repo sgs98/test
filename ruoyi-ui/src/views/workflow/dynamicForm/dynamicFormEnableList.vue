@@ -65,7 +65,7 @@
         ref="dynamicFormEditRef"
        />
        <!-- 工作流 -->
-       <verify ref="verifyRef" @callSubmit="callSubmit" :taskId="taskId" :taskVariables="taskVariables" :sendMessage="sendMessage"/>
+       <verify ref="verifyRef" @submitCallback="submitCallback" :taskId="taskId" :taskVariables="taskVariables" :sendMessage="sendMessage"/>
     </div>
   </div>
 </template>
@@ -211,7 +211,7 @@ export default {
         })
     },
     // 提交成功回调
-    callSubmit(){
+    submitCallback(){
       this.dynamicFormEditVisible = false;
       this.dataViewVisible = true
       this.getList();
