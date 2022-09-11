@@ -188,7 +188,7 @@ export default {
         entity: this.dynamicFormData.variableMap,
       };
       this.sendMessage = {
-        title: this.dynamicFormData.formRemrak,
+        title: this.dynamicFormData.formName,
         messageContent:'单据【'+this.dynamicFormData.applyCode+"】申请"
       }
       this.$refs.verifyRef.visible = true

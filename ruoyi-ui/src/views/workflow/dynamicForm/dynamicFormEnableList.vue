@@ -182,6 +182,10 @@ export default {
         status: 'waiting'
       }
       addBusinessForm(data).then(response => {
+        this.sendMessage = {
+          title: response.data.formName,
+          messageContent:'单据【'+response.data.applyCode+"】申请"
+        }
         this.submitFormApply(response.data)
       })
     },

@@ -119,7 +119,7 @@
               v-model="form.formValue"
               @draftForm="draftProcessForm(arguments)"
               @submitForm="submitProcessForm(arguments)"
-              ref="dynamicFormEditVisible"
+              ref="dynamicFormEditRef"
           />
         </el-tab-pane>
         <el-tab-pane label="审批意见" v-if="processInstanceId">
@@ -338,6 +338,10 @@ export default {
     },
     /** 提交按钮 */
     submitProcessForm(args) {
+      this.sendMessage = {
+        title: this.form.formName,
+        messageContent:'单据【'+this.form.applyCode+"】申请"
+      }
       this.form.formText = args[0]
       this.form.formValue = args[1]
       this.form.status = 'waiting'

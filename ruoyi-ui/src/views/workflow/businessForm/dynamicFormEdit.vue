@@ -169,7 +169,11 @@ export default {
     //提交
     submitForm(){
       this.validate()
-      this.$emit('submitForm',this.buildData,this.formVal);
+      this.$refs[this.formConf.formModel].validate((valid) => {
+        if (valid) {
+          this.$emit('submitForm',this.buildData,this.formVal);
+        }
+      });
     },
     handlerValChange(key,origin){
       this.$set(this.form,key,origin);
