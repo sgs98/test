@@ -5,14 +5,17 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.BeanCopyUtils;
 import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.common.utils.JsonUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.core.domain.PageQuery;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.ruoyi.workflow.common.enums.BusinessStatusEnum;
 import com.ruoyi.workflow.domain.ActProcessDefSetting;
 import com.ruoyi.workflow.service.IActProcessDefSetting;
 import com.ruoyi.workflow.service.IProcessInstanceService;
@@ -52,10 +55,10 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
      * 查询业务表单
      */
     @Override
-    public ActBusinessFormVo queryById(Long id){
+    public ActBusinessFormVo queryById(Long id) {
         ActBusinessFormVo vo = baseMapper.selectVoById(id);
-        WorkFlowUtils.setProcessInstIdFileValue(vo,String.valueOf(vo.getId()));
-        WorkFlowUtils.setStatusFileValue(vo,String.valueOf(vo.getId()));
+        WorkFlowUtils.setProcessInstIdFileValue(vo, String.valueOf(vo.getId()));
+        WorkFlowUtils.setStatusFileValue(vo, String.valueOf(vo.getId()));
         return vo;
     }
 
@@ -67,10 +70,10 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
         LambdaQueryWrapper<ActBusinessForm> lqw = buildQueryWrapper(bo);
         Page<ActBusinessFormVo> result = baseMapper.selectVoPage(pageQuery.build(), lqw);
         List<ActBusinessFormVo> records = result.getRecords();
-        if(CollectionUtil.isNotEmpty(records)){
+        if (CollectionUtil.isNotEmpty(records)) {
             List<String> collectIds = records.stream().map(e -> String.valueOf(e.getId())).collect(Collectors.toList());
-            WorkFlowUtils.setProcessInstIdListFileValue(records,collectIds,"id");
-            WorkFlowUtils.setStatusListFileValue(records,collectIds,"id");
+            WorkFlowUtils.setProcessInstIdListFileValue(records, collectIds, "id");
+            WorkFlowUtils.setStatusListFileValue(records, collectIds, "id");
         }
         return TableDataInfo.build(result);
     }
@@ -98,34 +101,36 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
     @Override
     public ActBusinessFormVo insertByBo(ActBusinessFormBo bo) {
         ActBusinessForm add = BeanUtil.toBean(bo, ActBusinessForm.class);
+        ActProcessDefSetting actProcessDefSetting = iActProcessDefSetting.queryByFormId(add.getFormId());
+        if (BusinessStatusEnum.WAITING.getStatus().equals(bo.getStatus()) && actProcessDefSetting == null) {
+            throw new ServiceException("未绑定流程");
+        }
         String date = DateUtils.dateTime();
         Long count = baseMapper.selectCount(new LambdaQueryWrapper<>());
-        add.setApplyCode("ACT"+date+(count+1));
+        add.setApplyCode("ACT" + date + (count + 1));
         boolean flag = baseMapper.insert(add) > 0;
         if (flag) {
             bo.setId(add.getId());
         }
         ActBusinessFormVo actBusinessFormVo = new ActBusinessFormVo();
-        BeanCopyUtils.copy(add,actBusinessFormVo);
-        ActProcessDefSetting actProcessDefSetting = iActProcessDefSetting.queryByFormId(add.getFormId());
+        BeanCopyUtils.copy(add, actBusinessFormVo);
         actBusinessFormVo.setActProcessDefSetting(actProcessDefSetting);
         Map<String, Object> variableMap = new HashMap<>(16);
-        if(ObjectUtil.isNotEmpty(actProcessDefSetting) && StringUtils.isNotBlank(actProcessDefSetting.getFormVariable())){
+        if (ObjectUtil.isNotEmpty(actProcessDefSetting) && StringUtils.isNotBlank(actProcessDefSetting.getFormVariable())) {
             String formValue = actBusinessFormVo.getFormValue();
             JSONObject jsonObject = JSONUtil.parseObj(formValue);
             String[] split = actProcessDefSetting.getFormVariable().split(",");
             for (String variableKey : split) {
-                if(jsonObject.containsKey(variableKey)){
+                if (jsonObject.containsKey(variableKey)) {
                     Object value = jsonObject.get(variableKey);
-                    variableMap.put(variableKey,value);
+                    variableMap.put(variableKey, value);
                 }
             }
         }
-        variableMap.put("businessKey",actBusinessFormVo.getId());
+        variableMap.put("businessKey", actBusinessFormVo.getId());
         actBusinessFormVo.setVariableMap(variableMap);
         return actBusinessFormVo;
     }
-
 
 
     /**
@@ -134,24 +139,27 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
     @Override
     public ActBusinessFormVo updateByBo(ActBusinessFormBo bo) {
         ActBusinessForm update = BeanUtil.toBean(bo, ActBusinessForm.class);
+        ActProcessDefSetting actProcessDefSetting = iActProcessDefSetting.queryByFormId(update.getFormId());
+        if (BusinessStatusEnum.WAITING.getStatus().equals(bo.getStatus()) && actProcessDefSetting == null) {
+            throw new ServiceException("未绑定流程");
+        }
         baseMapper.updateById(update);
         ActBusinessFormVo actBusinessFormVo = new ActBusinessFormVo();
-        BeanCopyUtils.copy(update,actBusinessFormVo);
-        ActProcessDefSetting actProcessDefSetting = iActProcessDefSetting.queryByFormId(update.getFormId());
+        BeanCopyUtils.copy(update, actBusinessFormVo);
         actBusinessFormVo.setActProcessDefSetting(actProcessDefSetting);
         Map<String, Object> variableMap = new HashMap<>(16);
-        if(ObjectUtil.isNotEmpty(actProcessDefSetting) && StringUtils.isNotBlank(actProcessDefSetting.getFormVariable())){
+        if (ObjectUtil.isNotEmpty(actProcessDefSetting) && StringUtils.isNotBlank(actProcessDefSetting.getFormVariable())) {
             String formValue = actBusinessFormVo.getFormValue();
             JSONObject jsonObject = JSONUtil.parseObj(formValue);
             String[] split = actProcessDefSetting.getFormVariable().split(",");
             for (String variableKey : split) {
-                if(jsonObject.containsKey(variableKey)){
+                if (jsonObject.containsKey(variableKey)) {
                     Object value = jsonObject.get(variableKey);
-                    variableMap.put(variableKey,value);
+                    variableMap.put(variableKey, JsonUtils.toJsonString(value));
                 }
             }
         }
-        variableMap.put("businessKey",actBusinessFormVo.getId());
+        variableMap.put("businessKey", actBusinessFormVo.getId());
         actBusinessFormVo.setVariableMap(variableMap);
         return actBusinessFormVo;
     }
@@ -164,7 +172,7 @@ public class ActBusinessFormServiceImpl implements IActBusinessFormService {
     public Boolean deleteWithValidByIds(Collection<Long> ids) {
         for (Long id : ids) {
             String processInstanceId = iProcessInstanceService.getProcessInstanceId(id.toString());
-            if(StringUtils.isNotBlank(processInstanceId)){
+            if (StringUtils.isNotBlank(processInstanceId)) {
                 iProcessInstanceService.deleteRuntimeProcessAndHisInst(processInstanceId);
             }
         }

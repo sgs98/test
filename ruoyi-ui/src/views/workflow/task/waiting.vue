@@ -102,7 +102,6 @@
           <history :processInstanceId="processInstanceId" :editMessage="true"></history>
         </el-dialog>
 
-        <approvalForm ref="approvalForm" :businessKey = 'businessKey' :processInstanceId = 'processInstanceId'/>
         <!-- 选择人员 -->
         <sys-dept-user ref="userRef" @confirmUser="clickUser" :multiple="false"/>
 
@@ -147,14 +146,12 @@
   import api from '@/api/workflow/task'
   import History from "@/components/Process/History";
   import Back from "@/components/Process/Back";
-  import ApprovalForm from "@/views/components/approvalForm";
   import SysDeptUser from "@/views/components/user/sys-dept-user";
   import MultiUser from "@/views/components/user/multi-user";
   export default {
     components: {
       Back,
       History,
-      ApprovalForm,
       SysDeptUser,
       MultiUser
     },

@@ -35,7 +35,7 @@
 <script>
 import api from '@/api/workflow/processInst'
 import leaveForm from "@/views/components/form/leaveForm";
-import dynamicFormEdit from '@/views/workflow/businessForm/dynamicFormEdit'
+import dynamicFormEdit from '@/views/components/form/dynamicFormEdit'
 export default {
     props: {
       processInstanceId: String, // 流程实例id

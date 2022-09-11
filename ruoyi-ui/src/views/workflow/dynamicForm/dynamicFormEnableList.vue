@@ -162,7 +162,7 @@ export default {
         formKey: this.formData.formKey,
         formName: this.formData.formName,
         formText: args[0],
-        formValue: args[1]
+        status: 'draft'
       }
       addBusinessForm(data).then(response => {
         this.$modal.msgSuccess("保存成功");
@@ -178,7 +178,8 @@ export default {
         formKey: this.formData.formKey,
         formName: this.formData.formName,
         formText: args[0],
-        formValue: args[1]
+        formValue: args[1],
+        status: 'waiting'
       }
       addBusinessForm(data).then(response => {
         this.submitFormApply(response.data)
@@ -186,10 +187,6 @@ export default {
     },
     //提交流程
     submitFormApply(entity){
-        if(!entity.actProcessDefSetting){
-          this.$modal.msgError("未绑定流程");
-          return
-        }
         let variables = {
             entity: entity.variableMap
         }

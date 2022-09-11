@@ -144,6 +144,10 @@ export default {
     dynamicFormData: {
       type:Object,
       default:()=>{}
+    },
+    taskId: {
+      type:String,
+      default:''
     }
   },
   components:{
@@ -160,7 +164,8 @@ export default {
       rules:{},
       currentIndex:-1,
       formVal: undefined,
-      sendMessage: {}
+      sendMessage: {},
+      taskVariables: {}
     }
   },
   mounted() {

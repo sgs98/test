@@ -326,6 +326,7 @@ export default {
     draftProcessForm(args){
       this.form.formText = args[0]
       this.form.formValue = args[1]
+      this.form.status = 'draft'
       if (this.form.id != null) {
         updateBusinessForm(this.form).then(response => {
           this.$modal.msgSuccess("修改成功");
@@ -339,6 +340,7 @@ export default {
     submitProcessForm(args) {
       this.form.formText = args[0]
       this.form.formValue = args[1]
+      this.form.status = 'waiting'
       if (this.form.id != null) {
         updateBusinessForm(this.form).then(response => {
           this.submitFormApply(response.data)
@@ -347,10 +349,6 @@ export default {
     },
      //提交流程
      submitFormApply(entity){
-        if(!entity.actProcessDefSetting){
-          this.$modal.msgError("未绑定流程");
-          return
-        }
         let variables = {
             entity: entity.variableMap
         }

@@ -39,24 +39,20 @@
                 </el-table-column>
                 <el-table-column  align="center" prop="businessKey" :show-overflow-tooltip="true" label="流程关联业务ID" width="160"/>
                 <el-table-column  align="center" prop="createTime" label="创建时间" width="160"/>
-                <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
-                <template slot-scope="scope">
-                    <el-row :gutter="10" class="mb8">
-                        <el-col :span="1.5">
-                        <el-button size="mini" icon="el-icon-sort" v-if="scope.row.isClaim===false" type="text"
-                        @click="clickClaim(scope.row)">签收 &nbsp;</el-button>
-                        <el-button size="mini" icon="el-icon-sort" v-if="scope.row.isClaim===true" type="text"
-                        @click="returnTask(scope.row)">归还 &nbsp;</el-button>
-                        <el-button
-                            v-if="scope.row.isClaim===null||scope.row.isClaim===true"
-                            type="text"
-                            @click="clickTaskPop(scope.row)"
-                            size="mini"
-                            icon="el-icon-s-check"
-                        >办理</el-button>
-                        </el-col>
-                    </el-row>
-                    </template>
+                <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+                  <template slot-scope="scope">
+                    <el-button size="mini" icon="el-icon-sort" v-if="scope.row.isClaim===false" type="text"
+                    @click="clickClaim(scope.row)">签收 &nbsp;</el-button>
+                    <el-button size="mini" icon="el-icon-sort" v-if="scope.row.isClaim===true" type="text"
+                    @click="returnTask(scope.row)">归还 &nbsp;</el-button>
+                    <el-button
+                        v-if="scope.row.isClaim===null||scope.row.isClaim===true"
+                        type="text"
+                        @click="clickTaskPop(scope.row)"
+                        size="mini"
+                        icon="el-icon-s-check"
+                    >办理</el-button>
+                  </template>
                 </el-table-column>
             </el-table>
 

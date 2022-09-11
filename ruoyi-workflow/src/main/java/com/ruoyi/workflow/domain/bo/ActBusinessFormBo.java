@@ -68,5 +68,11 @@ public class ActBusinessFormBo extends BaseEntity {
     @ApiModelProperty(value = "单号", required = true)
     private String applyCode;
 
+    /**
+     *状态
+     */
+    @ApiModelProperty(value = "状态", required = true)
+    private String status;
+
 
 }
