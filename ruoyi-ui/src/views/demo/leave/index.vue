@@ -480,28 +480,24 @@ export default {
     },
     //提交流程
     submitFormApply(entity){
-        let variables = {
-            entity: entity
+        let assigneeList = []
+        assigneeList.push(1)
+        assigneeList.push(2)
+        //流程变量
+        this.taskVariables = {
+            entity: entity,
+            userId: '1',
+            //assigneeList: assigneeList
         }
         const data = {
             processKey: this.processKey, // key
             businessKey: entity.id, // 业务id
-            variables: variables,
+            variables: this.taskVariables,
             classFullName: 'com.ruoyi.demo.domain.BsLeave'
         }
         // 启动流程
-        let assigneeList = []
-        assigneeList.push(1)
-        assigneeList.push(2)
         processApi.startProcessApply(data).then(response => {
             this.taskId = response.data.taskId;
-            // 查询下一节点的变量
-            this.taskVariables = {
-                entity: entity,  // 变量
-                //assignee: '1', // key
-                userId: '1',
-                //assigneeList: assigneeList
-            }
             this.$refs.verifyRef.visible = true
             this.$refs.verifyRef.reset()
         })

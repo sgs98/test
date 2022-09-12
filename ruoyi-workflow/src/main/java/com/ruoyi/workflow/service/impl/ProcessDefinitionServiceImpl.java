@@ -9,11 +9,13 @@ import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.workflow.common.constant.ActConstant;
 import com.ruoyi.workflow.domain.ActNodeAssignee;
 import com.ruoyi.workflow.domain.bo.DefinitionBo;
+import com.ruoyi.workflow.domain.vo.ActProcessDefSettingVo;
 import com.ruoyi.workflow.domain.vo.ActProcessNodeVo;
 import com.ruoyi.workflow.domain.vo.ProcessDefinitionVo;
 import com.ruoyi.workflow.flowable.factory.WorkflowService;
 import com.ruoyi.workflow.mapper.ProcessDefinitionMapper;
 import com.ruoyi.workflow.service.IActNodeAssigneeService;
+import com.ruoyi.workflow.service.IActProcessDefSetting;
 import com.ruoyi.workflow.service.IProcessDefinitionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +60,8 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
 
     private final ProcessDefinitionMapper processDefinitionMapper;
 
+    private final IActProcessDefSetting iActProcessDefSetting;
+
     /**
      * @Description: 查询流程定义列表
      * @param: definitionBo
@@ -80,12 +84,21 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
         List<String> deploymentIds = definitionList.stream().map(ProcessDefinition::getDeploymentId).collect(Collectors.toList());
         List<Deployment> deploymentList = repositoryService.createDeploymentQuery()
             .deploymentIds(deploymentIds).list();
+        List<ActProcessDefSettingVo> processDefSettingList = null;
+        if (CollectionUtil.isNotEmpty(definitionList)) {
+            List<String> defIds = definitionList.stream().map(ProcessDefinition::getId).collect(Collectors.toList());
+            processDefSettingList = iActProcessDefSetting.getProcessDefSettingByDefIds(defIds);
+        }
         for (ProcessDefinition processDefinition : definitionList) {
             // 部署时间
             Deployment deployment = deploymentList.stream().filter(e -> e.getId().equals(processDefinition.getDeploymentId())).findFirst().orElse(null);
             ProcessDefinitionVo processDefinitionVo = BeanUtil.toBean(processDefinition, ProcessDefinitionVo.class);
             if (ObjectUtil.isNotEmpty(deployment) && deployment.getDeploymentTime() != null) {
                 processDefinitionVo.setDeploymentTime(deployment.getDeploymentTime());
+            }
+            // 流程定义设置
+            if(CollectionUtil.isNotEmpty(processDefSettingList)){
+                processDefSettingList.stream().filter(e->processDefinition.getId().equals(e.getProcessDefinitionId())).findFirst().ifPresent(processDefinitionVo::setActProcessDefSettingVo);
             }
             processDefinitionVoList.add(processDefinitionVo);
         }
@@ -344,7 +357,7 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
         actNodeAssignee.setMultiple(false);
         actNodeAssignee.setIndex(0);
         ActNodeAssignee info = iActNodeAssigneeService.getInfo(actProcessNodeVo.getProcessDefinitionId(), actProcessNodeVo.getNodeId());
-        if(ObjectUtil.isEmpty(info)){
+        if (ObjectUtil.isEmpty(info)) {
             iActNodeAssigneeService.delByDefinitionIdAndNodeId(actProcessNodeVo.getProcessDefinitionId(), actProcessNodeVo.getNodeId());
             iActNodeAssigneeService.add(actNodeAssignee);
         }
@@ -376,7 +389,7 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
             processMigrationService.createProcessInstanceMigrationBuilder()
                 .migrateToProcessDefinition(currentProcessDefinitionId)
                 .migrateProcessInstances(fromProcessDefinitionId);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ServiceException(e.getMessage());
         }
         return true;

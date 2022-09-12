@@ -51,6 +51,13 @@ public class ActProcessDefSettingImpl implements IActProcessDefSetting {
     }
 
     @Override
+    public List<ActProcessDefSettingVo> getProcessDefSettingByDefIds(List<String> defIds) {
+        LambdaQueryWrapper<ActProcessDefSetting> lqw = Wrappers.lambdaQuery();
+        lqw.in(ActProcessDefSetting::getProcessDefinitionId, defIds);
+        return baseMapper.selectVoList(lqw);
+    }
+
+    @Override
     public String checkProcessDefSettingByFormId(String defId, String formId) {
         LambdaQueryWrapper<ActProcessDefSetting> lqw = Wrappers.lambdaQuery();
         lqw.eq(ActProcessDefSetting::getFormId, formId);

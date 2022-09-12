@@ -353,22 +353,19 @@ export default {
     },
      //提交流程
      submitFormApply(entity){
-        let variables = {
+        //流程变量
+        this.taskVariables = {
             entity: entity.variableMap
         }
         const data = {
             processKey: entity.actProcessDefSetting.processDefinitionKey, // key
             businessKey: entity.id, // 业务id
-            variables: variables,
+            variables: this.taskVariables,
             classFullName: entity.formKey
         }
         // 启动流程
         processApi.startProcessApply(data).then(response => {
             this.taskId = response.data.taskId;
-            // 查询下一节点的变量
-            this.taskVariables = {
-                entity: entity.variableMap,  // 变量
-            }
             this.$refs.verifyRef.visible = true
             this.$refs.verifyRef.reset()
         })

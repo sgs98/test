@@ -1,36 +1,46 @@
 <template>
   <el-dialog title="表单" :visible.sync="visible" v-if="visible" width="60%" :close-on-click-modal="false" append-to-body>
-    <el-form label-width="100px" :model="fromData" :rules="rulesFrom" ref="fromDataRef">
+    <el-form label-width="110px" :model="formData" :rules="rulesFrom" ref="formDataRef">
       <el-row>
         <el-col class="line" :span="12">
-          <el-form-item label="流程定义Key">
-            <el-input v-model="fromData.processDefinitionKey" disabled></el-input>
+          <el-form-item label="流程定义Key" prop="processDefinitionKey">
+            <el-input v-model="formData.processDefinitionKey" disabled></el-input>
           </el-form-item>
         </el-col>
         <el-col class="line" :span="12">
-          <el-form-item label="流程定义名称">
-            <el-input v-model="fromData.processDefinitionName" disabled></el-input>
+          <el-form-item label="流程定义名称" prop="processDefinitionName">
+            <el-input v-model="formData.processDefinitionName" disabled></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row>
+        <el-col class="line" :span="24">
+          <el-form-item label="表单类型" prop="formType">
+            <el-radio-group v-model="formData.formType">
+              <el-radio label="1" border>动态表单</el-radio>
+              <el-radio label="2" border>业务表单</el-radio>
+            </el-radio-group>
           </el-form-item>
         </el-col>
       </el-row>
       <el-row>
         <el-col class="line" :span="12">
           <el-form-item label="表单Key" prop="formKey">
-            <el-input v-model="fromData.formKey" placeholder="请选择表单" disabled>
+            <el-input v-model="formData.formKey" placeholder="请选择表单" disabled>
              <el-button slot="append" @click="handerOpenForm" icon="el-icon-search"></el-button>
             </el-input>
           </el-form-item>
         </el-col>
         <el-col class="line" :span="12">
           <el-form-item label="表单名称" prop="formName">
-            <el-input v-model="fromData.formName" disabled></el-input>
+            <el-input v-model="formData.formName" disabled></el-input>
           </el-form-item>
         </el-col>
       </el-row>
       <el-row>
         <el-col class="line" :span="24">
           <el-form-item label="表单参数">
-            <el-input type="textarea" placeholder="请输入表单参数,动态表单中参数id,多个用英文逗号隔开" v-model="fromData.formVariable" @input="change($event)"/>
+            <el-input type="textarea" placeholder="请输入表单参数,动态表单中参数id,多个用英文逗号隔开" v-model="formData.formVariable" @input="change($event)"/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -83,7 +93,7 @@
     </el-dialog>
      <span slot="footer" class="dialog-footer">
       <el-button @click="visible = false">取 消</el-button>
-      <el-button type="primary" @click="submitForm()">确 定</el-button>
+      <el-button type="primary" @click="submitForm('formDataRef')">确 定</el-button>
     </span>
   </el-dialog>
 </template>
@@ -93,7 +103,7 @@ import { listDynamicFormEnable } from "@/api/workflow/dynamicForm";
 import { addProcessDefSetting,checkProcessDefSettingByDefId } from "@/api/workflow/processDefSetting";
 export default {
   props:{
-    fromData: {
+    formData: {
       type: Object,
       default:()=>{}
     }
@@ -125,11 +135,20 @@ export default {
       },
       // 表单校验
       rulesFrom: {
+        processDefinitionKey: [
+          { required: true, message: '流程定义Key不能为空', trigger: 'blur' }
+        ],
+        processDefinitionName: [
+          { required: true, message: '流程定义名称不能为空', trigger: 'blur' }
+        ],
         formKey: [
           { required: true, message: '表单Key不能为空', trigger: 'blur' }
         ],
         formName: [
           { required: true, message: '表单名称不能为空', trigger: 'blur' }
+        ],
+        formType: [
+          { required: true, message: '表单类型不能为空', trigger: 'blur' }
         ]
       }
     };
@@ -139,10 +158,6 @@ export default {
   methods: {
     change(e){
         this.$forceUpdate(e)
-    },
-    //设计表单
-    handleFormDesigner(row){
-        this.$router.push('/workflow/dynamicFormDesigne/'+row.id)
     },
     /** 查询流程单列表 */
     getList() {
@@ -166,9 +181,9 @@ export default {
     },
     // 选中数据
     handleChange(row) {
-      this.fromData.formId = row.id
-      this.fromData.formKey = row.formKey
-      this.fromData.formName = row.formName
+      this.$set(this.formData,'formId',row.id)
+      this.$set(this.formData,'formKey',row.formKey)
+      this.$set(this.formData,'formName',row.formName)
       this.formVisible = false;
     },
     // 打开表单
@@ -177,27 +192,31 @@ export default {
       this.formVisible = true
     },
     // 确认
-    submitForm(){
+    submitForm(formName){
       this.loading = true;
-      checkProcessDefSettingByDefId(this.fromData.processDefinitionId,this.fromData.formId).then(response => {
-        if(response.msg){
-          this.$modal.confirm(response.msg).then(() => {
-            addProcessDefSetting(this.fromData).then(response => {
-              this.$modal.msgSuccess("保存成功");
-              this.loading = false;
-              this.visible = false;
-            });
-          }).finally(() => {
-            this.loading = false;
-          });
-        }else{
-          addProcessDefSetting(this.fromData).then(response => {
-            this.$modal.msgSuccess("保存成功");
-            this.loading = false;
-            this.visible = false;
-          });
-        }
-      })
+      this.$refs[formName].validate((valid) => {
+      if (valid) {
+        checkProcessDefSettingByDefId(this.formData.processDefinitionId,this.formData.formId).then(response => {
+          if(response.msg){
+            this.$modal.confirm(response.msg).then(() => {
+              addProcessDefSetting(this.formData).then(response => {
+                this.$modal.msgSuccess("保存成功");
+                this.loading = false;
+                this.visible = false;
+                this.$emit("callbackFn")
+              });
+            })
+          }else{
+              addProcessDefSetting(this.formData).then(response => {
+                this.$modal.msgSuccess("保存成功");
+                this.loading = false;
+                this.visible = false;
+                this.$emit("callbackFn")
+              });
+          }
+        })
+      }
+    })
     }
   }
 };

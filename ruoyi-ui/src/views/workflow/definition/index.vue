@@ -57,6 +57,8 @@
           </template>
         </el-table-column>
         <el-table-column  align="center" prop="deploymentTime" label="部署时间" width="150"></el-table-column>
+        <el-table-column  align="center" prop="actProcessDefSettingVo.formKey" label="表单Key" width="150"></el-table-column>
+        
         <el-table-column  align="center" prop="description" :show-overflow-tooltip="true" label="挂起或激活原因" width="150"></el-table-column>
         <el-table-column label="操作" align="center" width="210" class-name="small-padding fixed-width">
         <template slot-scope="scope">
@@ -155,7 +157,7 @@
     <process-setting ref="settingRef"/>
 
     <!-- 表单设置 -->
-    <process-form-list ref="formRef" :fromData="fromData"/>
+    <process-form-list ref="formRef" @callbackFn="getList" :formData="formData"/>
 
 
   </div>
@@ -216,7 +218,7 @@ export default {
             procedefData: {},
             type: '',//png,xml
             // 表单数据
-            fromData: {}
+            formData: {}
         }
     },
     created() {
@@ -350,16 +352,16 @@ export default {
       handleForm(row){
         this.loading = true
         getProcessDefSettingByDefId(row.id).then(response => {
-          this.fromData = {
+          this.formData = {
             processDefinitionId: row.id,
             processDefinitionKey: row.key,
             processDefinitionName: row.name
           }
           if(response.data){
-            this.fromData.formId = response.data.formId
-            this.fromData.formKey = response.data.formKey
-            this.fromData.formName = response.data.formName
-            this.fromData.formVariable = response.data.formVariable
+            this.formData.formId = response.data.formId
+            this.formData.formKey = response.data.formKey
+            this.formData.formName = response.data.formName
+            this.formData.formVariable = response.data.formVariable
           }
           this.loading = false
           this.$refs.formRef.visible = true

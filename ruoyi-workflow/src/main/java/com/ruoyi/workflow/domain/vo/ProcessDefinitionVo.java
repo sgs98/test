@@ -83,4 +83,10 @@ public class ProcessDefinitionVo implements Serializable {
     @ApiModelProperty("挂起或激活原因")
     private String description;
 
+    /**
+     * 流程定义设置
+     */
+    @ApiModelProperty("流程定义设置")
+    private ActProcessDefSettingVo actProcessDefSettingVo;
+
 }

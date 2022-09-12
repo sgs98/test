@@ -35,7 +35,7 @@ import io.swagger.annotations.ApiOperation;
 @Api(value = "流程定义设置控制器", tags = {"流程定义设置管理"})
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/workflow/ProcessDefSetting")
+@RequestMapping("/workflow/processDefSetting")
 public class ActProcessDefSettingController extends BaseController {
 
     private final IActProcessDefSetting iActProcessDefSetting;

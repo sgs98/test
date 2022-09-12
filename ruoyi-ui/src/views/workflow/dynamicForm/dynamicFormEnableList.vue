@@ -58,12 +58,16 @@
     <!-- 动态表单编辑 -->
     <div v-if="dynamicFormEditVisible">
        <div class="container-header"><i class="el-dialog__close el-icon el-icon-close" @click="closeDynamicEdit"></i></div>
-       <dynamicFormEdit
-        :buildData="formData.formDesignerText"
-        @draftForm="draftProcessForm(arguments)"
-        @submitForm="submitProcessForm(arguments)"
-        ref="dynamicFormEditRef"
-       />
+       <el-tabs type="border-card" class="container-tab">
+        <el-tab-pane label="业务单据">
+          <dynamicFormEdit
+            :buildData="formData.formDesignerText"
+            @draftForm="draftProcessForm(arguments)"
+            @submitForm="submitProcessForm(arguments)"
+            ref="dynamicFormEditRef"
+          />
+        </el-tab-pane>
+      </el-tabs>
        <!-- 工作流 -->
        <verify ref="verifyRef" @submitCallback="submitCallback" :taskId="taskId" :taskVariables="taskVariables" :sendMessage="sendMessage"/>
     </div>
@@ -191,22 +195,19 @@ export default {
     },
     //提交流程
     submitFormApply(entity){
-        let variables = {
+        //流程变量
+        this.taskVariables = {
             entity: entity.variableMap
         }
         const data = {
             processKey: entity.actProcessDefSetting.processDefinitionKey, // key
             businessKey: entity.id, // 业务id
-            variables: variables,
+            variables: this.taskVariables,
             classFullName: entity.formKey
         }
         // 启动流程
         processApi.startProcessApply(data).then(response => {
             this.taskId = response.data.taskId;
-            // 查询下一节点的变量
-            this.taskVariables = {
-                entity: entity,  // 变量
-            }
             this.$refs.verifyRef.visible = true
             this.$refs.verifyRef.reset()
         })
@@ -248,5 +249,16 @@ export default {
   .el-icon-close{
     float: right;
     cursor: pointer;
+  }
+  .container-tab{
+    height: calc(100vh - 155px);
+    overflow-y: auto;
+  }
+  /* 修改滚动条样式 */
+  .container-tab::-webkit-scrollbar {
+    width: 4px;
+  }
+  .container-tab::-webkit-scrollbar-thumb {
+    border-radius: 10px;
   }
 </style>

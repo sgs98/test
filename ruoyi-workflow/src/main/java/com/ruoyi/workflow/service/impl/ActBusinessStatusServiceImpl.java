@@ -110,14 +110,22 @@ public class ActBusinessStatusServiceImpl extends ServiceImpl<ActBusinessStatusM
     @Override
     public boolean deleteStateByBusinessKey(String businessKey) {
         int delete = baseMapper.delete(new LambdaQueryWrapper<ActBusinessStatus>().eq(ActBusinessStatus::getBusinessKey, businessKey));
-        RedisUtils.deleteObject(ActConstant.CACHE_ACT_BUSINESS_STATUS_KEY + businessKey);
+        ActBusinessStatus actBusinessStatus = getInfoByBusinessKey(businessKey);
+        if (actBusinessStatus != null) {
+            RedisUtils.deleteObject(ActConstant.CACHE_ACT_BUSINESS_STATUS_KEY + businessKey);
+            RedisUtils.deleteObject(ActConstant.CACHE_ACT_BUSINESS_STATUS_KEY + actBusinessStatus.getProcessInstanceId());
+        }
         return delete == 1;
     }
 
     @Override
     public boolean deleteStateByProcessInstId(String processInstanceId) {
         int delete = baseMapper.delete(new LambdaQueryWrapper<ActBusinessStatus>().eq(ActBusinessStatus::getProcessInstanceId, processInstanceId));
-        RedisUtils.deleteObject(ActConstant.CACHE_ACT_BUSINESS_STATUS_KEY + processInstanceId);
+        ActBusinessStatus actBusinessStatus = getInfoByProcessInstId(processInstanceId);
+        if (actBusinessStatus != null) {
+            RedisUtils.deleteObject(ActConstant.CACHE_ACT_BUSINESS_STATUS_KEY + processInstanceId);
+            RedisUtils.deleteObject(ActConstant.CACHE_ACT_BUSINESS_STATUS_KEY + actBusinessStatus.getBusinessKey());
+        }
         return delete == 1;
     }
 

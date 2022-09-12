@@ -142,14 +142,14 @@ export default {
     /** 提交按钮 */
     submitForm() {
       getLeave(this.businessKey).then(response => {
-            this.taskVariables = {
-                 entity: response.data,
-                 userId :1
-            };
-            this.sendMessage = {
-              title:'请假申请',
-              messageContent:'单据【'+this.form.id+"】申请"
-            }
+          this.taskVariables = {
+                entity: response.data,
+                userId :1
+          };
+          this.sendMessage = {
+            title:'请假申请',
+            messageContent:'单据【'+this.form.id+"】申请"
+          }
       });
       this.$refs.verifyRef.visible = true
       this.$refs.verifyRef.reset()

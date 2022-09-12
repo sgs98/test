@@ -28,6 +28,11 @@ public interface IActProcessDefSetting {
     ActProcessDefSettingVo getProcessDefSettingByDefId(String defId);
 
     /**
+     * 按流程定义id集合查询流程定义设置详细集合
+     */
+    List<ActProcessDefSettingVo> getProcessDefSettingByDefIds(List<String> defIds);
+
+    /**
      * 校验表单是否关联
      */
     String checkProcessDefSettingByFormId(String defId,String formId);

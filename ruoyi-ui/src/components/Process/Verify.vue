@@ -227,7 +227,7 @@ export default {
   },
 
   watch: {
-    async taskVariables(newVal) {
+    async visible(newVal) {
       if (newVal) {
         try {
           this.loading = true;
