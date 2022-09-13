@@ -51,7 +51,6 @@ spring:
           url: jdbc:mysql://127.0.0.1:3306/ruoyi-flowable6?useUnicode=true&characterEncoding=utf8&nullCatalogMeansCurrent=true&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true
           username: root
           password: root
-
         # 从库数据源
         slave:
           lazy: true
