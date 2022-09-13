@@ -86,17 +86,11 @@ public class ActProcessDefSettingController extends BaseController {
      * 校验表单是否关联
      */
     @ApiOperation("校验表单是否关联")
-    @GetMapping("/checkProcessDefSettingByDefId/{defId}/{formId}")
-    public R<Void> checkProcessDefSettingByDefId(@ApiParam("流程定义id")
-                                                           @NotNull(message = "流程定义id不能为空")
-                                                           @PathVariable("defId") String defId,
-                                              @NotNull(message = "表单id不能为空")
-                                              @PathVariable("formId") String formId) {
-        if(formId == null){
-            return R.fail("请选择表单");
-        }
-        String msg = iActProcessDefSetting.checkProcessDefSettingByFormId(defId,formId);
-        return R.ok(msg);
+    @GetMapping("/checkProcessDefSetting/{defId}/{param}/{businessType}")
+    public R<Void> checkProcessDefSetting(@NotNull(message = "流程定义id不能为空")  @PathVariable("defId") String defId,
+                                              @NotNull(message = "参数不能为空") @PathVariable("param") String param,
+                                              @NotNull(message = "业务类型") @PathVariable("businessType") Integer businessType) {
+        return iActProcessDefSetting.checkProcessDefSetting(defId,param,businessType);
     }
 
     /**

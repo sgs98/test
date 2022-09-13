@@ -2,14 +2,14 @@ package com.ruoyi.workflow.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import com.ruoyi.common.core.validate.AddGroup;
+import cn.hutool.core.util.ObjectUtil;
+import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.core.domain.PageQuery;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.ruoyi.common.utils.ValidatorUtils;
 import com.ruoyi.workflow.domain.ActProcessDefSetting;
 import com.ruoyi.workflow.mapper.ActProcessDefSettingMapper;
 import lombok.RequiredArgsConstructor;
@@ -58,16 +58,25 @@ public class ActProcessDefSettingImpl implements IActProcessDefSetting {
     }
 
     @Override
-    public String checkProcessDefSettingByFormId(String defId, String formId) {
+    public R<Void> checkProcessDefSetting(String defId, String param, Integer businessType) {
         LambdaQueryWrapper<ActProcessDefSetting> lqw = Wrappers.lambdaQuery();
-        lqw.eq(ActProcessDefSetting::getFormId, formId);
         lqw.ne(ActProcessDefSetting::getProcessDefinitionId, defId);
-        List<ActProcessDefSetting> processDefSettings = baseMapper.selectList(lqw);
-        if (CollectionUtil.isNotEmpty(processDefSettings)) {
-            String collect = processDefSettings.stream().map(ActProcessDefSetting::getProcessDefinitionKey).collect(Collectors.joining(","));
-            return "表单已被流程【" + collect + "】绑定，是否确认删除绑定，绑定当前表单？";
+        if (0 == businessType) {
+            lqw.eq(ActProcessDefSetting::getFormId, param);
+            List<ActProcessDefSetting> processDefSettings = baseMapper.selectList(lqw);
+            if (CollectionUtil.isNotEmpty(processDefSettings)) {
+                String collect = processDefSettings.stream().map(ActProcessDefSetting::getProcessDefinitionKey).collect(Collectors.joining(","));
+                return R.ok("表单已被流程【" + collect + "】绑定，是否确认删除绑定，绑定当前选项？");
+            }
+        } else {
+            lqw.eq(ActProcessDefSetting::getComponentName, param);
+            List<ActProcessDefSetting> processDefSettings = baseMapper.selectList(lqw);
+            if (CollectionUtil.isNotEmpty(processDefSettings)) {
+                String collect = processDefSettings.stream().map(ActProcessDefSetting::getComponentName).collect(Collectors.joining(","));
+                return R.ok( "组件已被流程【" + collect + "】绑定，是否确认删除绑定，绑定当前选项？");
+            }
         }
-        return null;
+        return R.ok();
     }
 
     /**
@@ -107,9 +116,14 @@ public class ActProcessDefSettingImpl implements IActProcessDefSetting {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean insertByBo(ActProcessDefSettingBo bo) {
-        ValidatorUtils.validate(bo, AddGroup.class);
         ActProcessDefSetting add = BeanUtil.toBean(bo, ActProcessDefSetting.class);
-        validEntityBeforeSave(add);
+        LambdaQueryWrapper<ActProcessDefSetting> lqw = Wrappers.lambdaQuery();
+        if(0 == bo.getBusinessType()){
+            lqw.eq(ActProcessDefSetting::getFormId, bo.getFormId());
+        }else{
+            lqw.eq(ActProcessDefSetting::getComponentName, bo.getComponentName());
+        }
+        baseMapper.delete(lqw);
         boolean flag = baseMapper.insert(add) > 0;
         if (flag) {
             bo.setId(add.getId());
@@ -124,17 +138,7 @@ public class ActProcessDefSettingImpl implements IActProcessDefSetting {
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateByBo(ActProcessDefSettingBo bo) {
         ActProcessDefSetting update = BeanUtil.toBean(bo, ActProcessDefSetting.class);
-        validEntityBeforeSave(update);
         return baseMapper.updateById(update) > 0;
-    }
-
-    /**
-     * 保存前的数据校验
-     */
-    private void validEntityBeforeSave(ActProcessDefSetting entity) {
-        LambdaQueryWrapper<ActProcessDefSetting> lqw = Wrappers.lambdaQuery();
-        lqw.eq(ActProcessDefSetting::getFormId, entity.getFormId());
-        baseMapper.delete(lqw);
     }
 
     /**

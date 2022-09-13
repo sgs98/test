@@ -57,7 +57,18 @@
           </template>
         </el-table-column>
         <el-table-column  align="center" prop="deploymentTime" label="部署时间" width="150"></el-table-column>
-        <el-table-column  align="center" prop="actProcessDefSettingVo.formKey" label="表单Key" width="150"></el-table-column>
+        <el-table-column  align="center" prop="actProcessDefSettingVo.businessType" label="表单Key" width="150">
+          <template slot-scope="scope">
+            <el-tag type="success" v-if="scope.row.actProcessDefSettingVo && scope.row.actProcessDefSettingVo.businessType===0">动态表单</el-tag>
+            <el-tag type="primary" v-else-if="scope.row.actProcessDefSettingVo && scope.row.actProcessDefSettingVo.businessType===1">业务表单</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column  align="center" label="表单Key/组件名称" width="150">
+          <template slot-scope="scope">
+            <span v-if="scope.row.actProcessDefSettingVo && scope.row.actProcessDefSettingVo.businessType===0">{{scope.row.actProcessDefSettingVo.formKey}}</span>
+            <span v-if="scope.row.actProcessDefSettingVo && scope.row.actProcessDefSettingVo.businessType===1">{{scope.row.actProcessDefSettingVo.componentName}}</span>
+          </template>
+        </el-table-column>
         
         <el-table-column  align="center" prop="description" :show-overflow-tooltip="true" label="挂起或激活原因" width="150"></el-table-column>
         <el-table-column label="操作" align="center" width="210" class-name="small-padding fixed-width">
@@ -352,17 +363,15 @@ export default {
       handleForm(row){
         this.loading = true
         getProcessDefSettingByDefId(row.id).then(response => {
-          this.formData = {
-            processDefinitionId: row.id,
-            processDefinitionKey: row.key,
-            processDefinitionName: row.name
-          }
+          this.formData = {}
           if(response.data){
-            this.formData.formId = response.data.formId
-            this.formData.formKey = response.data.formKey
-            this.formData.formName = response.data.formName
-            this.formData.formVariable = response.data.formVariable
+            this.formData = response.data
+          }else{
+            this.formData.businessType = 0
           }
+          this.formData.processDefinitionId = row.id
+          this.formData.processDefinitionKey = row.key
+          this.formData.processDefinitionName = row.name         
           this.loading = false
           this.$refs.formRef.visible = true
         })

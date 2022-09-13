@@ -1,5 +1,6 @@
 package com.ruoyi.workflow.service;
 
+import com.ruoyi.common.core.domain.R;
 import com.ruoyi.workflow.domain.ActProcessDefSetting;
 import com.ruoyi.workflow.domain.vo.ActProcessDefSettingVo;
 import com.ruoyi.workflow.domain.bo.ActProcessDefSettingBo;
@@ -35,7 +36,7 @@ public interface IActProcessDefSetting {
     /**
      * 校验表单是否关联
      */
-    String checkProcessDefSettingByFormId(String defId,String formId);
+    R<Void> checkProcessDefSetting(String defId, String param, Integer businessType);
 
     /**
      * 查询流程定义设置列表

@@ -15,15 +15,15 @@
       </el-row>
       <el-row>
         <el-col class="line" :span="24">
-          <el-form-item label="表单类型" prop="formType">
-            <el-radio-group v-model="formData.formType">
-              <el-radio label="1" border>动态表单</el-radio>
-              <el-radio label="2" border>业务表单</el-radio>
+          <el-form-item label="表单类型" prop="businessType">
+            <el-radio-group @change="change($event)" v-model="formData.businessType">
+              <el-radio :label="0" border>动态表单</el-radio>
+              <el-radio :label="1" border>业务表单</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-col>
       </el-row>
-      <el-row>
+      <el-row v-if="formData.businessType === 0">
         <el-col class="line" :span="12">
           <el-form-item label="表单Key" prop="formKey">
             <el-input v-model="formData.formKey" placeholder="请选择表单" disabled>
@@ -37,14 +37,20 @@
           </el-form-item>
         </el-col>
       </el-row>
-      <el-row>
+      <el-row v-if="formData.businessType === 0">
         <el-col class="line" :span="24">
-          <el-form-item label="表单参数">
+          <el-form-item label="表单参数" :key="formData.formVariable">
             <el-input type="textarea" placeholder="请输入表单参数,动态表单中参数id,多个用英文逗号隔开" v-model="formData.formVariable" @input="change($event)"/>
           </el-form-item>
         </el-col>
       </el-row>
-
+      <el-row v-if="formData.businessType === 1">
+        <el-col class="line" :span="12">
+          <el-form-item label="组件名称" prop="componentName" :key="formData.componentName">
+            <el-input placeholder="请输入组件名称" v-model="formData.componentName"/>
+          </el-form-item>
+        </el-col>
+      </el-row>
     </el-form>
     <el-dialog title="表单" :visible.sync="formVisible" v-if="visible" width="70%" :close-on-click-modal="false" append-to-body>
       <div class="app-container">
@@ -100,7 +106,7 @@
 
 <script>
 import { listDynamicFormEnable } from "@/api/workflow/dynamicForm";
-import { addProcessDefSetting,checkProcessDefSettingByDefId } from "@/api/workflow/processDefSetting";
+import { addProcessDefSetting,checkProcessDefSetting } from "@/api/workflow/processDefSetting";
 export default {
   props:{
     formData: {
@@ -147,8 +153,11 @@ export default {
         formName: [
           { required: true, message: '表单名称不能为空', trigger: 'blur' }
         ],
-        formType: [
-          { required: true, message: '表单类型不能为空', trigger: 'blur' }
+        businessType: [
+          { required: true, message: '业务类型不能为空', trigger: 'blur' }
+        ],
+        componentName: [
+          { required: true, message: '组件名称不能为空', trigger: 'blur' }
         ]
       }
     };
@@ -158,6 +167,7 @@ export default {
   methods: {
     change(e){
         this.$forceUpdate(e)
+        this.$refs["formDataRef"].clearValidate()
     },
     /** 查询流程单列表 */
     getList() {
@@ -196,9 +206,27 @@ export default {
       this.loading = true;
       this.$refs[formName].validate((valid) => {
       if (valid) {
-        checkProcessDefSettingByDefId(this.formData.processDefinitionId,this.formData.formId).then(response => {
-          if(response.msg){
-            this.$modal.confirm(response.msg).then(() => {
+        let param = ''
+        if(this.formData.businessType === '0'){
+          param = this.formData.formId
+        }else{
+          param = this.formData.componentName
+        }
+        checkProcessDefSetting(this.formData.processDefinitionId,param,this.formData.businessType).then(response => {
+          if(this.formData.businessType === '0'){
+            this.formData.componentName = ''
+          }else{
+            this.formData.formId = ''
+            this.formData.formKey = ''
+            this.formData.formName = ''
+            this.formData.formVisible = ''
+          }
+          if(response.msg.indexOf("绑定")!=-1){
+            this.$confirm(response.msg, '提示', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(() => {
               addProcessDefSetting(this.formData).then(response => {
                 this.$modal.msgSuccess("保存成功");
                 this.loading = false;

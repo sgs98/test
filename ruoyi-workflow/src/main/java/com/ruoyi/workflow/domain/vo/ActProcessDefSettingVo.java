@@ -9,7 +9,7 @@ import lombok.Data;
 
 
 /**
- *流程定义设置视图对象 act_process_def_form
+ *流程定义设置视图对象 act_process_def_Setting
  *
  * @author gssong
  * @date 2022-08-28
@@ -50,6 +50,20 @@ public class ActProcessDefSettingVo {
     private String processDefinitionName;
 
     /**
+     * 业务类型，0动态表单，1业务单据
+     */
+    @ExcelProperty(value = "业务类型，0动态表单，1业务单据")
+    @ApiModelProperty("业务类型，0动态表单，1业务单据")
+    private Integer businessType;
+
+    /**
+     * 组件名称
+     */
+    @ExcelProperty(value = "组件名称")
+    @ApiModelProperty("组件名称")
+    private String componentName;
+
+    /**
      * 表单id
      */
     @ExcelProperty(value = "表单id")
@@ -76,6 +90,13 @@ public class ActProcessDefSettingVo {
     @ExcelProperty(value = "动态表单中参数id,多个用英文逗号隔开")
     @ApiModelProperty("动态表单中参数id,多个用英文逗号隔开")
     private String formVariable;
+
+    /**
+     * 备注
+     */
+    @ExcelProperty(value = "备注")
+    @ApiModelProperty("备注")
+    private String remark;
 
 
 }

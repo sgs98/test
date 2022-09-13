@@ -37,6 +37,14 @@ public class ActProcessDefSetting extends BaseEntity {
      */
     private String processDefinitionName;
     /**
+     * 业务类型，0动态表单，1业务单据
+     */
+    private Integer businessType;
+    /**
+     * 组件名称
+     */
+    private String componentName;
+    /**
      * 表单id
      */
     private Long formId;
@@ -52,5 +60,9 @@ public class ActProcessDefSetting extends BaseEntity {
      * 动态表单中参数id,多个用英文逗号隔开
      */
     private String formVariable;
+    /**
+     * 备注
+     */
+    private String remark;
 
 }

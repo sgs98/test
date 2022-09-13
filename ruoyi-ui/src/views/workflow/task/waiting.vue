@@ -249,7 +249,7 @@
       },
       //修改办理人
       openAssignee(){
-        this.$refs.userRef.visible = true
+         this.$refs.userRef.visible = true
       },
       //选择人员
       clickUser(userList){
