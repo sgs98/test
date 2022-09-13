@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "关于我们",
+  "usingComponents": {
+    "uni-title": "/uni_modules/uni-title/components/uni-title/uni-title"
+  }
+}

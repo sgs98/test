@@ -47,6 +47,34 @@ public class SysLoginService {
     private final SysPermissionService permissionService;
 
     /**
+     *  app登录验证
+     *
+     * @param username 用户名
+     * @param password 密码
+     * @param code     验证码
+     * @param uuid     唯一标识
+     * @return 结果
+     */
+    public String mobileLogin(String username, String password, String code, String uuid) {
+        HttpServletRequest request = ServletUtils.getRequest();
+        boolean captchaOnOff = configService.selectCaptchaOnOff();
+        // 验证码开关
+        if (captchaOnOff) {
+            validateCaptcha(username, code, uuid, request);
+        }
+        SysUser user = loadUserByUsername(username);
+        checkLogin(LoginType.PASSWORD, username, () -> !BCrypt.checkpw(password, user.getPassword()));
+        // 此处可根据登录用户的数据不同 自行创建 loginUser
+        LoginUser loginUser = buildLoginUser(user);
+        // 生成token
+        LoginHelper.loginByDevice(loginUser, DeviceType.APP);
+
+        asyncService.recordLogininfor(username, Constants.LOGIN_SUCCESS, MessageUtils.message("user.login.success"), request);
+        recordLoginInfo(user.getUserId(), username);
+        return StpUtil.getTokenValue();
+    }
+
+    /**
      * 登录验证
      *
      * @param username 用户名

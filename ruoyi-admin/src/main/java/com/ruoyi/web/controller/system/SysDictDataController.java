@@ -21,7 +21,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 数据字典信息
@@ -62,6 +64,27 @@ public class SysDictDataController extends BaseController {
     @GetMapping(value = "/{dictCode}")
     public R<SysDictData> getInfo(@ApiParam("字典code") @PathVariable Long dictCode) {
         return R.ok(dictDataService.selectDictDataById(dictCode));
+    }
+
+    /**
+     * 根据字典类型查询字典数据信息
+     */
+    @ApiOperation("根据字典类型查询字典数据信息-手机端uniapp")
+    @GetMapping(value = "/typeForM/{dictType}")
+    public R<List> dictTypeForM(@ApiParam("字典类型") @PathVariable String dictType) {
+        List dicDataList = new ArrayList<>();
+        List<SysDictData> data = dictTypeService.selectDictDataByType(dictType);
+        if (ObjectUtil.isNull(data)) {
+            data = new ArrayList<>();
+        }
+        Map<String,String> dicData;
+        for (SysDictData sd:data) {
+            dicData=new HashMap<>();
+            dicData.put("value",sd.getDictValue());
+            dicData.put("text",sd.getDictLabel());
+            dicDataList.add(dicData);
+        }
+        return R.ok(dicDataList);
     }
 
     /**

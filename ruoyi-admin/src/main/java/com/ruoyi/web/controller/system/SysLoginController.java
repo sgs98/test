@@ -47,6 +47,24 @@ public class SysLoginController {
     private final SysPermissionService permissionService;
 
     /**
+     *  手机登录登录方法
+     *
+     * @param loginBody 登录信息
+     * @return 结果
+     */
+    @Anonymous
+    @ApiOperation("登录方法")
+    @PostMapping("/mobileLogin")
+    public R<Map<String, Object>> mobileLogin(@Validated @RequestBody LoginBody loginBody) {
+        Map<String, Object> ajax = new HashMap<>();
+        // 生成令牌
+        String token = loginService.mobileLogin(loginBody.getUsername(), loginBody.getPassword(), loginBody.getCode(),
+            loginBody.getUuid());
+        ajax.put(Constants.TOKEN, token);
+        return R.ok(ajax);
+    }
+
+    /**
      * 登录方法
      *
      * @param loginBody 登录信息

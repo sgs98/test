@@ -1,0 +1,78 @@
+@charset "UTF-8";
+/**
+ * uni-app内置的常用样式变量
+ */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.uni-table-th {
+  padding: 12px 10px;
+  display: table-cell;
+  box-sizing: border-box;
+  font-size: 14px;
+  font-weight: bold;
+  color: #909399;
+  border-bottom: 1px #ebeef5 solid;
+}
+.uni-table-th-row {
+  display: flex;
+  flex-direction: row;
+}
+.table--border {
+  border-right: 1px #ebeef5 solid;
+}
+.uni-table-th-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+.arrow {
+  display: block;
+  position: relative;
+  width: 10px;
+  height: 8px;
+  left: 5px;
+  overflow: hidden;
+  cursor: pointer;
+}
+.down {
+  top: 3px;
+}
+.down ::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  position: absolute;
+  left: 2px;
+  top: -5px;
+  -webkit-transform: rotate(45deg);
+          transform: rotate(45deg);
+  background-color: #ccc;
+}
+.down.active ::after {
+  background-color: #007aff;
+}
+.up ::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  position: absolute;
+  left: 2px;
+  top: 5px;
+  -webkit-transform: rotate(45deg);
+          transform: rotate(45deg);
+  background-color: #ccc;
+}
+.up.active ::after {
+  background-color: #007aff;
+}
+

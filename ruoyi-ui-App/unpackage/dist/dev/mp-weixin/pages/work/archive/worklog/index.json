@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "工作量列表",
+  "usingComponents": {
+    "uni-search-bar": "/uni_modules/uni-search-bar/components/uni-search-bar/uni-search-bar",
+    "uni-segmented-control": "/uni_modules/uni-segmented-control/components/uni-segmented-control/uni-segmented-control",
+    "uni-pagination": "/uni_modules/uni-pagination/components/uni-pagination/uni-pagination",
+    "uni-fab": "/uni_modules/uni-fab/components/uni-fab/uni-fab",
+    "record": "/pages/work/archive/worklog/record"
+  }
+}

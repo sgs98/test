@@ -1,0 +1,82 @@
+@charset "UTF-8";
+/**
+ * uni-app内置的常用样式变量
+ */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.uni-swiper__warp.data-v-77b53eff {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+.uni-swiper__dots-box.data-v-77b53eff {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.uni-swiper__dots-item.data-v-77b53eff {
+  width: 8px;
+  border-radius: 100px;
+  margin-left: 6px;
+  background-color: rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+}
+.uni-swiper__dots-item.data-v-77b53eff:first-child {
+  margin: 0;
+}
+.uni-swiper__dots-default.data-v-77b53eff {
+  border-radius: 100px;
+}
+.uni-swiper__dots-long.data-v-77b53eff {
+  border-radius: 50px;
+}
+.uni-swiper__dots-bar.data-v-77b53eff {
+  border-radius: 50px;
+}
+.uni-swiper__dots-nav.data-v-77b53eff {
+  bottom: 0px;
+  padding: 8px 0;
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+.uni-swiper__dots-nav-item.data-v-77b53eff {
+  /* overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap; */
+  font-size: 14px;
+  color: #fff;
+  margin: 0 15px;
+}
+.uni-swiper__dots-indexes.data-v-77b53eff {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.uni-swiper__dots-indexes-text.data-v-77b53eff {
+  color: #fff;
+  font-size: 12px;
+  line-height: 14px;
+}
+
