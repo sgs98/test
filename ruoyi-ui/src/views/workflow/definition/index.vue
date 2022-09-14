@@ -39,13 +39,13 @@
         <el-table-column align="center" prop="version" label="版本号" width="90" >
           <template slot-scope="{row}"> v{{row.version}}.0</template>
         </el-table-column>
-        <el-table-column align="center" prop="resourceName" label="流程XML" min-width="120" show-overflow-tooltip>
+        <el-table-column align="center" prop="resourceName" label="流程XML" min-width="100" show-overflow-tooltip>
         <template slot-scope="{row}">
           <!-- 注意组件上使用原生事件，要加 .active -->
           <el-link type="primary" @click.native="clickExportXML(row.id)">{{ row.resourceName }}</el-link>
         </template>
         </el-table-column>
-        <el-table-column align="center" prop="diagramResourceName" label="流程图片" min-width="120" show-overflow-tooltip>
+        <el-table-column align="center" prop="diagramResourceName" label="流程图片" min-width="100" show-overflow-tooltip>
         <template slot-scope="{row}">
           <el-link type="primary" @click="clickPreviewImg(row.id)">{{ row.diagramResourceName }}</el-link>
         </template>
@@ -56,8 +56,8 @@
             <el-tag type="danger" v-else>挂起</el-tag>
           </template>
         </el-table-column>
-        <el-table-column  align="center" prop="deploymentTime" label="部署时间" width="150"></el-table-column>
-        <el-table-column  align="center" prop="actProcessDefSettingVo.businessType" label="表单Key" width="150">
+        <el-table-column  align="center" prop="deploymentTime" label="部署时间" :show-overflow-tooltip="true" width="100"></el-table-column>
+        <el-table-column  align="center" prop="actProcessDefSettingVo.businessType" label="表单Key" width="80">
           <template slot-scope="scope">
             <el-tag type="success" v-if="scope.row.actProcessDefSettingVo && scope.row.actProcessDefSettingVo.businessType===0">动态表单</el-tag>
             <el-tag type="primary" v-else-if="scope.row.actProcessDefSettingVo && scope.row.actProcessDefSettingVo.businessType===1">业务表单</el-tag>

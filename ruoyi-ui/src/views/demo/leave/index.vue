@@ -401,7 +401,7 @@ export default {
         this.loading = false;
         this.form = response.data;
         this.$nextTick(() => {
-          this.processInstanceId=response.data.processInstanceId
+          this.processInstanceId=response.data.actBusinessStatus.processInstanceId
         })
         this.open = true;
         this.title = "修改请假业务";
@@ -421,7 +421,7 @@ export default {
         this.loading = false;
         this.form = response.data;
         this.$nextTick(() => {
-          this.processInstanceId=response.data.processInstanceId
+          this.processInstanceId=response.data.actBusinessStatus.processInstanceId
         })
         this.open = true;
         this.title = "查看请假业务";
@@ -506,7 +506,7 @@ export default {
     cancelProcessApply(row){
          this.$modal.confirm('是否撤销申请').then(() => {
             this.loading = true;
-            return processApi.cancelProcessApply(row.processInstanceId);
+            return processApi.cancelProcessApply(row.actBusinessStatus.processInstanceId);
          }).then(() => {
             this.getList();
             this.$modal.msgSuccess("撤回成功");

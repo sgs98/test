@@ -38,7 +38,6 @@ public class BsLeaveServiceImpl implements IBsLeaveService {
     @Override
     public BsLeaveVo queryById(String id){
         BsLeaveVo vo = baseMapper.selectVoById(id);
-        WorkFlowUtils.setProcessInstIdFileValue(vo,id);
         WorkFlowUtils.setStatusFileValue(vo,vo.getId());
         return vo;
     }
@@ -50,7 +49,6 @@ public class BsLeaveServiceImpl implements IBsLeaveService {
         List<BsLeaveVo> records = result.getRecords();
         if(CollectionUtil.isNotEmpty(records)){
             List<String> collectIds = records.stream().map(BsLeaveVo::getId).collect(Collectors.toList());
-            WorkFlowUtils.setProcessInstIdListFileValue(records,collectIds,"id");
             WorkFlowUtils.setStatusListFileValue(records,collectIds,"id");
         }
         result.setRecords(records);

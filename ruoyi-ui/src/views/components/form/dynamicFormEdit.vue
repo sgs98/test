@@ -184,15 +184,19 @@ export default {
     //提交
     submitForm(){
       this.validate()
-      this.taskVariables = {
-        entity: this.dynamicFormData.variableMap,
-      };
-      this.sendMessage = {
-        title: this.dynamicFormData.formName,
-        messageContent:'单据【'+this.dynamicFormData.applyCode+"】申请"
-      }
-      this.$refs.verifyRef.visible = true
-      this.$refs.verifyRef.reset()
+      this.$refs[this.formConf.formModel].validate((valid) => {
+        if (valid) {
+          this.taskVariables = {
+            entity: this.dynamicFormData.variableMap,
+          };
+          this.sendMessage = {
+            title: this.dynamicFormData.formName,
+            messageContent:'单据【'+this.dynamicFormData.applyCode+"】申请"
+          }
+          this.$refs.verifyRef.visible = true
+          this.$refs.verifyRef.reset()
+        }
+      });
     },
     handlerValChange(key,origin){
       this.$set(this.form,key,origin);

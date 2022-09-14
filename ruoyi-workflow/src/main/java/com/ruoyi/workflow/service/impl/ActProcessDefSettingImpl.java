@@ -2,7 +2,6 @@ package com.ruoyi.workflow.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.core.page.TableDataInfo;
@@ -58,7 +57,7 @@ public class ActProcessDefSettingImpl implements IActProcessDefSetting {
     }
 
     @Override
-    public R<Void> checkProcessDefSetting(String defId, String param, Integer businessType) {
+    public R<List<Long>> checkProcessDefSetting(String defId, String param, Integer businessType) {
         LambdaQueryWrapper<ActProcessDefSetting> lqw = Wrappers.lambdaQuery();
         lqw.ne(ActProcessDefSetting::getProcessDefinitionId, defId);
         if (0 == businessType) {
@@ -66,14 +65,16 @@ public class ActProcessDefSettingImpl implements IActProcessDefSetting {
             List<ActProcessDefSetting> processDefSettings = baseMapper.selectList(lqw);
             if (CollectionUtil.isNotEmpty(processDefSettings)) {
                 String collect = processDefSettings.stream().map(ActProcessDefSetting::getProcessDefinitionKey).collect(Collectors.joining(","));
-                return R.ok("表单已被流程【" + collect + "】绑定，是否确认删除绑定，绑定当前选项？");
+                List<Long> ids = processDefSettings.stream().map(ActProcessDefSetting::getId).collect(Collectors.toList());
+                return R.ok("表单已被流程【" + collect + "】绑定，是否确认删除绑定，绑定当前选项？", ids);
             }
         } else {
             lqw.eq(ActProcessDefSetting::getComponentName, param);
             List<ActProcessDefSetting> processDefSettings = baseMapper.selectList(lqw);
             if (CollectionUtil.isNotEmpty(processDefSettings)) {
                 String collect = processDefSettings.stream().map(ActProcessDefSetting::getComponentName).collect(Collectors.joining(","));
-                return R.ok( "组件已被流程【" + collect + "】绑定，是否确认删除绑定，绑定当前选项？");
+                List<Long> ids = processDefSettings.stream().map(ActProcessDefSetting::getId).collect(Collectors.toList());
+                return R.ok("组件已被流程【" + collect + "】绑定，是否确认删除绑定，绑定当前选项？", ids);
             }
         }
         return R.ok();
@@ -116,19 +117,27 @@ public class ActProcessDefSettingImpl implements IActProcessDefSetting {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean insertByBo(ActProcessDefSettingBo bo) {
-        ActProcessDefSetting add = BeanUtil.toBean(bo, ActProcessDefSetting.class);
-        LambdaQueryWrapper<ActProcessDefSetting> lqw = Wrappers.lambdaQuery();
-        if(0 == bo.getBusinessType()){
-            lqw.eq(ActProcessDefSetting::getFormId, bo.getFormId());
-        }else{
-            lqw.eq(ActProcessDefSetting::getComponentName, bo.getComponentName());
+        ActProcessDefSetting add = new ActProcessDefSetting();
+        add.setProcessDefinitionId(bo.getProcessDefinitionId());
+        add.setProcessDefinitionKey(bo.getProcessDefinitionKey());
+        add.setProcessDefinitionName(bo.getProcessDefinitionName());
+        add.setBusinessType(bo.getBusinessType());
+        add.setRemark(bo.getRemark());
+        if (0 == bo.getBusinessType()) {
+            add.setFormId(bo.getFormId());
+            add.setFormKey(bo.getFormKey());
+            add.setFormName(bo.getFormName());
+            add.setFormVariable(bo.getFormVariable());
+        } else {
+            add.setComponentName(bo.getComponentName());
         }
-        baseMapper.delete(lqw);
-        boolean flag = baseMapper.insert(add) > 0;
-        if (flag) {
-            bo.setId(add.getId());
+        if(CollectionUtil.isNotEmpty(bo.getIds())){
+            baseMapper.deleteBatchIds(bo.getIds());
         }
-        return flag;
+        if (bo.getId() != null) {
+            baseMapper.deleteById(bo.getId());
+        }
+        return baseMapper.insert(add) > 0;
     }
 
     /**

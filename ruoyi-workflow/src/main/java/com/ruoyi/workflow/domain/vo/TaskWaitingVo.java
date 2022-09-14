@@ -1,6 +1,7 @@
 package com.ruoyi.workflow.domain.vo;
 
 import com.ruoyi.workflow.domain.ActBusinessStatus;
+import com.ruoyi.workflow.domain.ActProcessDefSetting;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -117,4 +118,9 @@ public class TaskWaitingVo implements Serializable {
      * 业务状态
      */
     private ActBusinessStatus actBusinessStatus;
+
+    /**
+     * 流程定义设置
+     */
+    private ActProcessDefSettingVo actProcessDefSetting;
 }

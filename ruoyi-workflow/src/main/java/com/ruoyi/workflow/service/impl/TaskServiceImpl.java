@@ -77,6 +77,8 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
 
     private final TaskMapper taskMapper;
 
+    private final IActProcessDefSetting iActProcessDefSetting;
+
 
     /**
      * @Description: 查询当前用户的待办任务
@@ -99,25 +101,38 @@ public class TaskServiceImpl extends WorkflowService implements ITaskService {
         List<Task> taskList = query.listPage(req.getFirstResult(), req.getPageSize());
         long total = query.count();
         List<TaskWaitingVo> list = new ArrayList<>();
+        //流程实例id
+        Set<String> processInstanceIds = taskList.stream().map(Task::getProcessInstanceId).collect(Collectors.toSet());
+        //流程定义id
+        List<String> processDefinitionIds = taskList.stream().map(Task::getProcessDefinitionId).collect(Collectors.toList());
+        // 查询流程实例
+        List<ProcessInstance> processInstanceList = runtimeService.createProcessInstanceQuery().processInstanceIds(processInstanceIds).list();
+        // 查询流程定义设置
+        List<ActProcessDefSettingVo> processDefSettingLists = iActProcessDefSetting.getProcessDefSettingByDefIds(processDefinitionIds);
+
         for (Task task : taskList) {
             TaskWaitingVo taskWaitingVo = new TaskWaitingVo();
             BeanUtils.copyProperties(task, taskWaitingVo);
             taskWaitingVo.setAssigneeId(StringUtils.isNotBlank(task.getAssignee()) ? Long.valueOf(task.getAssignee()) : null);
             taskWaitingVo.setProcessStatus(!task.isSuspended() ? "激活" : "挂起");
             // 查询流程实例
-            ProcessInstance pi = runtimeService.createProcessInstanceQuery()
-                .processInstanceId(task.getProcessInstanceId()).singleResult();
-            //流程发起人
-            String startUserId = pi.getStartUserId();
-            if (StringUtils.isNotBlank(startUserId)) {
-                SysUser sysUser = iUserService.selectUserById(Long.valueOf(startUserId));
-                if (ObjectUtil.isNotNull(sysUser)) {
-                    taskWaitingVo.setStartUserNickName(sysUser.getNickName());
-                }
-            }
-            taskWaitingVo.setProcessDefinitionVersion(pi.getProcessDefinitionVersion());
-            taskWaitingVo.setProcessDefinitionName(pi.getProcessDefinitionName());
-            taskWaitingVo.setBusinessKey(pi.getBusinessKey());
+            processInstanceList.stream().filter(e -> e.getProcessInstanceId().equals(task.getProcessInstanceId())).findFirst()
+                .ifPresent(e -> {
+                    //流程发起人
+                    String startUserId = e.getStartUserId();
+                    if (StringUtils.isNotBlank(startUserId)) {
+                        SysUser sysUser = iUserService.selectUserById(Long.valueOf(startUserId));
+                        if (ObjectUtil.isNotNull(sysUser)) {
+                            taskWaitingVo.setStartUserNickName(sysUser.getNickName());
+                        }
+                    }
+                    taskWaitingVo.setProcessDefinitionVersion(e.getProcessDefinitionVersion());
+                    taskWaitingVo.setProcessDefinitionName(e.getProcessDefinitionName());
+                    taskWaitingVo.setBusinessKey(e.getBusinessKey());
+                });
+            // 查询流程定义
+            processDefSettingLists.stream().filter(e -> e.getProcessDefinitionId().equals(task.getProcessDefinitionId())).findFirst()
+                .ifPresent(taskWaitingVo::setActProcessDefSetting);
             list.add(taskWaitingVo);
         }
         if (CollectionUtil.isNotEmpty(list)) {

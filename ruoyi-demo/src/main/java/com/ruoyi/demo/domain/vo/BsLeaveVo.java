@@ -83,11 +83,6 @@ public class BsLeaveVo {
     private Date endDate;
 
     /**
-     * 流程实例id
-     */
-    private String processInstanceId;
-
-    /**
      * 流程状态
      */
     @ExcelProperty(value = "流程状态")

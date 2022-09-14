@@ -39,14 +39,14 @@
       </el-row>
       <el-row v-if="formData.businessType === 0">
         <el-col class="line" :span="24">
-          <el-form-item label="表单参数" :key="formData.formVariable">
+          <el-form-item label="表单参数">
             <el-input type="textarea" placeholder="请输入表单参数,动态表单中参数id,多个用英文逗号隔开" v-model="formData.formVariable" @input="change($event)"/>
           </el-form-item>
         </el-col>
       </el-row>
       <el-row v-if="formData.businessType === 1">
         <el-col class="line" :span="12">
-          <el-form-item label="组件名称" prop="componentName" :key="formData.componentName">
+          <el-form-item label="组件名称" prop="componentName">
             <el-input placeholder="请输入组件名称" v-model="formData.componentName"/>
           </el-form-item>
         </el-col>
@@ -207,26 +207,19 @@ export default {
       this.$refs[formName].validate((valid) => {
       if (valid) {
         let param = ''
-        if(this.formData.businessType === '0'){
+        if(this.formData.businessType === 0){
           param = this.formData.formId
         }else{
           param = this.formData.componentName
         }
         checkProcessDefSetting(this.formData.processDefinitionId,param,this.formData.businessType).then(response => {
-          if(this.formData.businessType === '0'){
-            this.formData.componentName = ''
-          }else{
-            this.formData.formId = ''
-            this.formData.formKey = ''
-            this.formData.formName = ''
-            this.formData.formVisible = ''
-          }
-          if(response.msg.indexOf("绑定")!=-1){
+          if(response.data){
             this.$confirm(response.msg, '提示', {
               confirmButtonText: '确定',
               cancelButtonText: '取消',
               type: 'warning'
             }).then(() => {
+              this.formData.ids = response.data
               addProcessDefSetting(this.formData).then(response => {
                 this.$modal.msgSuccess("保存成功");
                 this.loading = false;

@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Arrays;
 
 import lombok.RequiredArgsConstructor;
+
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.*;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.annotation.Validated;
 import com.ruoyi.common.annotation.RepeatSubmit;
@@ -74,10 +76,10 @@ public class ActProcessDefSettingController extends BaseController {
      * 校验表单是否关联
      */
     @GetMapping("/checkProcessDefSetting/{defId}/{param}/{businessType}")
-    public R<Void> checkProcessDefSetting(@NotNull(message = "流程定义id不能为空")  @PathVariable("defId") String defId,
-                                              @NotNull(message = "参数不能为空") @PathVariable("param") String param,
-                                              @NotNull(message = "业务类型") @PathVariable("businessType") Integer businessType) {
-        return iActProcessDefSetting.checkProcessDefSetting(defId,param,businessType);
+    public R<List<Long>> checkProcessDefSetting(@NotNull(message = "流程定义id不能为空") @PathVariable("defId") String defId,
+                                                                @NotNull(message = "参数不能为空") @PathVariable("param") String param,
+                                                                @NotNull(message = "业务类型") @PathVariable("businessType") Integer businessType) {
+        return iActProcessDefSetting.checkProcessDefSetting(defId, param, businessType);
     }
 
     /**

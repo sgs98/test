@@ -283,7 +283,7 @@ export default {
       getBusinessForm(id).then(response => {
         this.loading = false;
         this.form = response.data;
-        this.processInstanceId = response.data.processInstanceId
+        this.processInstanceId = response.data.actBusinessStatus.processInstanceId
         if(this.processInstanceId){
           this.getHistoryInfoList()
           this.getHistoryImage()
@@ -300,7 +300,7 @@ export default {
       getBusinessForm(id).then(response => {
         this.loading = false;
         this.form = response.data;
-        this.processInstanceId = response.data.processInstanceId
+        this.processInstanceId = response.data.actBusinessStatus.processInstanceId
         if(this.processInstanceId){
           this.getHistoryInfoList()
           this.getHistoryImage()

@@ -162,22 +162,17 @@
           this.processInstanceId = row.processInstanceId
           this.taskId = row.id
           this.parentTaskId = row.parentTaskId
-          if(row.actBusinessStatus && row.actBusinessStatus.classFullName){
-            if(row.actBusinessStatus.classFullName === 'com.ruoyi.demo.domain.BsLeave'){
-                this.currProcessForm = 'leaveForm'
-                this.dynamicFormEditVisible = true    
-                this.dataViewVisible = false  
-            }
-            if(row.actBusinessStatus.classFullName.indexOf(".") === -1){
-                getBusinessForm(this.businessKey).then(response => {
-                    this.dynamicFormData = response.data;
-                    this.dynamicFormEditVisible = true;
-                    this.dataViewVisible = false
-                    this.currProcessForm = 'dynamicFormEdit'
-                });
-            }
+          if(row.actProcessDefSetting && row.actProcessDefSetting.businessType === 0){
+            getBusinessForm(this.businessKey).then(response => {
+                this.dynamicFormData = response.data;
+                this.dynamicFormEditVisible = true;
+                this.dataViewVisible = false
+                this.currProcessForm = 'dynamicFormEdit'
+            });
           }else{
-              this.$modal.msgError("业务不存在");
+            this.currProcessForm = row.actProcessDefSetting.componentName
+            this.dynamicFormEditVisible = true    
+            this.dataViewVisible = false  
           }
       },
       //关闭办理弹出层

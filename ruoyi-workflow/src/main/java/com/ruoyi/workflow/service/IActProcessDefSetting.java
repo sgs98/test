@@ -36,7 +36,7 @@ public interface IActProcessDefSetting {
     /**
      * 校验表单是否关联
      */
-    R<Void> checkProcessDefSetting(String defId, String param, Integer businessType);
+    R<List<Long>> checkProcessDefSetting(String defId, String param, Integer businessType);
 
     /**
      * 查询流程定义设置列表
