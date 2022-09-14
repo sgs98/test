@@ -3,6 +3,8 @@ package com.ruoyi.workflow.domain.vo;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * @program: ruoyi-vue-plus
  * @description: 流程节点视图
@@ -10,7 +12,9 @@ import lombok.Data;
  * @created: 2022-02-26
  */
 @Data
-public class ActProcessNodeVo {
+public class ActProcessNodeVo implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * 节点id

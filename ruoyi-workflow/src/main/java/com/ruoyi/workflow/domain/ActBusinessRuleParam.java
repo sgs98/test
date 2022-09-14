@@ -1,7 +1,6 @@
 package com.ruoyi.workflow.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
-import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -14,7 +13,6 @@ import java.io.Serializable;
  */
 @Data
 @TableName("act_business_rule_param")
-@ApiModel("方法参数对象")
 public class ActBusinessRuleParam implements Serializable {
 
     private static final long serialVersionUID=1L;

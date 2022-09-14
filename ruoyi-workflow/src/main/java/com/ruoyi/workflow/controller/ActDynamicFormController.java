@@ -22,9 +22,6 @@ import com.ruoyi.workflow.domain.vo.ActDynamicFormVo;
 import com.ruoyi.workflow.domain.bo.ActDynamicFormBo;
 import com.ruoyi.workflow.service.IActDynamicFormService;
 import com.ruoyi.common.core.page.TableDataInfo;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiOperation;
 
 /**
  * 动态表单Controller
@@ -33,7 +30,6 @@ import io.swagger.annotations.ApiOperation;
  * @date 2022-08-11
  */
 @Validated
-@Api(value = "动态表单控制器", tags = {"动态表单管理"})
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/workflow/dynamicForm")
@@ -44,7 +40,6 @@ public class ActDynamicFormController extends BaseController {
     /**
      * 查询动态表单列表
      */
-    @ApiOperation("查询动态表单列表")
     @SaCheckPermission("workflow:dynamicForm:list")
     @GetMapping("/list")
     public TableDataInfo<ActDynamicFormVo> list(ActDynamicFormBo bo, PageQuery pageQuery) {
@@ -54,7 +49,6 @@ public class ActDynamicFormController extends BaseController {
     /**
      * 查询启用动态表单列表
      */
-    @ApiOperation("查询启用动态表单列表")
     @GetMapping("/enableList")
     public TableDataInfo<ActDynamicFormVo> enableList(ActDynamicFormBo bo, PageQuery pageQuery) {
         return iActDynamicFormService.queryPageEnableList(bo, pageQuery);
@@ -63,7 +57,6 @@ public class ActDynamicFormController extends BaseController {
     /**
      * 导出动态表单列表
      */
-    @ApiOperation("导出动态表单列表")
     @SaCheckPermission("workflow:dynamicForm:export")
     @Log(title = "动态表单", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
@@ -75,11 +68,9 @@ public class ActDynamicFormController extends BaseController {
     /**
      * 获取动态表单详细信息
      */
-    @ApiOperation("获取动态表单详细信息")
     @SaCheckPermission("workflow:dynamicForm:query")
     @GetMapping("/{id}")
-    public R<ActDynamicFormVo> getInfo(@ApiParam("主键")
-                                     @NotNull(message = "主键不能为空")
+    public R<ActDynamicFormVo> getInfo(@NotNull(message = "主键不能为空")
                                      @PathVariable("id") Long id) {
         return R.ok(iActDynamicFormService.queryById(id));
     }
@@ -87,7 +78,6 @@ public class ActDynamicFormController extends BaseController {
     /**
      * 新增动态表单
      */
-    @ApiOperation("新增动态表单")
     @SaCheckPermission("workflow:dynamicForm:add")
     @Log(title = "动态表单", businessType = BusinessType.INSERT)
     @RepeatSubmit()
@@ -99,7 +89,6 @@ public class ActDynamicFormController extends BaseController {
     /**
      * 修改动态表单
      */
-    @ApiOperation("修改动态表单")
     @SaCheckPermission("workflow:dynamicForm:edit")
     @Log(title = "动态表单", businessType = BusinessType.UPDATE)
     @RepeatSubmit()
@@ -111,7 +100,6 @@ public class ActDynamicFormController extends BaseController {
     /**
      * 修改动态表单
      */
-    @ApiOperation("修改动态表单")
     @SaCheckPermission("workflow:dynamicForm:edit")
     @Log(title = "动态表单", businessType = BusinessType.UPDATE)
     @RepeatSubmit()
@@ -123,13 +111,10 @@ public class ActDynamicFormController extends BaseController {
     /**
      * 删除动态表单
      */
-    @ApiOperation("删除动态表单")
     @SaCheckPermission("workflow:dynamicForm:remove")
     @Log(title = "动态表单", businessType = BusinessType.DELETE)
     @DeleteMapping("/{ids}")
-    public R<Void> remove(@ApiParam("主键串")
-                                       @NotEmpty(message = "主键不能为空")
-                                       @PathVariable Long[] ids) {
+    public R<Void> remove(@NotEmpty(message = "主键不能为空") @PathVariable Long[] ids) {
         return toAjax(iActDynamicFormService.deleteWithValidByIds(Arrays.asList(ids), true) ? 1 : 0);
     }
 }

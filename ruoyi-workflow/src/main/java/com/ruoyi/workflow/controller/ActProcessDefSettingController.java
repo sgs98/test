@@ -21,9 +21,6 @@ import com.ruoyi.workflow.domain.vo.ActProcessDefSettingVo;
 import com.ruoyi.workflow.domain.bo.ActProcessDefSettingBo;
 import com.ruoyi.workflow.service.IActProcessDefSetting;
 import com.ruoyi.common.core.page.TableDataInfo;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiOperation;
 
 /**
  * 流程定义设置Controller
@@ -32,7 +29,6 @@ import io.swagger.annotations.ApiOperation;
  * @date 2022-08-28
  */
 @Validated
-@Api(value = "流程定义设置控制器", tags = {"流程定义设置管理"})
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/workflow/processDefSetting")
@@ -43,7 +39,6 @@ public class ActProcessDefSettingController extends BaseController {
     /**
      * 查询流程定义设置列表
      */
-    @ApiOperation("查询流程定义设置列表")
     @GetMapping("/list")
     public TableDataInfo<ActProcessDefSettingVo> list(ActProcessDefSettingBo bo, PageQuery pageQuery) {
         return iActProcessDefSetting.queryPageList(bo, pageQuery);
@@ -52,7 +47,6 @@ public class ActProcessDefSettingController extends BaseController {
     /**
      * 导出流程定义设置列表
      */
-    @ApiOperation("导出流程定义设置列表")
     @Log(title = "流程定义设置", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(ActProcessDefSettingBo bo, HttpServletResponse response) {
@@ -63,29 +57,22 @@ public class ActProcessDefSettingController extends BaseController {
     /**
      * 获取流程定义设置详细信息
      */
-    @ApiOperation("获取流程定义设置详细信息")
     @GetMapping("/{id}")
-    public R<ActProcessDefSettingVo> getInfo(@ApiParam("主键")
-                                     @NotNull(message = "主键不能为空")
-                                     @PathVariable("id") Long id) {
+    public R<ActProcessDefSettingVo> getInfo(@NotNull(message = "主键不能为空") @PathVariable("id") Long id) {
         return R.ok(iActProcessDefSetting.queryById(id));
     }
 
     /**
      * 按流程定义id查询流程定义设置详细
      */
-    @ApiOperation("按流程定义id查询流程定义设置详细")
     @GetMapping("/getProcessDefSettingByDefId/{defId}")
-    public R<ActProcessDefSettingVo> getProcessDefSettingByDefId(@ApiParam("流程定义id")
-                                          @NotNull(message = "流程定义id不能为空")
-                                          @PathVariable("defId") String defId) {
+    public R<ActProcessDefSettingVo> getProcessDefSettingByDefId(@NotNull(message = "流程定义id不能为空") @PathVariable("defId") String defId) {
         return R.ok(iActProcessDefSetting.getProcessDefSettingByDefId(defId));
     }
 
     /**
      * 校验表单是否关联
      */
-    @ApiOperation("校验表单是否关联")
     @GetMapping("/checkProcessDefSetting/{defId}/{param}/{businessType}")
     public R<Void> checkProcessDefSetting(@NotNull(message = "流程定义id不能为空")  @PathVariable("defId") String defId,
                                               @NotNull(message = "参数不能为空") @PathVariable("param") String param,
@@ -96,7 +83,6 @@ public class ActProcessDefSettingController extends BaseController {
     /**
      * 新增流程定义设置
      */
-    @ApiOperation("新增流程定义设置")
     @Log(title = "流程定义设置", businessType = BusinessType.INSERT)
     @RepeatSubmit()
     @PostMapping()
@@ -107,7 +93,6 @@ public class ActProcessDefSettingController extends BaseController {
     /**
      * 修改流程定义设置
      */
-    @ApiOperation("修改流程定义设置")
     @Log(title = "流程定义设置", businessType = BusinessType.UPDATE)
     @RepeatSubmit()
     @PutMapping()
@@ -118,12 +103,9 @@ public class ActProcessDefSettingController extends BaseController {
     /**
      * 删除流程定义设置
      */
-    @ApiOperation("删除流程定义设置")
     @Log(title = "流程定义设置", businessType = BusinessType.DELETE)
     @DeleteMapping("/{ids}")
-    public R<Void> remove(@ApiParam("主键串")
-                                       @NotEmpty(message = "主键不能为空")
-                                       @PathVariable Long[] ids) {
+    public R<Void> remove(@NotEmpty(message = "主键不能为空") @PathVariable Long[] ids) {
         return toAjax(iActProcessDefSetting.deleteWithValidByIds(Arrays.asList(ids), true) ? 1 : 0);
     }
 }

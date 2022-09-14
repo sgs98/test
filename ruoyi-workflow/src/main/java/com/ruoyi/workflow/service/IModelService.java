@@ -2,7 +2,6 @@ package com.ruoyi.workflow.service;
 
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableDataInfo;
-import com.ruoyi.workflow.domain.bo.ModeBo;
 import com.ruoyi.workflow.domain.bo.ModelBo;
 import org.flowable.engine.repository.Model;
 
@@ -22,7 +21,7 @@ public interface IModelService {
      * @param data
      * @return
      */
-    R<Void> saveModelXml(ModeBo data);
+    R<Void> saveModelXml(ModelBo data);
 
     /**
      * 查询模型信息
@@ -43,7 +42,7 @@ public interface IModelService {
      * @param data
      * @return
      */
-    R<Model> add(ModeBo data);
+    R<Model> add(ModelBo data);
 
     /**
      * 通过流程定义模型id部署流程定义

@@ -248,10 +248,10 @@ public class ProcessDefinitionServiceImpl extends WorkflowService implements IPr
     public String getXml(String definitionId) {
         StringBuilder xml = new StringBuilder();
         ProcessDefinition processDefinition = repositoryService.getProcessDefinition(definitionId);
-        InputStream inputStream = null;
+        InputStream inputStream;
         try {
             inputStream = repositoryService.getResourceAsStream(processDefinition.getDeploymentId(), processDefinition.getResourceName());
-            xml.append(IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+            xml.append(IOUtils.toString(inputStream, ActConstant.UTF_8));
         } catch (IOException e) {
             e.printStackTrace();
         }

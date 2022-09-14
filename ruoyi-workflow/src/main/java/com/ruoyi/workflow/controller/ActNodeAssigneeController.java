@@ -8,7 +8,6 @@ import com.ruoyi.common.core.validate.AddGroup;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.workflow.domain.ActNodeAssignee;
 import com.ruoyi.workflow.service.IActNodeAssigneeService;
-import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +20,6 @@ import javax.validation.constraints.NotBlank;
  * @created: 2021/11/21 13:48
  */
 @Validated
-@Api(value = "流程节点人员设置控制器", tags = {"流程节点人员设置管理"})
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/workflow/actNodeAssignee")
@@ -36,7 +34,6 @@ public class ActNodeAssigneeController extends BaseController {
      * @Author: gssong
      * @Date: 2021/11/21
      */
-    @ApiOperation("保存流程节点人员设置")
     @Log(title = "流程节点人员设置管理", businessType = BusinessType.INSERT)
     @RepeatSubmit()
     @PostMapping()
@@ -51,11 +48,6 @@ public class ActNodeAssigneeController extends BaseController {
      * @Author: gssong
      * @Date: 2021/11/21
      */
-    @ApiOperation("按照流程定义id和流程节点id查询流程节点人员设置")
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "processDefinitionId",value = "流程定义id",required = true,dataTypeClass = String.class),
-        @ApiImplicitParam(name = "nodeId",value = "流程节点id",required = true,dataTypeClass = String.class)
-    })
     @GetMapping("/{processDefinitionId}/{nodeId}")
     public R<ActNodeAssignee> getInfoSetting(@NotBlank(message = "流程定义id不能为空") @PathVariable String processDefinitionId,
                                              @NotBlank(message = "流程节点id不能为空") @PathVariable String nodeId){
@@ -70,10 +62,6 @@ public class ActNodeAssigneeController extends BaseController {
      * @Author: gssong
      * @Date: 2021/11/21
      */
-    @ApiOperation("删除流程节点人员设置")
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "id",value = "主键",required = true,dataTypeClass = String.class)
-    })
     @Log(title = "流程节点人员设置管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/{id}")
     public R<Void> del(@NotBlank(message = "主键不能为空") @PathVariable String id){
@@ -88,11 +76,6 @@ public class ActNodeAssigneeController extends BaseController {
      * @Author: gssong
      * @Date: 2022/03/26
      */
-    @ApiOperation("复制给最新流程节点人员设置")
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "id",value = "主键",required = true,dataTypeClass = String.class),
-        @ApiImplicitParam(name = "key",value = "流程Key",required = true,dataTypeClass = String.class)
-    })
     @Log(title = "流程节点人员设置管理", businessType = BusinessType.INSERT)
     @PostMapping("/copy/{id}/{key}")
     public R<Void> copy(@NotBlank(message = "id不能为空") @PathVariable("id")  String id,

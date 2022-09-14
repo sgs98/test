@@ -1,7 +1,5 @@
 package com.ruoyi.workflow.domain.bo;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
@@ -14,35 +12,50 @@ import java.util.*;
  * @created: 2022-02-26
  */
 @Data
-@ApiModel("完成任务请求对象")
 public class TaskCompleteBo {
 
-    @ApiModelProperty(value = "任务ID",required = true)
+    /**
+     * 任务ID
+     */
     private String taskId;
 
-    @ApiModelProperty("是否抄送")
+    /**
+     * 是否抄送
+     */
     private Boolean isCopy = true;
 
-    @ApiModelProperty("抄送人员id")
+    /**
+     * 抄送人员id
+     */
     private String assigneeIds;
 
-    @ApiModelProperty("抄送人员名称")
+    /**
+     * 抄送人员名称
+     */
     private String assigneeNames;
 
-    @ApiModelProperty("审批意见")
+    /**
+     * 审批意见
+     */
     private String message;
 
-    @ApiModelProperty("消息对象")
+    /**
+     * 消息对象
+     */
     private SendMessage sendMessage;
 
-    @ApiModelProperty("下一个节点审批，key: 节点id, value：审批人集合,多个人使用英文逗号分隔")
+    /**
+     * 下一个节点审批，key: 节点id, value：审批人集合,多个人使用英文逗号分隔
+     */
     private Map<String, String> assigneeMap;
 
     public String getMessage() {
         return StringUtils.isEmpty(message) ? "同意": message;
     }
 
-    @ApiModelProperty("流程变量，前端会提交一个元素{'entity': {业务详情数据对象}}")
+    /**
+     * 流程变量，前端会提交一个元素{'entity': {业务详情数据对象}}
+     */
     private Map<String, Object> variables;
 
     public Map<String, Object> getVariables() {

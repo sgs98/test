@@ -22,9 +22,6 @@ import com.ruoyi.workflow.domain.vo.ActBusinessFormVo;
 import com.ruoyi.workflow.domain.bo.ActBusinessFormBo;
 import com.ruoyi.workflow.service.IActBusinessFormService;
 import com.ruoyi.common.core.page.TableDataInfo;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiOperation;
 
 /**
  * 业务表单Controller
@@ -33,7 +30,6 @@ import io.swagger.annotations.ApiOperation;
  * @date 2022-08-19
  */
 @Validated
-@Api(value = "业务表单控制器", tags = {"业务表单管理"})
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/workflow/businessForm")
@@ -44,7 +40,6 @@ public class ActBusinessFormController extends BaseController {
     /**
      * 查询业务表单列表
      */
-    @ApiOperation("查询业务表单列表")
     @SaCheckPermission("workflow:businessForm:list")
     @GetMapping("/list")
     public TableDataInfo<ActBusinessFormVo> list(ActBusinessFormBo bo, PageQuery pageQuery) {
@@ -54,7 +49,6 @@ public class ActBusinessFormController extends BaseController {
     /**
      * 导出业务表单列表
      */
-    @ApiOperation("导出业务表单列表")
     @SaCheckPermission("workflow:businessForm:export")
     @Log(title = "业务表单", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
@@ -66,11 +60,9 @@ public class ActBusinessFormController extends BaseController {
     /**
      * 获取业务表单详细信息
      */
-    @ApiOperation("获取业务表单详细信息")
     @SaCheckPermission("workflow:businessForm:query")
     @GetMapping("/{id}")
-    public R<ActBusinessFormVo> getInfo(@ApiParam("主键")
-                                     @NotNull(message = "主键不能为空")
+    public R<ActBusinessFormVo> getInfo(@NotNull(message = "主键不能为空")
                                      @PathVariable("id") Long id) {
         return R.ok(iActBusinessFormService.queryById(id));
     }
@@ -78,7 +70,6 @@ public class ActBusinessFormController extends BaseController {
     /**
      * 新增业务表单
      */
-    @ApiOperation("新增业务表单")
     @SaCheckPermission("workflow:businessForm:add")
     @Log(title = "业务表单", businessType = BusinessType.INSERT)
     @RepeatSubmit()
@@ -90,7 +81,6 @@ public class ActBusinessFormController extends BaseController {
     /**
      * 修改业务表单
      */
-    @ApiOperation("修改业务表单")
     @SaCheckPermission("workflow:businessForm:edit")
     @Log(title = "业务表单", businessType = BusinessType.UPDATE)
     @RepeatSubmit()
@@ -102,13 +92,10 @@ public class ActBusinessFormController extends BaseController {
     /**
      * 删除业务表单
      */
-    @ApiOperation("删除业务表单")
     @SaCheckPermission("workflow:businessForm:remove")
     @Log(title = "业务表单", businessType = BusinessType.DELETE)
     @DeleteMapping("/{ids}")
-    public R<Void> remove(@ApiParam("主键串")
-                                       @NotEmpty(message = "主键不能为空")
-                                       @PathVariable Long[] ids) {
+    public R<Void> remove(@NotEmpty(message = "主键不能为空")  @PathVariable Long[] ids) {
         return toAjax(Boolean.TRUE.equals(iActBusinessFormService.deleteWithValidByIds(Arrays.asList(ids))) ? 1 : 0);
     }
 }

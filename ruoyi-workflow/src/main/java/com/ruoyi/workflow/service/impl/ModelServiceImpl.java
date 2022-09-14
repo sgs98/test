@@ -11,9 +11,8 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.utils.JsonUtils;
 import com.ruoyi.workflow.common.constant.ActConstant;
-import com.ruoyi.workflow.domain.bo.ModeBo;
-import com.ruoyi.workflow.flowable.factory.WorkflowService;
 import com.ruoyi.workflow.domain.bo.ModelBo;
+import com.ruoyi.workflow.flowable.factory.WorkflowService;
 import com.ruoyi.workflow.service.IModelService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.batik.transcoder.TranscoderInput;
@@ -61,7 +60,7 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R<Void> saveModelXml(ModeBo data) {
+    public R<Void> saveModelXml(ModelBo data) {
         try {
             String xml = data.getXml();
             String svg = data.getSvg();
@@ -104,11 +103,9 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
             TranscoderInput input = new TranscoderInput(svgStream);
 
             PNGTranscoder transcoder = new PNGTranscoder();
-            // Setup output
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             TranscoderOutput output = new TranscoderOutput(outStream);
 
-            // Do the transformation
             transcoder.transcode(input, output);
             final byte[] result = outStream.toByteArray();
             repositoryService.addModelEditorSourceExtra(model.getId(), result);
@@ -187,7 +184,7 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R<Model> add(ModeBo data){
+    public R<Model> add(ModelBo data){
         try {
             String xml = data.getXml();
             String svg = data.getSvg();
@@ -231,10 +228,8 @@ public class ModelServiceImpl extends WorkflowService implements IModelService {
             TranscoderInput input = new TranscoderInput(svgStream);
 
             PNGTranscoder transcoder = new PNGTranscoder();
-            // Setup output
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             TranscoderOutput output = new TranscoderOutput(outStream);
-            // Do the transformation
             transcoder.transcode(input, output);
             final byte[] result = outStream.toByteArray();
             repositoryService.addModelEditorSourceExtra(model.getId(), result);

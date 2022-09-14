@@ -25,9 +25,6 @@ import com.ruoyi.demo.domain.vo.BsLeaveVo;
 import com.ruoyi.demo.domain.bo.BsLeaveBo;
 import com.ruoyi.demo.service.IBsLeaveService;
 import com.ruoyi.common.core.page.TableDataInfo;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiOperation;
 
 /**
  * 请假业务Controller
@@ -36,7 +33,6 @@ import io.swagger.annotations.ApiOperation;
  * @date 2022-01-11
  */
 @Validated
-@Api(value = "请假业务控制器", tags = {"请假业务管理"})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @RestController
 @RequestMapping("/demo/leave")
@@ -47,7 +43,6 @@ public class BsLeaveController extends BaseController {
     /**
      * 查询请假业务列表
      */
-    @ApiOperation("查询请假业务列表")
     @SaCheckPermission("demo:leave:list")
     @GetMapping("/list")
     public TableDataInfo<BsLeaveVo> list(@Validated(QueryGroup.class) BsLeaveBo bo, PageQuery pageQuery) {
@@ -57,7 +52,6 @@ public class BsLeaveController extends BaseController {
     /**
      * 导出请假业务列表
      */
-    @ApiOperation("导出请假业务列表")
     @SaCheckPermission("demo:leave:export")
     @Log(title = "请假业务", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
@@ -69,19 +63,15 @@ public class BsLeaveController extends BaseController {
     /**
      * 获取请假业务详细信息
      */
-    @ApiOperation("获取请假业务详细信息")
     @SaCheckPermission("demo:leave:query")
     @GetMapping("/{id}")
-    public R<BsLeaveVo> getInfo(@ApiParam("主键")
-                                         @NotNull(message = "主键不能为空")
-                                         @PathVariable("id") String id) {
+    public R<BsLeaveVo> getInfo(@NotNull(message = "主键不能为空") @PathVariable("id") String id) {
         return R.ok(iBsLeaveService.queryById(id));
     }
 
     /**
      * 新增请假业务
      */
-    @ApiOperation("新增请假业务")
     @SaCheckPermission("demo:leave:add")
     @Log(title = "请假业务", businessType = BusinessType.INSERT)
     @RepeatSubmit()
@@ -93,7 +83,6 @@ public class BsLeaveController extends BaseController {
     /**
      * 修改请假业务
      */
-    @ApiOperation("修改请假业务")
     @SaCheckPermission("demo:leave:edit")
     @Log(title = "请假业务", businessType = BusinessType.UPDATE)
     @RepeatSubmit()
@@ -105,13 +94,10 @@ public class BsLeaveController extends BaseController {
     /**
      * 删除请假业务
      */
-    @ApiOperation("删除请假业务")
     @SaCheckPermission("demo:leave:remove")
     @Log(title = "请假业务" , businessType = BusinessType.DELETE)
     @DeleteMapping("/{ids}")
-    public R<Void> remove(@ApiParam("主键串")
-                                   @NotEmpty(message = "主键不能为空")
-                                   @PathVariable String[] ids) {
+    public R<Void> remove(@NotEmpty(message = "主键不能为空") @PathVariable String[] ids) {
         return toAjax(iBsLeaveService.deleteWithValidByIds(Arrays.asList(ids)) ? 1 : 0);
     }
 }
