@@ -149,7 +149,7 @@ export default {
       form:{},
       rules:{},
       currentIndex:-1,
-      formVal: undefined
+      formVal: ''
     }
   },
   mounted() {

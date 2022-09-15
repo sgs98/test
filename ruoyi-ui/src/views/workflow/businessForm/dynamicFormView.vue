@@ -114,7 +114,7 @@ export default {
       }
     },
     form(){ //转换成json的值
-      if(this.value!==''){
+      if(this.value!=='' && this.value!==null){
         const value = JSON.parse(this.value);
         return value;
       }else{
