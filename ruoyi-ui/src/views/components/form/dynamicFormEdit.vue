@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="btn">
+    <div class="btn" v-show="parentTaskId===null">
         <div class="btn-content">
           <span>
             <el-button type="info" @click="submitCallback">关闭</el-button>
@@ -141,14 +141,18 @@ export default {
       type:Boolean,
       default:false
     },
+    // 动态表单数据
     dynamicFormData: {
       type:Object,
       default:()=>{}
     },
+    // 任务id
     taskId: {
       type:String,
       default:''
-    }
+    },
+    // 父级任务id
+    parentTaskId: String, 
   },
   components:{
     previewItem,

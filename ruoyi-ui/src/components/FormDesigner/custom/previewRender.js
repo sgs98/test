@@ -3,6 +3,7 @@ import childrenItem from './slot/index';
 import {remoteData} from './mixin';
 import Vue from 'vue'
 import { getToken } from "@/utils/auth";
+import { Message } from 'element-ui'
 //先修改在这里,后续需要优化
 function vModel(self, dataObject) {
   dataObject.props.value = self.value;
@@ -28,11 +29,12 @@ function vModel(self, dataObject) {
       }
     }
       dataObject.attrs['on-success'] = file=>{
-        //console.log("on-success",file);
+        if(file.code === 500){
+          Message({ message: file.msg,type: 'error' })
+          return false
+        }
         var filename=file.message.substring(file.message.lastIndexOf('/')+1)  //获取文件名称
         let fileObj = {name: filename, url: file.message}
-        console.log("dataObject=",dataObject);
-        console.log("self.conf=",self.conf);
         let oldValue = [];
         if(dataObject.props.value) {
           oldValue = JSON.parse(dataObject.props.value);
@@ -45,17 +47,13 @@ function vModel(self, dataObject) {
           oldValue = [fileObj]
         }
         self.$emit('input',JSON.stringify(oldValue));
-        console.log("on-success value",oldValue);
     } 
     dataObject.attrs['on-remove'] = (file, fileList) => {
-      console.log("on-remove file,fileList",file,fileList);
       let oldValue = JSON.parse(dataObject.props.value);
-      console.log("on-remove oldValue",oldValue);
       //file 删除的文件
       //过滤掉删除的文件  
       let newValue = oldValue.filter(item => item.name !== file.name)
       self.$emit('input',JSON.stringify(newValue));
-      console.log("on-remove newValue",newValue);
     }
     
     dataObject.attrs['on-error'] = (file) => {
