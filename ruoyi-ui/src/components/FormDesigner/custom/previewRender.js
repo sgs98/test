@@ -33,8 +33,12 @@ function vModel(self, dataObject) {
           Message({ message: file.msg,type: 'error' })
           return false
         }
-        var filename=file.message.substring(file.message.lastIndexOf('/')+1)  //获取文件名称
-        let fileObj = {name: filename, url: file.message}
+        console.log(file)
+        //获取文件名称
+        var filename=file.data.fileName.substring(file.data.fileName.lastIndexOf('/')+1)  
+        //获取文件路径
+        var url=file.data.url
+        let fileObj = {name: filename, url: url}
         let oldValue = [];
         if(dataObject.props.value) {
           oldValue = JSON.parse(dataObject.props.value);
