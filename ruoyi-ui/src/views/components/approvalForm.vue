@@ -33,9 +33,15 @@
 </template>
 
 <script>
+// 导入@/views/components/form 目录下所有组件
+const allComponents = require.context('@/views/components/form', false,/\.vue$/)
+// 组件名: 引用的组件
+let components = {}
+allComponents.keys().forEach(fileName => {
+  let componentName = allComponents(fileName)
+  components[fileName.replace(/^\.\/(.*)\.\w+$/, '$1')] = componentName.default
+})
 import api from '@/api/workflow/processInst'
-import leaveForm from "@/views/components/form/leaveForm";
-import dynamicFormEdit from '@/views/components/form/dynamicFormEdit'
 export default {
     props: {
       processInstanceId: String, // 流程实例id
@@ -45,10 +51,7 @@ export default {
       currProcessForm: String, // 当前流程表单组件
       dynamicFormData: {} //动态表单数据
     },
-    components: {
-      leaveForm,
-      dynamicFormEdit
-    },
+    components: components,
     data() {
       return {
         loading: false,
