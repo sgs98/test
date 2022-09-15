@@ -2,7 +2,7 @@ import { isAttr,jsonClone } from '../utils';
 import childrenItem from './slot/index';
 import {remoteData} from './mixin';
 import Vue from 'vue'
-import { ACCESS_TOKEN } from "@/store/mutation-types"
+import { getToken } from "@/utils/auth";
 //先修改在这里,后续需要优化
 function vModel(self, dataObject) {
   dataObject.props.value = self.value;
@@ -11,8 +11,7 @@ function vModel(self, dataObject) {
   }
   //判断是否为上传组件
   if(self.conf.compType === 'upload'){
-    const token = Vue.ls.get(ACCESS_TOKEN);
-    dataObject.attrs['headers'] = {"X-Access-Token":token};
+    dataObject.attrs['headers'] = {"Authorization":"Bearer " + getToken()};
     dataObject.attrs['before-upload'] = file=>{
       //非限定后缀不允许上传
       const fileName = file.name;
