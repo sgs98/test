@@ -3,6 +3,7 @@ import childrenItem from './slot/index';
 import {remoteData} from './mixin';
 import Vue from 'vue'
 import { getToken } from "@/utils/auth";
+import download from "@/plugins/download"
 
 function vModel(self, dataObject) {
   dataObject.props.value=self.value;
@@ -15,7 +16,14 @@ function vModel(self, dataObject) {
     dataObject.attrs['headers'] = {"Authorization":"Bearer " + getToken()};
     const filevalue = JSON.parse(dataObject.props.value);
     dataObject.props['file-list'] = filevalue;
-  }  
+    console.log("=====dataObject=====");
+    console.log(dataObject);
+    dataObject.attrs['on-preview'] = (file) => {
+      console.log("on-preview file",file);
+      //download(file);
+      download.oss(file.ossId);
+    }
+  } 
 }
 
 export default {

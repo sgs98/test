@@ -4,6 +4,7 @@ import {remoteData} from './mixin';
 import Vue from 'vue'
 import { getToken } from "@/utils/auth";
 import { Message } from 'element-ui'
+import download from "@/plugins/download"
 //先修改在这里,后续需要优化
 function vModel(self, dataObject) {
   dataObject.props.value = self.value;
@@ -33,12 +34,14 @@ function vModel(self, dataObject) {
           Message({ message: file.msg,type: 'error' })
           return false
         }
-        console.log(file)
+        console.log("on-success",file)
         //获取文件名称
         var filename=file.data.fileName.substring(file.data.fileName.lastIndexOf('/')+1)  
         //获取文件路径
         var url=file.data.url
-        let fileObj = {name: filename, url: url}
+        // ossId
+        var ossId = file.data.ossId
+        let fileObj = {name: filename, url: url,ossId: ossId}
         let oldValue = [];
         if(dataObject.props.value) {
           oldValue = JSON.parse(dataObject.props.value);
@@ -67,6 +70,7 @@ function vModel(self, dataObject) {
     dataObject.attrs['on-preview'] = (file) => {
       console.log("on-preview file",file);
       //download(file);
+      download.oss(file.ossId);
     }
   }
 }
